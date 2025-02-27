@@ -55,7 +55,7 @@
     "typescript": "^5.7.3"
   },
   "peerDependencies": {
-    "electron": ">=9.0.0 <34.0.0"
+    "electron": ">=9.0.0 <35.0.0"
   },
   "packageManager": "yarn@1.22.22"
 }
