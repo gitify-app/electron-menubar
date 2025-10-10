@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from 'node:path';
 
 import { MOCK_APP_GETAPPPATH } from '../__mocks__/electron';
 import { cleanOptions } from './cleanOptions';

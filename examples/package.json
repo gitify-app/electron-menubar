@@ -3,7 +3,12 @@
   "version": "0.1.0",
   "description": "Examples of menubar electron apps",
   "private": true,
-  "workspaces": ["arrow", "hello-world", "icon-animation", "native-menu"],
+  "workspaces": [
+    "arrow",
+    "hello-world",
+    "icon-animation",
+    "native-menu"
+  ],
   "devDependencies": {
     "electron": "^34.3.0"
   }

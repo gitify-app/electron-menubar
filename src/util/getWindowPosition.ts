@@ -4,7 +4,7 @@
 
 /** */
 
-import { type Rectangle, type Tray, screen as electronScreen } from 'electron';
+import { screen as electronScreen, type Rectangle, type Tray } from 'electron';
 
 const isLinux = process.platform === 'linux';
 
