@@ -1,10 +1,12 @@
-[**menubar**](../README.md) • **Docs**
+[**menubar**](../README.md)
 
 ***
 
 [menubar](../globals.md) / Menubar
 
 # Class: Menubar
+
+Defined in: [Menubar.ts:14](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L14)
 
 The main Menubar class.
 
@@ -16,68 +18,68 @@ The main Menubar class.
 
 ### app
 
-> `get` **app**(): `App`
+#### Get Signature
+
+> **get** **app**(): `App`
+
+Defined in: [Menubar.ts:46](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L46)
 
 The Electron [App](https://electronjs.org/docs/api/app)
 instance.
 
-#### Returns
+##### Returns
 
 `App`
-
-#### Defined in
-
-[Menubar.ts:46](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/Menubar.ts#L46)
 
 ***
 
 ### positioner
 
-> `get` **positioner**(): `default`
+#### Get Signature
+
+> **get** **positioner**(): `default`
+
+Defined in: [Menubar.ts:54](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L54)
 
 The [electron-positioner](https://github.com/jenslind/electron-positioner)
 instance.
 
-#### Returns
+##### Returns
 
 `default`
-
-#### Defined in
-
-[Menubar.ts:54](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/Menubar.ts#L54)
 
 ***
 
 ### tray
 
-> `get` **tray**(): `Tray`
+#### Get Signature
+
+> **get** **tray**(): `Tray`
+
+Defined in: [Menubar.ts:67](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L67)
 
 The Electron [Tray](https://electronjs.org/docs/api/tray) instance.
 
-#### Returns
+##### Returns
 
 `Tray`
-
-#### Defined in
-
-[Menubar.ts:67](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/Menubar.ts#L67)
 
 ***
 
 ### window
 
-> `get` **window**(): `undefined` \| `BrowserWindow`
+#### Get Signature
+
+> **get** **window**(): `undefined` \| `BrowserWindow`
+
+Defined in: [Menubar.ts:81](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L81)
 
 The Electron [BrowserWindow](https://electronjs.org/docs/api/browser-window)
 instance, if it's present.
 
-#### Returns
+##### Returns
 
 `undefined` \| `BrowserWindow`
-
-#### Defined in
-
-[Menubar.ts:81](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/Menubar.ts#L81)
 
 ## Methods
 
@@ -85,15 +87,21 @@ instance, if it's present.
 
 > **getOption**\<`K`\>(`key`): `Options`\[`K`\]
 
+Defined in: [Menubar.ts:90](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L90)
+
 Retrieve a menubar option.
 
 #### Type Parameters
 
-• **K** *extends* keyof `Options`
+##### K
+
+`K` *extends* keyof `Options`
 
 #### Parameters
 
-• **key**: `K`
+##### key
+
+`K`
 
 The option key to retrieve, see Options.
 
@@ -101,15 +109,13 @@ The option key to retrieve, see Options.
 
 `Options`\[`K`\]
 
-#### Defined in
-
-[Menubar.ts:90](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/Menubar.ts#L90)
-
 ***
 
 ### hideWindow()
 
 > **hideWindow**(): `void`
+
+Defined in: [Menubar.ts:97](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L97)
 
 Hide the menubar window.
 
@@ -117,29 +123,33 @@ Hide the menubar window.
 
 `void`
 
-#### Defined in
-
-[Menubar.ts:97](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/Menubar.ts#L97)
-
 ***
 
 ### setOption()
 
 > **setOption**\<`K`\>(`key`, `value`): `void`
 
+Defined in: [Menubar.ts:117](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L117)
+
 Change an option after menubar is created.
 
 #### Type Parameters
 
-• **K** *extends* keyof `Options`
+##### K
+
+`K` *extends* keyof `Options`
 
 #### Parameters
 
-• **key**: `K`
+##### key
+
+`K`
 
 The option key to modify, see Options.
 
-• **value**: `Options`\[`K`\]
+##### value
+
+`Options`\[`K`\]
 
 The value to set.
 
@@ -147,28 +157,24 @@ The value to set.
 
 `void`
 
-#### Defined in
-
-[Menubar.ts:117](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/Menubar.ts#L117)
-
 ***
 
 ### showWindow()
 
-> **showWindow**(`trayPos`?): `Promise`\<`void`\>
+> **showWindow**(`trayPos?`): `Promise`\<`void`\>
+
+Defined in: [Menubar.ts:126](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/Menubar.ts#L126)
 
 Show the menubar window.
 
 #### Parameters
 
-• **trayPos?**: `Rectangle`
+##### trayPos?
+
+`Rectangle`
 
 The bounds to show the window in.
 
 #### Returns
 
 `Promise`\<`void`\>
-
-#### Defined in
-
-[Menubar.ts:126](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/Menubar.ts#L126)

@@ -1,4 +1,4 @@
-[**menubar**](README.md) • **Docs**
+[**menubar**](README.md)
 
 ***
 

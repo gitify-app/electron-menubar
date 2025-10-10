@@ -1,4 +1,4 @@
-[**menubar**](../README.md) • **Docs**
+[**menubar**](../README.md)
 
 ***
 
@@ -8,19 +8,19 @@
 
 > **getWindowPosition**(`tray`): `WindowPosition`
 
+Defined in: [util/getWindowPosition.ts:76](https://github.com/max-mapper/menubar/blob/89ed428f76330ad9c3a20495241cd6c6eac47f81/src/util/getWindowPosition.ts#L76)
+
 Depending on where the taskbar is, determine where the window should be
 positioned.
 
 ## Parameters
 
-• **tray**: `Tray`
+### tray
+
+`Tray`
 
 The Electron Tray instance.
 
 ## Returns
 
 `WindowPosition`
-
-## Defined in
-
-[util/getWindowPosition.ts:76](https://github.com/max-mapper/menubar/blob/9dfd6c1353193306024f315a191d68a0c6e1fa38/src/util/getWindowPosition.ts#L76)

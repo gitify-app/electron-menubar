@@ -1,4 +1,4 @@
-**menubar** • [**Docs**](globals.md)
+**menubar**
 
 ***
 
@@ -122,10 +122,10 @@ The `Menubar` class is an event emitter:
 
 | menubar  | Electron                   | Notes                                                                                                                      |
 | -------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 9.x.x    | >=9.x.x <33.x.x |                                                                                                                            |
-| 8.x.x    | 8.x.xx                      |                                                                                                                            |
-| 7.x.x    | 7.x.xx                      |                                                                                                                            |
-| 6.x.x    | >=4.x.x <7.x.x   | Not recommended for [security reasons](https://electronjs.org/docs/tutorial/security#17-use-a-current-version-of-electron) |
+| 9.x.x    | >=9.x.x                    |                                                                                                                            |
+| 8.x.x    | 8.x.xx                     |                                                                                                                            |
+| 7.x.x    | 7.x.xx                     |                                                                                                                            |
+| 6.x.x    | >=4.x.x <7.x.x             | Not recommended for [security reasons](https://electronjs.org/docs/tutorial/security#17-use-a-current-version-of-electron) |
 | <= 5.x.x | <= 3.x.x                   | Please, _please_ don't use these old versions                                                                              |
 
 ## API Docs
