@@ -29,7 +29,21 @@
     "app"
   ],
   "license": "BSD-2-Clause",
-  "main": "lib/index.js",
+  "main": "lib/index.cjs",
+  "module": "lib/index.mjs",
+  "types": "lib/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.mts",
+        "default": "./lib/index.mjs"
+      },
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
+      }
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -38,14 +52,13 @@
     "url": "https://github.com/gitify-app/menubar.git"
   },
   "scripts": {
-    "build": "rimraf lib/ && tsc",
+    "build": "vp pack",
     "deploy": "bun run build && standard-version",
     "docs": "typedoc",
     "lint:check": "biome check",
     "lint": "biome check --fix",
     "test": "vp test"
   },
-  "types": "lib/index.d.ts",
   "dependencies": {
     "electron-positioner": "^4.1.0"
   },
@@ -54,7 +67,6 @@
     "@voidzero-dev/vite-plus-core": "latest",
     "@voidzero-dev/vite-plus-test": "latest",
     "electron": "^39.0.0",
-    "rimraf": "^6.0.1",
     "standard-version": "^9.5.0",
     "typedoc": "^0.28.14",
     "typedoc-plugin-markdown": "^4.9.0",
