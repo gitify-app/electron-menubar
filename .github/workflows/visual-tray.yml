@@ -97,12 +97,16 @@ jobs:
                       key: linux-kde
                       apt: plasma-workspace plasma-desktop kwin-x11 systemsettings
                       panel_cmd: plasmashell --no-respawn
+                      panel_warmup: 18
+                      post_ready_delay: 12000
                       experimental: true
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
                       apt: cinnamon-core muffin
                       panel_cmd: bash -c 'muffin --replace & sleep 3; cinnamon --replace'
+                      panel_warmup: 15
+                      post_ready_delay: 10000
                       experimental: true
                     - de: tint2
                       label: Linux (Tint2)
@@ -165,7 +169,9 @@ jobs:
               env:
                   VISUAL_KEY: ${{ matrix.key }}
                   VISUAL_LABEL: ${{ matrix.label }}
+                  VISUAL_POST_READY_DELAY_MS: ${{ matrix.post_ready_delay || 3000 }}
                   PANEL_CMD: ${{ matrix.panel_cmd }}
+                  PANEL_WARMUP: ${{ matrix.panel_warmup || 8 }}
               run: |
                   set -x
                   Xvfb :99 -screen 0 1920x1080x24 &
@@ -175,7 +181,7 @@ jobs:
                   dbus-run-session -- bash -c '
                       eval "$PANEL_CMD" &
                       PANEL_PID=$!
-                      sleep 8
+                      sleep "$PANEL_WARMUP"
                       bun run test:visual
                       EXIT=$?
                       kill $PANEL_PID 2>/dev/null || true

@@ -16,7 +16,9 @@ const resultPath = join(outDir, `${key}.json`);
 mkdirSync(outDir, { recursive: true });
 
 const READY_TIMEOUT_MS = 30_000;
-const POST_READY_DELAY_MS = 3_000;
+const POST_READY_DELAY_MS = Number(
+  process.env.VISUAL_POST_READY_DELAY_MS ?? 3_000,
+);
 const PASS_THRESHOLD = 50;
 
 const child = spawn(electronBin, [fixturePath], {
