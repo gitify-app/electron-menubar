@@ -1,16 +1,20 @@
 {
-  "name": "menubar",
+  "name": "@gitify/menubar",
   "version": "9.5.2",
-  "author": "Max Ogden",
+  "author": "Gitify",
+  "contributors": [
+    "Afonso Jorge Ramos (https://github.com/afonsojramos)",
+    "Adam Setch (https://github.com/setchy)"
+  ],
   "bugs": {
-    "url": "https://github.com/maxogden/menubar/issues"
+    "url": "https://github.com/gitify-app/menubar/issues"
   },
   "description": "high level way to create menubar desktop applications with electron",
   "files": [
     "/assets",
     "/lib"
   ],
-  "homepage": "https://github.com/maxogden/menubar",
+  "homepage": "https://github.com/gitify-app/menubar",
   "keywords": [
     "electron",
     "shell",
@@ -31,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxogden/menubar.git"
+    "url": "https://github.com/gitify-app/menubar.git"
   },
   "scripts": {
     "build": "rimraf lib/ && tsc",
