@@ -104,8 +104,7 @@ jobs:
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
                       apt: cinnamon cinnamon-session muffin
-                      panel_cmd: bash -c 'muffin --replace --x11 & sleep 4; cinnamon-session-cinnamon &
-                          sleep 4; cinnamon --replace --no-flash'
+                      panel_cmd: bash -c 'export LIBGL_ALWAYS_SOFTWARE=1 MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11; muffin --replace --x11 & sleep 4; cinnamon --replace'
                       panel_warmup: 20
                       post_ready_delay: 12000
                       experimental: true
