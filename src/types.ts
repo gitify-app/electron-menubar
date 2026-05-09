@@ -71,8 +71,19 @@ export interface Options {
   showOnAllWorkspaces?: boolean;
   /**
    * Show the window on 'right-click' event instead of regular 'click'.
+   * @deprecated Use {@link Options.trigger} instead. Will be removed in the
+   * next major release.
    */
   showOnRightClick?: boolean;
+  /**
+   * Tray event that toggles the menubar window. Set to `'none'` to disable
+   * automatic toggling — the window can still be shown by calling
+   * {@link Menubar.showWindow} directly. Useful when a single tray icon serves
+   * multiple windows.
+   * @default `'click'` (or `'right-click'` if the deprecated
+   * {@link Options.showOnRightClick} is `true`)
+   */
+  trigger?: 'click' | 'right-click' | 'none';
   /**
    * Menubar tray icon tooltip text. Calls [`tray.setTooltip`](https://electronjs.org/docs/api/tray#traysettooltiptooltip).
    */

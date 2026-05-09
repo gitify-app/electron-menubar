@@ -97,7 +97,8 @@ You can pass an optional options object into the `menubar({ ... })` function:
 - `showOnAllWorkspaces` (default true) - Makes the window available on all OS X workspaces.
 - `windowPosition` (default trayCenter and trayBottomCenter on Windows) - Sets the window position (x and y will still override this), check [positioner docs](https://github.com/jenslind/electron-positioner#docs) for valid values.
 - `showDockIcon` (default false) - Configure the visibility of the application dock icon.
-- `showOnRightClick` (default false) - Show the window on 'right-click' event instead of regular 'click'
+- `trigger` (default `'click'`) - Tray event that toggles the menubar window. One of `'click'`, `'right-click'`, or `'none'`. Use `'none'` to disable automatic toggling — useful when a single tray icon serves multiple windows. The window can still be shown by calling `mb.showWindow()` directly.
+- `showOnRightClick` (default false) - **Deprecated**, use `trigger: 'right-click'` instead. Show the window on 'right-click' event instead of regular 'click'.
 
 See the reference [API docs](./docs/interfaces/_types_.options.md).
 
