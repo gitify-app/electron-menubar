@@ -88,7 +88,10 @@ jobs:
                       label: Linux (LXQt)
                       key: linux-lxqt
                       apt: lxqt-panel lxqt-session
-                      panel_cmd: lxqt-panel
+                      panel_cmd: |
+                          mkdir -p ~/.config/lxqt && \
+                          printf '[General]\n__userfile__=true\npanels=p1\n[p1]\nplugins=statusnotifier\nposition=Top\nalignment=0\n' > ~/.config/lxqt/panel.conf && \
+                          lxqt-panel
                     - de: kde
                       label: Linux (KDE Plasma)
                       key: linux-kde
