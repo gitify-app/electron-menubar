@@ -95,20 +95,21 @@ jobs:
                     - de: kde
                       label: Linux (KDE Plasma)
                       key: linux-kde
-                      apt: plasma-workspace kwin-x11
+                      apt: plasma-workspace plasma-desktop kwin-x11 systemsettings
                       panel_cmd: plasmashell --no-respawn
                       experimental: true
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
-                      apt: cinnamon-core
-                      panel_cmd: cinnamon --replace
+                      apt: cinnamon-core muffin
+                      panel_cmd: bash -c 'muffin --replace & sleep 3; cinnamon --replace'
                       experimental: true
                     - de: tint2
                       label: Linux (Tint2)
                       key: linux-tint2
-                      apt: tint2
-                      panel_cmd: tint2
+                      apt: tint2 golang-go git
+                      panel_cmd: bash -c 'snixembed & sleep 1; tint2'
+                      build_snixembed: true
                       experimental: true
                     - de: gnome
                       label: Linux (GNOME)
@@ -150,6 +151,14 @@ jobs:
                       libxcomposite1 libxdamage1 libxfixes3 libcups2 \
                       libayatana-appindicator3-1 \
                       $APT_PACKAGES
+            - name: Build snixembed (SNI to XEmbed bridge)
+              if: matrix.build_snixembed
+              run: |
+                  git clone --depth 1 https://git.sr.ht/~steef/snixembed /tmp/snixembed
+                  cd /tmp/snixembed
+                  go build -o /tmp/snixembed/snixembed
+                  sudo install /tmp/snixembed/snixembed /usr/local/bin/snixembed
+                  snixembed --help 2>&1 | head -5 || true
             - name: Run visual test under ${{ matrix.de }}
               env:
                   VISUAL_KEY: ${{ matrix.key }}
@@ -233,6 +242,11 @@ jobs:
               env:
                   VISUAL_KEY: ${{ matrix.key }}
                   VISUAL_LABEL: ${{ matrix.label }}
+                  VISUAL_PREPARE_CMD: |
+                      Get-ChildItem 'HKCU:\Control Panel\NotifyIconSettings' -ErrorAction SilentlyContinue | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name IsPromoted -Value 1 -Type DWord -Force };
+                      Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
+                      Start-Process explorer;
+                      Start-Sleep -Seconds 6
               run: bun run test:visual
             - name: Upload artifacts
               if: always()

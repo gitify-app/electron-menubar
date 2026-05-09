@@ -49,6 +49,18 @@ if (!ready) {
 
 await new Promise((r) => setTimeout(r, POST_READY_DELAY_MS));
 
+const prepareCmd = process.env.VISUAL_PREPARE_CMD;
+if (prepareCmd) {
+  console.log(`running VISUAL_PREPARE_CMD: ${prepareCmd}`);
+  if (process.platform === 'win32') {
+    execFileSync('powershell', ['-NoProfile', '-Command', prepareCmd], {
+      stdio: 'inherit',
+    });
+  } else {
+    execFileSync('sh', ['-c', prepareCmd], { stdio: 'inherit' });
+  }
+}
+
 try {
   capture(screenshotPath);
 } catch (err) {
