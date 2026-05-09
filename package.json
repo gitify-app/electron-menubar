@@ -1,68 +1,85 @@
 {
   "name": "@gitify/menubar",
   "version": "9.5.2",
+  "description": "high level way to create menubar desktop applications with electron",
+  "keywords": [
+    "app",
+    "electron",
+    "linux",
+    "mac",
+    "menu",
+    "menubar",
+    "shell",
+    "taskbar",
+    "tray",
+    "traybar",
+    "windows"
+  ],
+  "homepage": "https://github.com/gitify-app/menubar",
+  "bugs": {
+    "url": "https://github.com/gitify-app/menubar/issues"
+  },
+  "license": "BSD-2-Clause",
   "author": "Gitify",
   "contributors": [
     "Afonso Jorge Ramos (https://github.com/afonsojramos)",
     "Adam Setch (https://github.com/setchy)"
   ],
-  "bugs": {
-    "url": "https://github.com/gitify-app/menubar/issues"
-  },
-  "description": "high level way to create menubar desktop applications with electron",
-  "files": [
-    "/assets",
-    "/lib"
-  ],
-  "homepage": "https://github.com/gitify-app/menubar",
-  "keywords": [
-    "electron",
-    "shell",
-    "menubar",
-    "menu",
-    "taskbar",
-    "tray",
-    "traybar",
-    "mac",
-    "linux",
-    "windows",
-    "app"
-  ],
-  "license": "BSD-2-Clause",
-  "main": "lib/index.js",
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/gitify-app/menubar.git"
   },
-  "scripts": {
-    "build": "rimraf lib/ && tsc",
-    "deploy": "yarn build && standard-version",
-    "docs": "typedoc",
-    "lint:check": "biome check",
-    "lint": "biome check --fix",
-    "test": "jest"
+  "files": [
+    "/assets",
+    "/lib"
+  ],
+  "main": "lib/index.cjs",
+  "module": "lib/index.mjs",
+  "types": "lib/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.mts",
+        "default": "./lib/index.mjs"
+      },
+      "require": {
+        "types": "./lib/index.d.cts",
+        "default": "./lib/index.cjs"
+      }
+    }
   },
-  "types": "lib/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "deploy": "bun run build && standard-version",
+    "docs": "typedoc",
+    "lint:check": "vp check",
+    "lint": "vp check --fix",
+    "test": "vp test",
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "electron-positioner": "^4.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.1",
-    "@types/jest": "^30.0.0",
+    "@voidzero-dev/vite-plus-core": "latest",
+    "@voidzero-dev/vite-plus-test": "latest",
     "electron": "^39.0.0",
-    "jest": "^30.2.0",
-    "rimraf": "^6.0.1",
     "standard-version": "^9.5.0",
-    "ts-jest": "^29.4.5",
     "typedoc": "^0.28.14",
     "typedoc-plugin-markdown": "^4.9.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite-plus": "latest",
+    "vitest": "latest"
   },
   "peerDependencies": {
     "electron": ">=9.0.0 <40.0.0"
   },
-  "packageManager": "yarn@1.22.22"
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+  },
+  "packageManager": "bun@1.3.11"
 }
