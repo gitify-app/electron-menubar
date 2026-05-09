@@ -1,6 +1,7 @@
-import { EventEmitter } from 'events';
-import fs from 'fs';
-import path from 'path';
+import { EventEmitter } from 'node:events';
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { BrowserWindow, Tray } from 'electron';
 import Positioner from 'electron-positioner';
 
@@ -10,8 +11,6 @@ import { getWindowPosition } from './util/getWindowPosition';
 
 /**
  * The main Menubar class.
- *
- * @noInheritDoc
  */
 export class Menubar extends EventEmitter {
   private _app: Electron.App;
@@ -160,7 +159,7 @@ export class Menubar extends EventEmitter {
     }
 
     // Default the window to the right if `trayPos` bounds are undefined or null.
-    let noBoundsPosition = undefined;
+    let noBoundsPosition: Options['windowPosition'];
     if (
       (trayPos === undefined || trayPos.x === 0) &&
       this._options.windowPosition &&

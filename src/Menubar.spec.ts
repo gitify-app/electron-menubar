@@ -1,4 +1,4 @@
-import { BrowserWindow, Tray, app } from 'electron';
+import { app, BrowserWindow, Tray } from 'electron';
 
 import { Menubar } from './Menubar';
 
