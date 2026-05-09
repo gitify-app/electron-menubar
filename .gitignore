@@ -5,3 +5,5 @@ lib
 dist
 *.app
 *.log
+test-results
+playwright-report
