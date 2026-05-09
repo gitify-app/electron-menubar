@@ -2,6 +2,9 @@
 
 This document is still a work-in-progress. If you have tested `menubar` with a platform that is not listed under here, I would greatly appreciate a PR!
 
+<!-- platforms:start -->
+<!-- platforms:end -->
+
 ## macOS
 
 | Version           | Working Status | Known Issues                                                                                                   |
