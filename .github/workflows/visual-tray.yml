@@ -115,7 +115,7 @@ jobs:
                       label: Linux (GNOME)
                       key: linux-gnome
                       apt: gnome-shell gnome-shell-extension-appindicator
-                      panel_cmd: gnome-shell --x11
+                      panel_cmd: bash -c 'gnome-extensions enable ubuntu-appindicators@ubuntu.com 2>/dev/null || true; gnome-shell --x11'
                       experimental: true
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -231,15 +231,13 @@ jobs:
                   exit 1
             - name: Build library
               run: bun run build
-            - name: Disable tray icon auto-hide
+            - name: Set EnableAutoTray=0 (legacy Win10/2022 path)
               shell: pwsh
               run: |
                   $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer'
                   New-Item -Path $key -Force | Out-Null
                   Set-ItemProperty -Path $key -Name 'EnableAutoTray' -Value 0 -Type DWord
-                  Stop-Process -Name explorer -Force
-                  Start-Process explorer
-                  Start-Sleep -Seconds 5
+                  taskkill /F /IM explorer.exe 2>$null; Start-Process explorer; Start-Sleep -Seconds 5
             - name: Run visual test
               env:
                   VISUAL_KEY: ${{ matrix.key }}
