@@ -13,4 +13,22 @@ export default defineConfig({
   test: {
     include: ['src/**/*.spec.ts'],
   },
+  lint: {
+    ignorePatterns: ['lib/**', 'docs/**', 'examples/**', 'coverage/**'],
+  },
+  fmt: {
+    singleQuote: true,
+    tabWidth: 2,
+    printWidth: 80,
+    sortImports: true,
+    ignorePatterns: [
+      'lib/**',
+      'docs/**',
+      'examples/**',
+      'coverage/**',
+      'CHANGELOG.md',
+      '**/*.md',
+      '.github/**',
+    ],
+  },
 });

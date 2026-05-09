@@ -1,34 +1,38 @@
 {
   "name": "@gitify/menubar",
   "version": "9.5.2",
+  "description": "high level way to create menubar desktop applications with electron",
+  "keywords": [
+    "app",
+    "electron",
+    "linux",
+    "mac",
+    "menu",
+    "menubar",
+    "shell",
+    "taskbar",
+    "tray",
+    "traybar",
+    "windows"
+  ],
+  "homepage": "https://github.com/gitify-app/menubar",
+  "bugs": {
+    "url": "https://github.com/gitify-app/menubar/issues"
+  },
+  "license": "BSD-2-Clause",
   "author": "Gitify",
   "contributors": [
     "Afonso Jorge Ramos (https://github.com/afonsojramos)",
     "Adam Setch (https://github.com/setchy)"
   ],
-  "bugs": {
-    "url": "https://github.com/gitify-app/menubar/issues"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gitify-app/menubar.git"
   },
-  "description": "high level way to create menubar desktop applications with electron",
   "files": [
     "/assets",
     "/lib"
   ],
-  "homepage": "https://github.com/gitify-app/menubar",
-  "keywords": [
-    "electron",
-    "shell",
-    "menubar",
-    "menu",
-    "taskbar",
-    "tray",
-    "traybar",
-    "mac",
-    "linux",
-    "windows",
-    "app"
-  ],
-  "license": "BSD-2-Clause",
   "main": "lib/index.cjs",
   "module": "lib/index.mjs",
   "types": "lib/index.d.cts",
@@ -47,16 +51,12 @@
   "publishConfig": {
     "access": "public"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/gitify-app/menubar.git"
-  },
   "scripts": {
     "build": "vp pack",
     "deploy": "bun run build && standard-version",
     "docs": "typedoc",
-    "lint:check": "biome check",
-    "lint": "biome check --fix",
+    "lint:check": "vp check",
+    "lint": "vp check --fix",
     "test": "vp test",
     "typecheck": "tsc --noEmit"
   },
@@ -64,7 +64,6 @@
     "electron-positioner": "^4.1.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.1",
     "@voidzero-dev/vite-plus-core": "latest",
     "@voidzero-dev/vite-plus-test": "latest",
     "electron": "^39.0.0",
