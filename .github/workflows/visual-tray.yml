@@ -74,26 +74,21 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - de: xfce
-                      label: Linux (Xfce)
-                      key: linux-xfce
-                      apt: xfce4-panel xfce4-statusnotifier-plugin
-                      panel_cmd: xfce4-panel --disable-wm-check
                     - de: mate
                       label: Linux (MATE)
                       key: linux-mate
                       apt: mate-panel mate-indicator-applet
                       panel_cmd: mate-panel --replace
+                    - de: xfce
+                      label: Linux (Xfce)
+                      key: linux-xfce
+                      apt: xfce4-panel
+                      panel_cmd: xfce4-panel --disable-wm-check
                     - de: lxqt
                       label: Linux (LXQt)
                       key: linux-lxqt
-                      apt: lxqt-panel
+                      apt: lxqt-panel lxqt-session
                       panel_cmd: lxqt-panel
-                    - de: tint2
-                      label: Linux (Tint2)
-                      key: linux-tint2
-                      apt: tint2
-                      panel_cmd: tint2
                     - de: kde
                       label: Linux (KDE Plasma)
                       key: linux-kde
@@ -105,6 +100,12 @@ jobs:
                       key: linux-cinnamon
                       apt: cinnamon-core
                       panel_cmd: cinnamon --replace
+                      experimental: true
+                    - de: tint2
+                      label: Linux (Tint2)
+                      key: linux-tint2
+                      apt: tint2
+                      panel_cmd: tint2
                       experimental: true
                     - de: gnome
                       label: Linux (GNOME)
@@ -142,6 +143,9 @@ jobs:
                       xvfb imagemagick dbus-x11 \
                       libgtk-3-0 libnss3 libxss1 libasound2t64 \
                       libgbm1 libatk-bridge2.0-0 libdrm2 \
+                      libxtst6 libnotify4 libxrandr2 \
+                      libxcomposite1 libxdamage1 libxfixes3 libcups2 \
+                      libayatana-appindicator3-1 \
                       $APT_PACKAGES
             - name: Run visual test under ${{ matrix.de }}
               env:
