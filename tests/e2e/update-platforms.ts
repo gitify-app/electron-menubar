@@ -19,7 +19,10 @@ const targetPath = process.argv[3] ?? 'PLATFORMS.md';
 
 const files = readdirSync(resultsDir).filter((f) => f.endsWith('.json'));
 const results: PlatformResult[] = files
-  .map((f) => JSON.parse(readFileSync(join(resultsDir, f), 'utf8')) as PlatformResult)
+  .map(
+    (f) =>
+      JSON.parse(readFileSync(join(resultsDir, f), 'utf8')) as PlatformResult,
+  )
   .sort((a, b) => a.label.localeCompare(b.label));
 
 if (results.length === 0) {
@@ -52,7 +55,8 @@ if (startIdx === -1 || endIdx === -1) {
   process.exit(1);
 }
 
-const updated = original.slice(0, startIdx) + block + original.slice(endIdx + END.length);
+const updated =
+  original.slice(0, startIdx) + block + original.slice(endIdx + END.length);
 
 if (updated === original) {
   console.log(`${targetPath} unchanged`);
