@@ -184,16 +184,18 @@ jobs:
         runs-on: ${{ matrix.runner }}
         permissions:
             contents: read
+        continue-on-error: ${{ matrix.experimental || false }}
         strategy:
             fail-fast: false
             matrix:
                 include:
-                    - runner: windows-2025
-                      label: Windows Server 2025
-                      key: windows-2025
                     - runner: windows-2022
                       label: Windows Server 2022
                       key: windows-2022
+                    - runner: windows-2025
+                      label: Windows Server 2025
+                      key: windows-2025
+                      experimental: true
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
