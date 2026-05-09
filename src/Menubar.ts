@@ -273,32 +273,48 @@ export class Menubar extends EventEmitter {
       throw new Error('Window has been initialized just above. qed.');
     }
 
-    // 'Windows' taskbar: sync windows position each time before showing
-    // https://github.com/maxogden/menubar/issues/232
-    if (['win32', 'linux'].includes(process.platform)) {
-      // Fill in this._options.windowPosition when taskbar position is available
-      this._options.windowPosition = getWindowPosition(this.tray);
-    }
-
     this.emit('show');
 
+    // Cache fresh tray bounds (or fall back to existing cache / tray bounds)
+    // so `positionWindow` can reposition without an event payload — for
+    // example when the window resizes via `setSize`.
     if (trayPos && trayPos.x !== 0) {
-      // Cache the bounds
       this._cachedBounds = trayPos;
-    } else if (this._cachedBounds) {
-      // Cached value will be used if showWindow is called without bounds data
-      trayPos = this._cachedBounds;
-    } else if (this.tray.getBounds) {
-      // Get the current tray bounds
-      trayPos = this.tray.getBounds();
+    } else if (!this._cachedBounds && this.tray.getBounds) {
+      this._cachedBounds = this.tray.getBounds();
     }
+
+    this.positionWindow();
+    this._browserWindow.show();
+    this._isVisible = true;
+    this.emit('after-show');
+    this.refreshLinuxContextMenu();
+  }
+
+  /**
+   * Compute and apply the tray-anchored position of the browser window. Safe
+   * to call any time after `createWindow` has run — invoked from
+   * {@link showWindow} on every show, and from the window's `resize` event so
+   * `setSize` calls reposition the window correctly.
+   */
+  private positionWindow = (): void => {
+    if (!this._browserWindow || !this._tray) {
+      return;
+    }
+
+    // 'Windows' taskbar: sync window position each time before positioning.
+    // https://github.com/maxogden/menubar/issues/232
+    if (['win32', 'linux'].includes(process.platform)) {
+      this._options.windowPosition = getWindowPosition(this._tray);
+    }
+
+    const trayPos = this._cachedBounds ?? this._tray.getBounds?.();
 
     // Default the window to the right if `trayPos` bounds are undefined or null.
     let noBoundsPosition: Options['windowPosition'];
     if (
       (trayPos === undefined || trayPos.x === 0) &&
-      this._options.windowPosition &&
-      this._options.windowPosition.startsWith('tray')
+      this._options.windowPosition?.startsWith('tray')
     ) {
       noBoundsPosition =
         process.platform === 'win32' ? 'bottomRight' : 'topRight';
@@ -322,12 +338,7 @@ export class Menubar extends EventEmitter {
     // `.setPosition` crashed on non-integers
     // https://github.com/maxogden/menubar/issues/233
     this._browserWindow.setPosition(Math.round(x), Math.round(y));
-    this._browserWindow.show();
-    this._isVisible = true;
-    this.emit('after-show');
-    this.refreshLinuxContextMenu();
-    return;
-  }
+  };
 
   private async appReady(): Promise<void> {
     if (this.app.dock && !this._options.showDockIcon) {
@@ -538,6 +549,11 @@ export class Menubar extends EventEmitter {
     // Use `closed` (not `close`) so consumer `close` listeners can still read
     // `mb.window` and call `event.preventDefault()` without racing our cleanup.
     this._browserWindow.on('closed', this.windowClear.bind(this));
+
+    // Re-anchor the window to the tray when its size changes (e.g. via
+    // `mb.window.setSize(...)`), so the window doesn't end up clipped under
+    // the taskbar. https://github.com/maxogden/menubar/issues/349
+    this._browserWindow.on('resize', this.positionWindow);
 
     this.emit('before-load');
 
