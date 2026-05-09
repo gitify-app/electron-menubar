@@ -26,7 +26,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 ## Installation
 
 ```bash
-yarn add @gitify/menubar
+bun add @gitify/menubar
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ yarn add @gitify/menubar
 Starting with your own new project, run these commands:
 
 ```bash
-$ yarn add @gitify/menubar
+$ bun add @gitify/menubar
 $ touch myApp.js
 $ touch index.html
 ```
