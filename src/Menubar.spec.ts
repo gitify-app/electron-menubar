@@ -1,6 +1,10 @@
 import { app, BrowserWindow, Tray } from 'electron';
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { Menubar } from './Menubar';
+
+vi.mock('electron', () => import('./__mocks__/electron'));
 
 describe('Menubar', () => {
   let mb: Menubar | undefined;

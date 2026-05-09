@@ -1,7 +1,11 @@
 import * as path from 'node:path';
 
+import { describe, expect, it, vi } from 'vitest';
+
 import { MOCK_APP_GETAPPPATH } from '../__mocks__/electron';
 import { cleanOptions } from './cleanOptions';
+
+vi.mock('electron', () => import('../__mocks__/electron'));
 
 const DEFAULT_OPTIONS = {
   activateWithApp: true,
