@@ -177,6 +177,7 @@ jobs:
                   export DISPLAY=:99
                   sleep 2
                   dbus-run-session -- bash -c '
+                      export DISPLAY=:99
                       eval "$PANEL_CMD" &
                       PANEL_PID=$!
                       sleep "$PANEL_WARMUP"
