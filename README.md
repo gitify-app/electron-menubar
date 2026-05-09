@@ -15,7 +15,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 
 ✅ Only one dependency, and one peer-dependency.
 
-✅ Works on macOS, Windows and most Linuxes. See [details](./WORKING_PLATFORMS.md).
+✅ Works on macOS, Windows and most Linuxes. See [tested platforms](./PLATFORMS.md).
 
 ✅ 💥 [**3.6kB minified + gzipped**](https://bundlephobia.com/result?p=@gitify/menubar) 💥
 
@@ -75,8 +75,6 @@ The return value of `menubar()` is a `Menubar` class instance, which has these p
 - `destroy()`: tear down the menubar instance,
 - `isDestroyed()`: whether the menubar is currently destroyed.
 
-See the reference [API docs](./docs/classes/_menubar_.menubar.md).
-
 ## `menubar()` Options
 
 You can pass an optional options object into the `menubar({ ... })` function:
@@ -99,8 +97,6 @@ You can pass an optional options object into the `menubar({ ... })` function:
 - `showDockIcon` (default false) - Configure the visibility of the application dock icon.
 - `trigger` (default `'click'`) - Tray event that toggles the menubar window. One of `'click'`, `'right-click'`, or `'none'`. Use `'none'` to disable automatic toggling — useful when a single tray icon serves multiple windows. The window can still be shown by calling `mb.showWindow()` directly.
 - `showOnRightClick` (default false) - **Deprecated**, use `trigger: 'right-click'` instead. Show the window on 'right-click' event instead of regular 'click'.
-
-See the reference [API docs](./docs/interfaces/_types_.options.md).
 
 ## Events
 
@@ -126,10 +122,6 @@ The `Menubar` class is an event emitter:
 | 7.x.x    | 7.x.xx                     |                                                                                                                            |
 | 6.x.x    | >=4.x.x <7.x.x             | Not recommended for [security reasons](https://electronjs.org/docs/tutorial/security#17-use-a-current-version-of-electron) |
 | <= 5.x.x | <= 3.x.x                   | Please, _please_ don't use these old versions                                                                              |
-
-## API Docs
-
-See the reference [API docs](./docs/globals.md).
 
 ## Tips
 
