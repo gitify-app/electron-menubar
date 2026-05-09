@@ -121,7 +121,6 @@ jobs:
                       key: linux-gnome
                       apt: gnome-shell gnome-shell-extension-appindicator
                       panel_cmd: bash -c 'gnome-extensions enable ubuntu-appindicators@ubuntu.com 2>/dev/null || true; gnome-shell --x11'
-                      experimental: true
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
@@ -214,7 +213,6 @@ jobs:
                     - runner: windows-2025
                       label: Windows Server 2025
                       key: windows-2025
-                      experimental: true
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
