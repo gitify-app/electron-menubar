@@ -90,7 +90,7 @@ jobs:
                       apt: lxqt-panel lxqt-session
                       panel_cmd: |
                           mkdir -p ~/.config/lxqt && \
-                          printf '[General]\n__userfile__=true\npanels=p1\n[p1]\nplugins=statusnotifier\nposition=Top\nalignment=0\n' > ~/.config/lxqt/panel.conf && \
+                          printf '[General]\n__userfile__=true\npanels=p1\n[p1]\nplugins=statusnotifier\nposition=Top\nalignment=0\n[statusnotifier]\ntype=statusnotifier\nalignment=Right\n' > ~/.config/lxqt/panel.conf && \
                           lxqt-panel
                     - de: kde
                       label: Linux (KDE Plasma)
