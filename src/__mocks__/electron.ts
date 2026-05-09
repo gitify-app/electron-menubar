@@ -10,9 +10,16 @@ export const app = {
   on: (): void => {
     /* Do nothing */
   },
+  removeListener: (): void => {
+    /* Do nothing */
+  },
 };
 
 export class BrowserWindow {
+  destroy(): void {
+    // Do nothing
+  }
+
   loadURL(): void {
     // Do nothing
   }
@@ -28,6 +35,10 @@ export class BrowserWindow {
 
 export class Tray {
   on(): void {
+    // Do nothing
+  }
+
+  removeListener(): void {
     // Do nothing
   }
 

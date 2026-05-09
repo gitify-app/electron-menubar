@@ -45,4 +45,30 @@ describe('Menubar', () => {
       });
     });
   });
+
+  it('is not destroyed by default', () => {
+    expect(mb!.isDestroyed()).toBe(false);
+  });
+
+  it('reports as destroyed after `destroy()` is called', () => {
+    return new Promise<void>((resolve) => {
+      mb!.on('ready', () => {
+        mb!.destroy();
+        expect(mb!.isDestroyed()).toBe(true);
+        expect(mb!.window).toBeUndefined();
+        resolve();
+      });
+    });
+  });
+
+  it('is idempotent: calling `destroy()` twice is a no-op', () => {
+    return new Promise<void>((resolve) => {
+      mb!.on('ready', () => {
+        mb!.destroy();
+        mb!.destroy();
+        expect(mb!.isDestroyed()).toBe(true);
+        resolve();
+      });
+    });
+  });
 });

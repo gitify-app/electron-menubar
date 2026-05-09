@@ -16,6 +16,7 @@ export class Menubar extends EventEmitter {
   private _app: Electron.App;
   private _browserWindow?: BrowserWindow;
   private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
+  private _isDestroyed: boolean;
   private _isVisible: boolean; // track visibility
   private _cachedBounds?: Electron.Rectangle; // _cachedBounds are needed for double-clicked event
   private _options: Options;
@@ -26,17 +27,14 @@ export class Menubar extends EventEmitter {
     super();
     this._app = app;
     this._options = cleanOptions(options);
+    this._isDestroyed = false;
     this._isVisible = false;
 
     if (app.isReady()) {
       // See https://github.com/maxogden/menubar/pull/151
-      process.nextTick(() =>
-        this.appReady().catch((err) => console.error('menubar: ', err)),
-      );
+      process.nextTick(this.onAppReady);
     } else {
-      app.on('ready', () => {
-        this.appReady().catch((err) => console.error('menubar: ', err));
-      });
+      app.on('ready', this.onAppReady);
     }
   }
 
@@ -81,6 +79,46 @@ export class Menubar extends EventEmitter {
    */
   get window(): BrowserWindow | undefined {
     return this._browserWindow;
+  }
+
+  /**
+   * Tear down the menubar instance: destroy the window, remove the tray, and
+   * detach all listeners. Subsequent clicks on the tray will be no-ops until a
+   * new {@link Menubar} instance is created.
+   */
+  destroy(): void {
+    if (this.isDestroyed()) {
+      return;
+    }
+
+    if (this._browserWindow) {
+      this._browserWindow.destroy();
+      this._browserWindow = undefined;
+    }
+
+    if (this._tray) {
+      // Ensure all potential listeners are removed.
+      for (const event of ['click', 'right-click', 'double-click']) {
+        this._tray.removeListener(
+          event as Parameters<Tray['on']>[0],
+          this.clicked,
+        );
+      }
+      this._tray.setToolTip('');
+      this._tray = undefined;
+    }
+
+    this._app.removeListener('ready', this.onAppReady);
+    this._app.removeListener('activate', this.onAppActivate);
+
+    this._isDestroyed = true;
+  }
+
+  /**
+   * Whether {@link destroy} has been called on this menubar instance.
+   */
+  isDestroyed(): boolean {
+    return this._isDestroyed;
   }
 
   /**
@@ -199,11 +237,7 @@ export class Menubar extends EventEmitter {
     }
 
     if (this._options.activateWithApp) {
-      this.app.on('activate', (_event, hasVisibleWindows) => {
-        if (!hasVisibleWindows) {
-          this.showWindow().catch(console.error);
-        }
-      });
+      this.app.on('activate', this.onAppActivate);
     }
 
     let trayImage =
@@ -221,11 +255,8 @@ export class Menubar extends EventEmitter {
     if (!this.tray) {
       throw new Error('Tray has been initialized above');
     }
-    this.tray.on(
-      defaultClickEvent as Parameters<Tray['on']>[0],
-      this.clicked.bind(this),
-    );
-    this.tray.on('double-click', this.clicked.bind(this));
+    this.tray.on(defaultClickEvent as Parameters<Tray['on']>[0], this.clicked);
+    this.tray.on('double-click', this.clicked);
     this.tray.setToolTip(this._options.tooltip);
 
     if (!this._options.windowPosition) {
@@ -245,10 +276,10 @@ export class Menubar extends EventEmitter {
    * @param e
    * @param bounds
    */
-  private async clicked(
+  private clicked = async (
     event?: Electron.KeyboardEvent,
     bounds?: Electron.Rectangle,
-  ): Promise<void> {
+  ): Promise<void> => {
     if (event && (event.shiftKey || event.ctrlKey || event.metaKey)) {
       return this.hideWindow();
     }
@@ -264,7 +295,20 @@ export class Menubar extends EventEmitter {
 
     this._cachedBounds = bounds || this._cachedBounds;
     await this.showWindow(this._cachedBounds);
-  }
+  };
+
+  private onAppActivate = (
+    _event: Electron.Event,
+    hasVisibleWindows: boolean,
+  ): void => {
+    if (!hasVisibleWindows) {
+      this.showWindow().catch(console.error);
+    }
+  };
+
+  private onAppReady = (): void => {
+    this.appReady().catch((err) => console.error('menubar: ', err));
+  };
 
   private async createWindow(): Promise<void> {
     this.emit('create-window');
