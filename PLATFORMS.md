@@ -3,6 +3,19 @@
 This document is still a work-in-progress. If you have tested `menubar` with a platform that is not listed under here, I would greatly appreciate a PR!
 
 <!-- platforms:start -->
+
+_Continuously verified by [E2E smoke tests](.github/workflows/e2e.yml)._
+
+| Platform | Status |
+| -------- | ------ |
+| macOS 14 (Sonoma) | ✅ Pass |
+| macOS 15 (Sequoia) | ✅ Pass |
+| macOS 26 (Tahoe) | ✅ Pass |
+| Ubuntu 22.04 | ✅ Pass |
+| Ubuntu 24.04 | ✅ Pass |
+| Windows Server 2022 | ✅ Pass |
+| Windows Server 2025 | ✅ Pass |
+
 <!-- platforms:end -->
 
 ## macOS
