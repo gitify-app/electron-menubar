@@ -307,6 +307,11 @@ export class Menubar extends EventEmitter {
   };
 
   private onAppReady = (): void => {
+    // Guard against `destroy()` being called between construction and the
+    // scheduled `process.nextTick`/`'ready'` firing.
+    if (this._isDestroyed) {
+      return;
+    }
     this.appReady().catch((err) => console.error('menubar: ', err));
   };
 
