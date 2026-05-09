@@ -156,6 +156,8 @@ jobs:
               run: |
                   git clone --depth 1 https://git.sr.ht/~steef/snixembed /tmp/snixembed
                   cd /tmp/snixembed
+                  go mod init snixembed
+                  go mod tidy
                   go build -o /tmp/snixembed/snixembed
                   sudo install /tmp/snixembed/snixembed /usr/local/bin/snixembed
                   snixembed --help 2>&1 | head -5 || true
