@@ -1,37 +1,30 @@
 // https://github.com/electron/electron/issues/3909#issuecomment-190990825
 
-import { vi } from 'vitest';
+import { type Mock, vi } from 'vitest';
 
 export const MOCK_APP_GETAPPPATH = 'mock.app.getAppPath';
 
-export const app = {
+export const app: {
+  getAppPath: Mock;
+  isReady: () => Promise<void>;
+  on: Mock;
+  removeListener: Mock;
+} = {
   getAppPath: vi.fn(() => MOCK_APP_GETAPPPATH),
   isReady: (): Promise<void> => Promise.resolve(),
-  on: (): void => {
-    /* Do nothing */
-  },
+  on: vi.fn(),
+  removeListener: vi.fn(),
 };
 
 export class BrowserWindow {
-  loadURL(): void {
-    // Do nothing
-  }
-
-  on(): void {
-    // Do nothing
-  }
-
-  setVisibleOnAllWorkspaces(): void {
-    // Do nothing
-  }
+  destroy: Mock = vi.fn();
+  loadURL: Mock = vi.fn();
+  on: Mock = vi.fn();
+  setVisibleOnAllWorkspaces: Mock = vi.fn();
 }
 
 export class Tray {
-  on(): void {
-    // Do nothing
-  }
-
-  setToolTip(): void {
-    // Do nothing
-  }
+  on: Mock = vi.fn();
+  removeListener: Mock = vi.fn();
+  setToolTip: Mock = vi.fn();
 }

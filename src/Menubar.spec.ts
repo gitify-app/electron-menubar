@@ -1,5 +1,5 @@
 import { app, BrowserWindow, Tray } from 'electron';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
 import { Menubar } from './Menubar';
 
@@ -9,6 +9,7 @@ describe('Menubar', () => {
   let mb: Menubar | undefined;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     mb = new Menubar(app, { preloadWindow: true });
   });
 
@@ -41,6 +42,60 @@ describe('Menubar', () => {
     return new Promise<void>((resolve) => {
       mb!.on('ready', () => {
         expect(mb!.window).toBeInstanceOf(BrowserWindow);
+        resolve();
+      });
+    });
+  });
+
+  it('is not destroyed by default', () => {
+    expect(mb!.isDestroyed()).toBe(false);
+  });
+
+  it('reports as destroyed after `destroy()` is called', () => {
+    return new Promise<void>((resolve) => {
+      mb!.on('ready', () => {
+        mb!.destroy();
+        expect(mb!.isDestroyed()).toBe(true);
+        expect(mb!.window).toBeUndefined();
+        resolve();
+      });
+    });
+  });
+
+  it('removes tray and app listeners on `destroy()`', () => {
+    return new Promise<void>((resolve) => {
+      mb!.on('ready', () => {
+        const tray = mb!.tray;
+        mb!.destroy();
+
+        const trayEvents = (tray.removeListener as Mock).mock.calls.map(
+          ([event]) => event,
+        );
+        expect(trayEvents).toEqual(
+          expect.arrayContaining(['click', 'right-click', 'double-click']),
+        );
+
+        const appEvents = (app.removeListener as Mock).mock.calls.map(
+          ([event]) => event,
+        );
+        expect(appEvents).toEqual(
+          expect.arrayContaining(['ready', 'activate']),
+        );
+        resolve();
+      });
+    });
+  });
+
+  it('is idempotent: calling `destroy()` twice is a no-op', () => {
+    return new Promise<void>((resolve) => {
+      mb!.on('ready', () => {
+        mb!.destroy();
+        const callsAfterFirst = (app.removeListener as Mock).mock.calls.length;
+        mb!.destroy();
+        expect(mb!.isDestroyed()).toBe(true);
+        expect((app.removeListener as Mock).mock.calls.length).toBe(
+          callsAfterFirst,
+        );
         resolve();
       });
     });
