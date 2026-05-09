@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "esModuleInterop": true,
     "strict": true,
     "declaration": true,
-    "outDir": "./lib",
     "skipLibCheck": true,
-    "target": "es5"
-  }
+    "noEmit": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src/**/*", "vite.config.ts"]
 }
