@@ -73,8 +73,6 @@ The return value of `menubar()` is a `Menubar` class instance, which has these p
 - `showWindow()`: show the menubar window,
 - `hideWindow()`: hide the menubar window
 
-See the reference [API docs](./docs/classes/_menubar_.menubar.md).
-
 ## `menubar()` Options
 
 You can pass an optional options object into the `menubar({ ... })` function:
@@ -96,8 +94,6 @@ You can pass an optional options object into the `menubar({ ... })` function:
 - `windowPosition` (default trayCenter and trayBottomCenter on Windows) - Sets the window position (x and y will still override this), check [positioner docs](https://github.com/jenslind/electron-positioner#docs) for valid values.
 - `showDockIcon` (default false) - Configure the visibility of the application dock icon.
 - `showOnRightClick` (default false) - Show the window on 'right-click' event instead of regular 'click'
-
-See the reference [API docs](./docs/interfaces/_types_.options.md).
 
 ## Events
 
@@ -123,10 +119,6 @@ The `Menubar` class is an event emitter:
 | 7.x.x    | 7.x.xx                     |                                                                                                                            |
 | 6.x.x    | >=4.x.x <7.x.x             | Not recommended for [security reasons](https://electronjs.org/docs/tutorial/security#17-use-a-current-version-of-electron) |
 | <= 5.x.x | <= 3.x.x                   | Please, _please_ don't use these old versions                                                                              |
-
-## API Docs
-
-See the reference [API docs](./docs/globals.md).
 
 ## Tips
 

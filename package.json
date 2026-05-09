@@ -54,7 +54,6 @@
   "scripts": {
     "build": "vp pack",
     "deploy": "bun run build && standard-version",
-    "docs": "typedoc",
     "lint:check": "vp check",
     "lint": "vp check --fix",
     "test": "vp test",
@@ -68,8 +67,6 @@
     "@voidzero-dev/vite-plus-test": "latest",
     "electron": "^39.0.0",
     "standard-version": "^9.5.0",
-    "typedoc": "^0.28.14",
-    "typedoc-plugin-markdown": "^4.9.0",
     "typescript": "^5.9.3",
     "vite-plus": "latest",
     "vitest": "latest"
