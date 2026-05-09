@@ -1,8 +1,8 @@
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/max-mapper/menubar/test.yml)
-[![npm (scoped)](https://img.shields.io/npm/v/menubar.svg)](https://www.npmjs.com/package/menubar)
-![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/max-mapper/menubar)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/menubar.svg)
-![npm bundle size](https://img.shields.io/bundlephobia/min/menubar.svg)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/gitify-app/menubar/test.yml)
+[![npm (scoped)](https://img.shields.io/npm/v/@gitify/menubar.svg)](https://www.npmjs.com/package/@gitify/menubar)
+![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/gitify-app/menubar)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/@gitify/menubar.svg)
+![npm bundle size](https://img.shields.io/bundlephobia/min/@gitify/menubar.svg)
 
 <br /><br /><br />
 
@@ -17,7 +17,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 
 ✅ Works on macOS, Windows and most Linuxes. See [details](./WORKING_PLATFORMS.md).
 
-✅ 💥 [**3.6kB minified + gzipped**](https://bundlephobia.com/result?p=menubar) 💥
+✅ 💥 [**3.6kB minified + gzipped**](https://bundlephobia.com/result?p=@gitify/menubar) 💥
 
 | <img src="assets/screenshot-macos-dark.png" height="250px" /> | <img src="assets/screenshot-windows.png" height="250px" /> | <img src="assets/screenshot-linux.png" height="250px" /> |
 | :-----------------------------------------------------------: | :--------------------------------------------------------: | :------------------------------------------------------: |
@@ -26,7 +26,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 ## Installation
 
 ```bash
-yarn add menubar
+yarn add @gitify/menubar
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ yarn add menubar
 Starting with your own new project, run these commands:
 
 ```bash
-$ yarn add menubar
+$ yarn add @gitify/menubar
 $ touch myApp.js
 $ touch index.html
 ```
@@ -42,7 +42,7 @@ $ touch index.html
 Fill `index.html` with some HTML, and `myApp.js` like this:
 
 ```javascript
-const { menubar } = require('menubar');
+const { menubar } = require('@gitify/menubar');
 
 const mb = menubar();
 
@@ -133,5 +133,9 @@ See the reference [API docs](./docs/globals.md).
 - Use `mb.on('after-create-window', callback)` to run things after your app has loaded. For example you could run `mb.window.openDevTools()` to open the developer tools for debugging, or load a different URL with `mb.window.loadURL()`
 - Use `mb.on('focus-lost')` if you would like to perform some operation when using the option `browserWindow.alwaysOnTop: true`
 - To restore focus of previous window after menubar hide, use `mb.on('after-hide', () => { mb.app.hide() } )` or similar
-- To create a native menu, you can use `tray.setContextMenu(contextMenu)`, and pass this custom tray to menubar: `const mb = menubar({ tray });`. See [this example](https://github.com/maxogden/menubar/tree/master/examples/native-menu) for more information.
+- To create a native menu, you can use `tray.setContextMenu(contextMenu)`, and pass this custom tray to menubar: `const mb = menubar({ tray });`. See [this example](https://github.com/gitify-app/menubar/tree/master/examples/native-menu) for more information.
 - To avoid a flash when opening your menubar app, you can disable backgrounding the app using the following: `mb.app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');`
+
+## Credits
+
+Originally created by [Max Ogden](https://github.com/maxogden) — forked from [maxogden/menubar](https://github.com/maxogden/menubar).
