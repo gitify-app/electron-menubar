@@ -246,17 +246,19 @@ export class Menubar extends EventEmitter {
       trayImage = path.join(__dirname, '..', 'assets', 'IconTemplate.png'); // Default cat icon
     }
 
-    const defaultClickEvent = this._options.showOnRightClick
-      ? 'right-click'
-      : 'click';
+    const trigger =
+      this._options.trigger ??
+      (this._options.showOnRightClick ? 'right-click' : 'click');
 
     this._tray = this._options.tray || new Tray(trayImage);
     // Type guards for TS not to complain
     if (!this.tray) {
       throw new Error('Tray has been initialized above');
     }
-    this.tray.on(defaultClickEvent as Parameters<Tray['on']>[0], this.clicked);
-    this.tray.on('double-click', this.clicked);
+    if (trigger !== 'none') {
+      this.tray.on(trigger as Parameters<Tray['on']>[0], this.clicked);
+      this.tray.on('double-click', this.clicked);
+    }
     this.tray.setToolTip(this._options.tooltip);
 
     if (!this._options.windowPosition) {
