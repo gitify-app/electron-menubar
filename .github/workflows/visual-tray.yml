@@ -103,10 +103,11 @@ jobs:
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
-                      apt: cinnamon-core muffin
-                      panel_cmd: bash -c 'muffin --replace & sleep 3; cinnamon --replace'
-                      panel_warmup: 15
-                      post_ready_delay: 10000
+                      apt: cinnamon cinnamon-session muffin
+                      panel_cmd: bash -c 'muffin --replace --x11 & sleep 4; cinnamon-session-cinnamon &
+                          sleep 4; cinnamon --replace --no-flash'
+                      panel_warmup: 20
+                      post_ready_delay: 12000
                       experimental: true
                     - de: tint2
                       label: Linux (Tint2)
