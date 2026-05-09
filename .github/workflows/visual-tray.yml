@@ -111,7 +111,7 @@ jobs:
                     - de: tint2
                       label: Linux (Tint2)
                       key: linux-tint2
-                      apt: tint2 golang-go git
+                      apt: tint2 valac libgtk-3-dev libdbusmenu-glib-dev libdbusmenu-gtk3-dev pkg-config make git
                       panel_cmd: bash -c 'snixembed & sleep 1; tint2'
                       build_snixembed: true
                       experimental: true
@@ -160,10 +160,8 @@ jobs:
               run: |
                   git clone --depth 1 https://git.sr.ht/~steef/snixembed /tmp/snixembed
                   cd /tmp/snixembed
-                  go mod init snixembed
-                  go mod tidy
-                  go build -o /tmp/snixembed/snixembed
-                  sudo install /tmp/snixembed/snixembed /usr/local/bin/snixembed
+                  make
+                  sudo make install PREFIX=/usr/local
                   snixembed --help 2>&1 | head -5 || true
             - name: Run visual test under ${{ matrix.de }}
               env:
