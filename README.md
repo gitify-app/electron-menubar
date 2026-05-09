@@ -15,7 +15,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 
 ✅ Only one dependency, and one peer-dependency.
 
-✅ Works on macOS, Windows and most Linuxes. See [details](./WORKING_PLATFORMS.md).
+✅ Works on macOS, Windows and most Linuxes. See [tested platforms](./PLATFORMS.md).
 
 ✅ 💥 [**3.6kB minified + gzipped**](https://bundlephobia.com/result?p=@gitify/menubar) 💥
 
