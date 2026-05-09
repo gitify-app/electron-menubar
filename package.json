@@ -58,6 +58,7 @@
     "lint": "vp check --fix",
     "test": "vp test",
     "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
+    "test:visual": "bun run tests/visual/run.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -65,6 +66,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
+    "@types/pngjs": "^6.0.5",
+    "pngjs": "^7.0.0",
     "@voidzero-dev/vite-plus-core": "latest",
     "@voidzero-dev/vite-plus-test": "latest",
     "electron": "^39.0.0",
