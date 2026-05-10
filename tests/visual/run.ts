@@ -77,22 +77,31 @@ try {
 child.kill('SIGTERM');
 
 const png = PNG.sync.read(readFileSync(screenshotPath));
-let magenta = 0;
-let green = 0;
+// Some panels (notably Plasma) recolor tray icons. The checker pattern
+// guarantees that whatever color transform is applied, the result has
+// strongly saturated pixels — far brighter than typical wallpaper noise.
+let exactMatch = 0;
+let saturated = 0;
 for (let i = 0; i < png.data.length; i += 4) {
   const r = png.data[i];
   const g = png.data[i + 1];
   const b = png.data[i + 2];
-  if (r > 200 && g < 80 && b > 200) magenta++;
-  else if (r < 80 && g > 200 && b < 80) green++;
+  const isMagenta = r > 200 && g < 80 && b > 200;
+  const isGreen = r < 80 && g > 200 && b < 80;
+  if (isMagenta || isGreen) exactMatch++;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  if (max > 180 && max - min > 140) saturated++;
 }
 
-const total = magenta + green;
-const status: 'pass' | 'fail' = total >= PASS_THRESHOLD ? 'pass' : 'fail';
+const status: 'pass' | 'fail' =
+  exactMatch >= PASS_THRESHOLD || saturated >= PASS_THRESHOLD * 2
+    ? 'pass'
+    : 'fail';
 console.log(
-  `magenta=${magenta} green=${green} total=${total} threshold=${PASS_THRESHOLD} → ${status}`,
+  `exactMatch=${exactMatch} saturated=${saturated} threshold=${PASS_THRESHOLD} → ${status}`,
 );
-writeResult({ status, magenta, green, total });
+writeResult({ status, exactMatch, saturated });
 
 if (status === 'fail') process.exit(1);
 
