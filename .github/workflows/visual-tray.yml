@@ -303,10 +303,16 @@ jobs:
                       label: Linux (Sway/Waybar)
                       key: linux-sway
                       apt: sway waybar grim
-                    # Hyprland is experimental: its Aquamarine backend (default since 0.40)
-                    # requires a DRM render node and crashes with "CBackend::create() failed!"
-                    # on GitHub-hosted runners which have no /dev/dri. Sway covers the same
-                    # wlroots+Waybar SNI surface, so Hyprland here is matrix completeness only.
+                    # Hyprland is experimental: since v0.42 it uses the Aquamarine backend,
+                    # whose allocator is hardcoded to GBM (Backend.cpp:160-176). Headless
+                    # mode has drmFD=-1, so the GBM allocator can never be created and
+                    # CBackend::create() fails. There is no software (Pixman) allocator
+                    # path — upstream TODO since 2024. GHA's Azure kernel ships no vkms
+                    # module, and AQ_HEADLESS_ONLY is a non-existent env var. The only
+                    # viable workaround is pinning to Hyprland v0.41.2 (last wlroots-based
+                    # release), which would need a 5–10 min from-source build per CI run.
+                    # Sway already covers the wlroots+Waybar+SNI surface, so we accept
+                    # this and leave Hyprland here only for matrix completeness.
                     - de: hyprland
                       label: Linux (Hyprland/Waybar)
                       key: linux-hyprland
