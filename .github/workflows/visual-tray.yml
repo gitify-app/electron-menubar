@@ -156,6 +156,11 @@ jobs:
                       key: linux-gnome
                       apt: gnome-shell gnome-shell-extension-appindicator
                       panel_cmd: bash -c 'gnome-extensions enable ubuntu-appindicators@ubuntu.com 2>/dev/null || true; gnome-shell --x11'
+                    # Budgie is experimental: noble ships budgie-desktop 10.7 whose default
+                    # panel layout does not include a Status Notifier applet. Electron
+                    # registers an SNI tray icon successfully on DBus, but no Budgie applet
+                    # hosts the watcher, so nothing renders. Fixing this requires writing
+                    # a custom panel layout via dconf — left as follow-up.
                     - de: budgie
                       label: Linux (Budgie)
                       key: linux-budgie
@@ -296,6 +301,10 @@ jobs:
                       label: Linux (Sway/Waybar)
                       key: linux-sway
                       apt: sway waybar grim
+                    # Hyprland is experimental: its Aquamarine backend (default since 0.40)
+                    # requires a DRM render node and crashes with "CBackend::create() failed!"
+                    # on GitHub-hosted runners which have no /dev/dri. Sway covers the same
+                    # wlroots+Waybar SNI surface, so Hyprland here is matrix completeness only.
                     - de: hyprland
                       label: Linux (Hyprland/Waybar)
                       key: linux-hyprland
