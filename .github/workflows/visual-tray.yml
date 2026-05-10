@@ -116,7 +116,6 @@ jobs:
                       build_snixembed: true
                       panel_warmup: 12
                       post_ready_delay: 6000
-                      experimental: true
                     - de: gnome
                       label: Linux (GNOME)
                       key: linux-gnome
