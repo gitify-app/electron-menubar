@@ -112,8 +112,10 @@ jobs:
                       label: Linux (Tint2)
                       key: linux-tint2
                       apt: tint2 valac libgtk-3-dev libdbusmenu-glib-dev libdbusmenu-gtk3-dev pkg-config make git
-                      panel_cmd: bash -c 'snixembed & sleep 1; tint2'
+                      panel_cmd: bash -c 'tint2 & sleep 3; snixembed'
                       build_snixembed: true
+                      panel_warmup: 12
+                      post_ready_delay: 6000
                       experimental: true
                     - de: gnome
                       label: Linux (GNOME)
