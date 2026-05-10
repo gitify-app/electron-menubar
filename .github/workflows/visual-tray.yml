@@ -122,7 +122,6 @@ jobs:
                           wait'
                       panel_warmup: 35
                       post_ready_delay: 18000
-                      experimental: true
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
