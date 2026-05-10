@@ -160,9 +160,15 @@ jobs:
                       label: Linux (Budgie)
                       key: linux-budgie
                       apt: budgie-desktop
-                      panel_cmd: bash -c 'budgie-wm --replace & sleep 4; budgie-panel'
-                      panel_warmup: 12
-                      post_ready_delay: 6000
+                      panel_cmd: |
+                          bash -c '
+                          export XDG_CURRENT_DESKTOP=Budgie:GNOME DESKTOP_SESSION=budgie-desktop
+                          budgie-wm --replace &
+                          sleep 5
+                          budgie-panel --replace'
+                      panel_warmup: 18
+                      post_ready_delay: 10000
+                      experimental: true
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
