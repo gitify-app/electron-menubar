@@ -22,11 +22,11 @@ const POST_READY_DELAY_MS = Number(
 const PASS_THRESHOLD = 50;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 
-// Electron 28+ has Ozone unconditional, so no UseOzonePlatform feature flag
-// is needed. --disable-gpu + --no-sandbox keeps CI happy on headless wlroots.
+// Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
+// even with WAYLAND_DISPLAY set. --disable-gpu + --no-sandbox keeps CI happy.
 const electronArgs = isWayland
   ? [
-      '--ozone-platform-hint=auto',
+      '--ozone-platform=wayland',
       '--enable-features=WaylandWindowDecorations',
       '--disable-gpu',
       '--no-sandbox',
