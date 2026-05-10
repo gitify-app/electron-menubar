@@ -60,9 +60,6 @@
     "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "electron-positioner": "^4.1.0"
-  },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@voidzero-dev/vite-plus-core": "latest",
