@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "@gitify/menubar",
-      "dependencies": {
-        "electron-positioner": "^4.1.0",
-      },
       "devDependencies": {
         "@playwright/test": "^1.49.0",
         "@types/pngjs": "^6.0.5",
@@ -296,8 +293,6 @@
     "dotgitignore": ["dotgitignore@2.1.0", "", { "dependencies": { "find-up": "^3.0.0", "minimatch": "^3.0.4" } }, "sha512-sCm11ak2oY6DglEPpCB8TixLjWAxd3kJTs6UIcSasNYxXdFPV+YKlye92c8H4kKFqV5qYMIh7d+cYecEg0dIkA=="],
 
     "electron": ["electron@39.8.10", "", { "dependencies": { "@electron/get": "^2.0.0", "@types/node": "^22.7.7", "extract-zip": "^2.0.1" }, "bin": { "electron": "cli.js" } }, "sha512-zbYtGPYUI7PzqLAzkk21Rk6j67WN0hxn0Mq/njErZo1d0HSf33is4f8ICI5fMLy5vYe0JtCtM5sYunNOaochSQ=="],
-
-    "electron-positioner": ["electron-positioner@4.1.0", "", {}, "sha512-726DfbI9ZNoCg+Fcu6XLuTKTnzf+6nFqv7h+K/V6Ug7IbaPMI7s9S8URnGtWFCy5N5PL4HSzRFF2mXuinftDdg=="],
 
     "emoji-regex": ["emoji-regex@8.0.0", "", {}, "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A=="],
 

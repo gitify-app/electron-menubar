@@ -61,9 +61,6 @@
     "test:visual": "bun run tests/visual/run.ts",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": {
-    "electron-positioner": "^4.1.0"
-  },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/pngjs": "^6.0.5",
