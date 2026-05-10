@@ -139,6 +139,7 @@ jobs:
                           xrandr --query
                           muffin --replace --x11 & sleep 4
                           cinnamon --replace'
+                      test_display: ':100'
                       panel_warmup: 25
                       post_ready_delay: 14000
                       experimental: true
@@ -204,6 +205,7 @@ jobs:
                   VISUAL_POST_READY_DELAY_MS: ${{ matrix.post_ready_delay || 3000 }}
                   PANEL_CMD: ${{ matrix.panel_cmd }}
                   PANEL_WARMUP: ${{ matrix.panel_warmup || 8 }}
+                  TEST_DISPLAY: ${{ matrix.test_display || ':99' }}
               run: |
                   set -x
                   Xvfb :99 -screen 0 ${{ matrix.xvfb_screen || '1920x1080x24' }} &
@@ -215,7 +217,7 @@ jobs:
                       eval "$PANEL_CMD" &
                       PANEL_PID=$!
                       sleep "$PANEL_WARMUP"
-                      bun run test:visual
+                      DISPLAY="$TEST_DISPLAY" bun run test:visual
                       EXIT=$?
                       kill $PANEL_PID 2>/dev/null || true
                       exit $EXIT
