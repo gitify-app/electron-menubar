@@ -97,24 +97,45 @@ jobs:
                       key: linux-kde
                       apt: plasma-workspace plasma-desktop kwin-x11 systemsettings kde-cli-tools
                       panel_cmd: |
-                          bash -c 'kwin_x11 --replace & sleep 4; plasmashell --no-respawn & sleep 12;
-                          APPLET_ID=$(awk -F"=" "/^plugin=org.kde.plasma.private.systemtray/{print prev}{prev=\$0}" ~/.config/plasma-org.kde.plasma.desktop-appletsrc 2>/dev/null | grep -oP "Applets\]\[\K[0-9]+" | head -1);
-                          if [ -n "$APPLET_ID" ]; then
-                            kwriteconfig5 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group 1 --group Applets --group "$APPLET_ID" --group Configuration --group General --key defaultStatus Active 2>/dev/null || true;
-                            kquitapp5 plasmashell 2>/dev/null; sleep 2; plasmashell --no-respawn &
-                            sleep 8;
-                          fi; wait'
+                          bash -c '
+                          kwin_x11 --replace & sleep 4
+                          plasmashell --no-respawn & PLASMA_PID=$!
+                          sleep 12
+                          CFG=~/.config/plasma-org.kde.plasma.desktop-appletsrc
+                          echo "=== plasma config dump ==="; cat "$CFG" 2>/dev/null || echo "(missing)"
+                          # Find every systemtray applet and force defaultStatus=Active + extraItems wildcard
+                          mapfile -t APPLET_IDS < <(awk -F"=" "/plugin=org.kde.plasma.private.systemtray/{print prev}{prev=NR}" "$CFG" 2>/dev/null)
+                          echo "=== applet ids: ${APPLET_IDS[*]} ==="
+                          for AID in "${APPLET_IDS[@]}"; do
+                            for CID in 1 2 3 4 5; do
+                              kwriteconfig5 --file "$CFG" --group Containments --group "$CID" --group Applets --group "$AID" --group Configuration --group General --key extraItems "org.kde.fixture,electron,menubar-visual-fixture" 2>/dev/null || true
+                              kwriteconfig5 --file "$CFG" --group Containments --group "$CID" --group Applets --group "$AID" --group Configuration --group General --key shownItems "org.kde.fixture,electron,menubar-visual-fixture" 2>/dev/null || true
+                            done
+                          done
+                          kquitapp5 plasmashell 2>/dev/null || pkill -f plasmashell
+                          sleep 2
+                          plasmashell --no-respawn & sleep 6
+                          echo "=== final plasma config ==="; cat "$CFG"
+                          wait'
                       panel_warmup: 30
-                      post_ready_delay: 14000
+                      post_ready_delay: 18000
                       experimental: true
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
-                      apt: cinnamon cinnamon-session muffin mesa-utils
-                      panel_cmd: bash -c 'export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11 MUTTER_DEBUG_DUMMY_MONITOR_SPECS=1024x768@60; muffin --replace --x11 & sleep 4; cinnamon --replace'
-                      xvfb_screen: 1024x768x24
-                      panel_warmup: 20
-                      post_ready_delay: 12000
+                      apt: cinnamon cinnamon-session muffin mesa-utils x11-xserver-utils
+                      panel_cmd: |
+                          bash -c '
+                          export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11
+                          # Inject a real RandR mode so muffin-monitor-config does not see NaN refresh
+                          xrandr --newmode "1920x1080_60" 173.00 1920 2048 2248 2576 1080 1083 1088 1120 -hsync +vsync 2>/dev/null || true
+                          xrandr --addmode default "1920x1080_60" 2>/dev/null || true
+                          xrandr --output default --mode "1920x1080_60" 2>/dev/null || true
+                          xrandr --query
+                          muffin --replace --x11 & sleep 4
+                          cinnamon --replace'
+                      panel_warmup: 25
+                      post_ready_delay: 14000
                       experimental: true
                     - de: tint2
                       label: Linux (Tint2)
