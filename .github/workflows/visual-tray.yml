@@ -125,18 +125,14 @@ jobs:
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
-                      apt: cinnamon cinnamon-session muffin mesa-utils xserver-xephyr x11-xserver-utils
+                      apt: cinnamon cinnamon-session muffin mesa-utils tigervnc-standalone-server x11-xserver-utils
+                      use_xvnc: true
                       panel_cmd: |
                           bash -c '
                           export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11
-                          # Run Cinnamon inside Xephyr (a real X server) since Xvfb RandR is broken
-                          Xephyr -screen 1920x1080 -ac -br -noreset :100 &
-                          sleep 3
-                          export DISPLAY=:100
-                          xrandr --query
+                          xrandr --query 2>&1 | head -20
                           muffin --replace --x11 & sleep 4
                           cinnamon --replace'
-                      test_display: ':100'
                       panel_warmup: 25
                       post_ready_delay: 14000
                       experimental: true
@@ -206,10 +202,14 @@ jobs:
                   TEST_DISPLAY: ${{ matrix.test_display || ':99' }}
               run: |
                   set -x
-                  Xvfb :99 -screen 0 ${{ matrix.xvfb_screen || '1920x1080x24' }} &
-                  XVFB_PID=$!
+                  if [ "${{ matrix.use_xvnc || 'false' }}" = "true" ]; then
+                      Xvnc :99 -geometry 1920x1080 -depth 24 -SecurityTypes None -localhost &
+                  else
+                      Xvfb :99 -screen 0 ${{ matrix.xvfb_screen || '1920x1080x24' }} &
+                  fi
+                  XSERVER_PID=$!
                   export DISPLAY=:99
-                  sleep 2
+                  sleep 3
                   dbus-run-session -- bash -c '
                       export DISPLAY=:99
                       eval "$PANEL_CMD" &
@@ -221,7 +221,7 @@ jobs:
                       exit $EXIT
                   '
                   EXIT=$?
-                  kill $XVFB_PID 2>/dev/null || true
+                  kill $XSERVER_PID 2>/dev/null || true
                   exit $EXIT
             - name: Upload artifacts
               if: always()
