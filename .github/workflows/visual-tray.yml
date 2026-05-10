@@ -122,23 +122,18 @@ jobs:
                           wait'
                       panel_warmup: 35
                       post_ready_delay: 18000
-                    # Cinnamon stays experimental: muffin always tries to set CRTC scaling
-                    # via XRRSetCrtcConfigs, which all virtual X servers (Xvfb, Xephyr, Xvnc)
-                    # return BadValue for. This is hard-coded and not gated by any feature flag,
-                    # so the shell never finishes initializing. Needs a KVM-based real session.
+                    # Cinnamon is experimental: Xvfb/Xvnc lack a working RRSetCrtcConfig,
+                    # so muffin's startup config-reconciler hits BadValue and never finishes.
+                    # Xdummy (Xorg + xserver-xorg-video-dummy) is a real Xorg with a complete
+                    # RandR 1.2+ implementation, which is the only theory that has a chance.
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
-                      apt: cinnamon cinnamon-session muffin mesa-utils tigervnc-standalone-server x11-xserver-utils dconf-cli
-                      use_xvnc: true
+                      apt: cinnamon cinnamon-session muffin mesa-utils xserver-xorg-core xserver-xorg-video-dummy xserver-xorg-legacy x11-xserver-utils dconf-cli
+                      use_xdummy: true
                       panel_cmd: |
                           bash -c '
                           export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11
-                          # Virtual X servers report RandR 1.6 but error on scale ops; disable all fractional/scale features
-                          gsettings set org.cinnamon.muffin experimental-features "[]" 2>/dev/null || true
-                          gsettings set org.gnome.mutter experimental-features "[]" 2>/dev/null || true
-                          gsettings set org.cinnamon.desktop.interface scaling-factor 1 2>/dev/null || true
-                          export MUTTER_DEBUG_FORCE_X11_RANDR_NO_SCALING=1
                           xrandr --query 2>&1 | head -20
                           muffin --replace --x11 & sleep 4
                           cinnamon --replace'
@@ -201,6 +196,36 @@ jobs:
                   make
                   sudo make install PREFIX=/usr/local
                   snixembed --help 2>&1 | head -5 || true
+            - name: Configure Xdummy
+              if: matrix.use_xdummy
+              run: |
+                  sudo tee /etc/X11/xorg-dummy.conf >/dev/null <<'EOF'
+                  Section "Device"
+                      Identifier "Dummy"
+                      Driver "dummy"
+                      VideoRam 256000
+                  EndSection
+                  Section "Monitor"
+                      Identifier "DummyMonitor"
+                      HorizSync 28.0-80.0
+                      VertRefresh 48.0-75.0
+                      Modeline "1920x1080" 148.50 1920 2008 2052 2200 1080 1084 1089 1125 +HSync +VSync
+                  EndSection
+                  Section "Screen"
+                      Identifier "DummyScreen"
+                      Device "Dummy"
+                      Monitor "DummyMonitor"
+                      DefaultDepth 24
+                      SubSection "Display"
+                          Depth 24
+                          Modes "1920x1080"
+                      EndSubSection
+                  EndSection
+                  EOF
+                  sudo tee /etc/X11/Xwrapper.config >/dev/null <<'EOF'
+                  allowed_users=anybody
+                  needs_root_rights=yes
+                  EOF
             - name: Run visual test under ${{ matrix.de }}
               env:
                   VISUAL_KEY: ${{ matrix.key }}
@@ -211,8 +236,8 @@ jobs:
                   TEST_DISPLAY: ${{ matrix.test_display || ':99' }}
               run: |
                   set -x
-                  if [ "${{ matrix.use_xvnc || 'false' }}" = "true" ]; then
-                      Xvnc :99 -geometry 1920x1080 -depth 24 -SecurityTypes None -localhost &
+                  if [ "${{ matrix.use_xdummy || 'false' }}" = "true" ]; then
+                      sudo Xorg :99 -config /etc/X11/xorg-dummy.conf -noreset -nolisten tcp -logfile /tmp/xorg.log &
                   else
                       Xvfb :99 -screen 0 ${{ matrix.xvfb_screen || '1920x1080x24' }} &
                   fi
