@@ -102,22 +102,27 @@ jobs:
                           plasmashell --no-respawn & PLASMA_PID=$!
                           sleep 12
                           CFG=~/.config/plasma-org.kde.plasma.desktop-appletsrc
-                          echo "=== plasma config dump ==="; cat "$CFG" 2>/dev/null || echo "(missing)"
-                          # Find every systemtray applet and force defaultStatus=Active + extraItems wildcard
-                          mapfile -t APPLET_IDS < <(awk -F"=" "/plugin=org.kde.plasma.private.systemtray/{print prev}{prev=NR}" "$CFG" 2>/dev/null)
-                          echo "=== applet ids: ${APPLET_IDS[*]} ==="
-                          for AID in "${APPLET_IDS[@]}"; do
-                            for CID in 1 2 3 4 5; do
-                              kwriteconfig5 --file "$CFG" --group Containments --group "$CID" --group Applets --group "$AID" --group Configuration --group General --key extraItems "org.kde.fixture,electron,menubar-visual-fixture" 2>/dev/null || true
-                              kwriteconfig5 --file "$CFG" --group Containments --group "$CID" --group Applets --group "$AID" --group Configuration --group General --key shownItems "org.kde.fixture,electron,menubar-visual-fixture" 2>/dev/null || true
-                            done
-                          done
+                          # Extract containment id whose plugin is the private systemtray
+                          SYS_CID=$(awk "
+                            /^\\[Containments\\]\\[[0-9]+\\]\$/ {
+                              match(\$0, /[0-9]+/); cid = substr(\$0, RSTART, RLENGTH)
+                            }
+                            /^plugin=org\\.kde\\.plasma\\.private\\.systemtray\$/ {
+                              print cid; exit
+                            }" "$CFG")
+                          echo "=== systemtray containment id: $SYS_CID ==="
+                          if [ -n "$SYS_CID" ]; then
+                            kwriteconfig5 --file "$CFG" --group Containments --group "$SYS_CID" --group General --key extraItems "menubar-visual-fixture,electron,Electron"
+                            kwriteconfig5 --file "$CFG" --group Containments --group "$SYS_CID" --group General --key shownItems "menubar-visual-fixture,electron,Electron"
+                            # Try the systemtray applet variant (defaultStatus=Active = always shown)
+                            kwriteconfig5 --file "$CFG" --group Containments --group "$SYS_CID" --group General --key defaultStatus 2
+                          fi
+                          echo "=== plasma config after rewrite ==="; cat "$CFG"
                           kquitapp5 plasmashell 2>/dev/null || pkill -f plasmashell
-                          sleep 2
-                          plasmashell --no-respawn & sleep 6
-                          echo "=== final plasma config ==="; cat "$CFG"
+                          sleep 3
+                          plasmashell --no-respawn & sleep 8
                           wait'
-                      panel_warmup: 30
+                      panel_warmup: 35
                       post_ready_delay: 18000
                       experimental: true
                     - de: cinnamon
