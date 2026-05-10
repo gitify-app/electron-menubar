@@ -33,6 +33,25 @@ export interface Options {
    */
   dir: string;
   /**
+   * Hide the window on `close` instead of letting it be destroyed, so the
+   * next tray click re-uses the same {@link BrowserWindow} instance. On
+   * Linux/Wayland the hide is deferred via `setImmediate` to work around a
+   * compositor bug that leaves frameless surfaces in a half-closed state
+   * when hidden synchronously from the `close` handler.
+   *
+   * Respects `app.isQuitting === true` (set this in your `before-quit`
+   * handler) so the close goes through during real quits. Has no effect
+   * when the close event was triggered by {@link Menubar.destroy}.
+   * @default `false`
+   */
+  hideOnClose?: boolean;
+  /**
+   * Hide the menubar window when the user presses `Escape` while it has
+   * focus. Wires up a `before-input-event` listener on the BrowserWindow.
+   * @default `false`
+   */
+  escapeToHide?: boolean;
+  /**
    * The png icon to use for the menubar. A good size to start with is 20x20.
    * To support retina, supply a 2x sized image (e.g. 40x40) with @2x added to
    * the end of the name, so icon.png and icon@2x.png and Electron will

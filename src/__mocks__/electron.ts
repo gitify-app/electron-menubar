@@ -24,6 +24,7 @@ export class BrowserWindow {
   setPosition: Mock = vi.fn();
   setVisibleOnAllWorkspaces: Mock = vi.fn();
   show: Mock = vi.fn();
+  webContents: { on: Mock } = { on: vi.fn() };
 }
 
 export class Tray {

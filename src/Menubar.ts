@@ -17,6 +17,7 @@ export class Menubar extends EventEmitter {
   private _browserWindow?: BrowserWindow;
   private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
   private _isDestroyed: boolean;
+  private _isQuitting: boolean; // set on app `before-quit`, used by hideOnClose
   private _isVisible: boolean; // track visibility
   private _cachedBounds?: Electron.Rectangle; // _cachedBounds are needed for double-clicked event
   private _options: Options;
@@ -28,7 +29,10 @@ export class Menubar extends EventEmitter {
     this._app = app;
     this._options = cleanOptions(options);
     this._isDestroyed = false;
+    this._isQuitting = false;
     this._isVisible = false;
+
+    app.on('before-quit', this.onBeforeQuit);
 
     if (app.isReady()) {
       // See https://github.com/maxogden/menubar/pull/151
@@ -90,6 +94,9 @@ export class Menubar extends EventEmitter {
     if (this.isDestroyed()) {
       return;
     }
+    // Set first so `hideOnClose` lets the close go through instead of
+    // intercepting it.
+    this._isDestroyed = true;
 
     if (this._browserWindow) {
       this._browserWindow.destroy();
@@ -110,8 +117,7 @@ export class Menubar extends EventEmitter {
 
     this._app.removeListener('ready', this.onAppReady);
     this._app.removeListener('activate', this.onAppActivate);
-
-    this._isDestroyed = true;
+    this._app.removeListener('before-quit', this.onBeforeQuit);
   }
 
   /**
@@ -308,6 +314,10 @@ export class Menubar extends EventEmitter {
     }
   };
 
+  private onBeforeQuit = (): void => {
+    this._isQuitting = true;
+  };
+
   private onAppReady = (): void => {
     // Guard against `destroy()` being called between construction and the
     // scheduled `process.nextTick`/`'ready'` firing.
@@ -351,6 +361,26 @@ export class Menubar extends EventEmitter {
       // https://github.com/electron/electron/issues/37832#issuecomment-1497882944
       this._browserWindow.setVisibleOnAllWorkspaces(true, {
         skipTransformProcessType: true, // Avoid damaging the original visible state of app.dock
+      });
+    }
+
+    if (this._options.hideOnClose) {
+      this._browserWindow.on('close', (event) => {
+        if (this._isDestroyed || this._isQuitting) {
+          return;
+        }
+        event.preventDefault();
+        // Defer the hide for Wayland: hiding synchronously from the `close`
+        // handler can leave frameless surfaces in a half-closed state.
+        setImmediate(() => this.hideWindow());
+      });
+    }
+
+    if (this._options.escapeToHide) {
+      this._browserWindow.webContents.on('before-input-event', (_event, input) => {
+        if (input.type === 'keyDown' && input.key === 'Escape') {
+          this.hideWindow();
+        }
       });
     }
 

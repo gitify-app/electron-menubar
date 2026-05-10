@@ -123,6 +123,88 @@ describe('Menubar', () => {
   });
 });
 
+describe('Menubar hideOnClose option', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const closeHandler = (mb: Menubar): ((event: { preventDefault: Mock }) => void) | undefined => {
+    const win = mb.window!;
+    return (win.on as Mock).mock.calls.find(([event]) => event === 'close')?.[1];
+  };
+
+  it('does not register a `close` handler by default', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        expect(closeHandler(mb)).toBeUndefined();
+        resolve();
+      });
+    });
+  });
+
+  it('intercepts close when `hideOnClose: true`', () => {
+    const mb = new Menubar(app, { preloadWindow: true, hideOnClose: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        const handler = closeHandler(mb);
+        expect(handler).toBeTypeOf('function');
+        const event = { preventDefault: vi.fn() };
+        handler?.(event);
+        expect(event.preventDefault).toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('lets close through during `before-quit`', () => {
+    const mb = new Menubar(app, { preloadWindow: true, hideOnClose: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        // Simulate before-quit firing
+        const beforeQuitHandler = (app.on as Mock).mock.calls.find(
+          ([event]) => event === 'before-quit',
+        )?.[1];
+        beforeQuitHandler?.();
+
+        const handler = closeHandler(mb);
+        const event = { preventDefault: vi.fn() };
+        handler?.(event);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar escapeToHide option', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('wires up a before-input-event listener when enabled', () => {
+    const mb = new Menubar(app, { preloadWindow: true, escapeToHide: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        const calls = (mb.window!.webContents.on as Mock).mock.calls;
+        expect(calls.map(([event]) => event)).toContain('before-input-event');
+        resolve();
+      });
+    });
+  });
+
+  it('does not wire a listener when disabled', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        const calls = (mb.window!.webContents.on as Mock).mock.calls;
+        expect(calls.map(([event]) => event)).not.toContain('before-input-event');
+        resolve();
+      });
+    });
+  });
+});
+
 describe('Menubar trigger option', () => {
   beforeEach(() => {
     vi.clearAllMocks();
