@@ -380,7 +380,8 @@ jobs:
                       libxcb-render0-dev libxcb-res0-dev libxcb-util-dev libxcb-xfixes0-dev \
                       xwayland \
                       glslang-tools libcap-dev libpciaccess-dev libxml2-dev \
-                      xutils-dev xcb-proto python3-xcbgen
+                      xutils-dev xcb-proto python3-xcbgen \
+                      libzip-dev librsvg2-dev libtomlplusplus-dev libsystemd-dev
                   # libxcb-errors-dev is not in noble; build it from source (submodules required)
                   git clone --depth 1 --recurse-submodules \
                       https://gitlab.freedesktop.org/xorg/lib/libxcb-errors /tmp/xcb-errors
