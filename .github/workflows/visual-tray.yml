@@ -366,6 +366,7 @@ jobs:
               if: matrix.build_hyprland && steps.hyprland-cache.outputs.cache-hit != 'true'
               run: |
                   set -e
+                  sudo apt-get update
                   sudo apt-get install -y --no-install-recommends \
                       build-essential cmake meson ninja-build pkg-config git ca-certificates zstd \
                       libcairo2-dev libpango1.0-dev libpixman-1-dev \
@@ -377,8 +378,17 @@ jobs:
                       hwdata uuid-dev \
                       libxcb1-dev libxcb-composite0-dev libxcb-ewmh-dev libxcb-icccm4-dev \
                       libxcb-render0-dev libxcb-res0-dev libxcb-util-dev libxcb-xfixes0-dev \
-                      libxcb-errors-dev xwayland \
-                      glslang-tools libcap-dev libpciaccess-dev libxml2-dev
+                      xwayland \
+                      glslang-tools libcap-dev libpciaccess-dev libxml2-dev \
+                      xutils-dev xcb-proto python3-xcbgen
+                  # libxcb-errors-dev is not in noble; build it from source
+                  git clone --depth 1 https://gitlab.freedesktop.org/xorg/lib/libxcb-errors /tmp/xcb-errors
+                  cd /tmp/xcb-errors
+                  ./autogen.sh --prefix=/usr
+                  make -j$(nproc)
+                  sudo make install
+                  sudo ldconfig
+                  cd -
                   build_hypr_lib() {
                       local repo=$1 tag=$2
                       git clone --depth 1 -b "$tag" "https://github.com/hyprwm/$repo" "/tmp/$repo"
