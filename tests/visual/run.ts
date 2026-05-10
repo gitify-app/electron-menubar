@@ -20,8 +20,21 @@ const POST_READY_DELAY_MS = Number(
   process.env.VISUAL_POST_READY_DELAY_MS ?? 3_000,
 );
 const PASS_THRESHOLD = 50;
+const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 
-const child = spawn(electronBin, [fixturePath], {
+// Electron 28+ has Ozone unconditional, so no UseOzonePlatform feature flag
+// is needed. --disable-gpu + --no-sandbox keeps CI happy on headless wlroots.
+const electronArgs = isWayland
+  ? [
+      '--ozone-platform-hint=auto',
+      '--enable-features=WaylandWindowDecorations',
+      '--disable-gpu',
+      '--no-sandbox',
+      fixturePath,
+    ]
+  : [fixturePath];
+
+const child = spawn(electronBin, electronArgs, {
   stdio: ['ignore', 'pipe', 'pipe'],
   env: { ...process.env, ELECTRON_DISABLE_SANDBOX: '1' },
 });
@@ -121,6 +134,8 @@ function capture(path: string): void {
       stdio: 'inherit',
       env: { ...process.env, VISUAL_OUT_PATH: path },
     });
+  } else if (isWayland) {
+    execFileSync('grim', [path], { stdio: 'inherit' });
   } else {
     execFileSync('import', ['-window', 'root', path], { stdio: 'inherit' });
   }
