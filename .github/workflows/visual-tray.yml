@@ -128,14 +128,14 @@ jobs:
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
-                      apt: cinnamon cinnamon-session muffin mesa-utils x11-xserver-utils
+                      apt: cinnamon cinnamon-session muffin mesa-utils xserver-xephyr x11-xserver-utils
                       panel_cmd: |
                           bash -c '
                           export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11
-                          # Inject a real RandR mode so muffin-monitor-config does not see NaN refresh
-                          xrandr --newmode "1920x1080_60" 173.00 1920 2048 2248 2576 1080 1083 1088 1120 -hsync +vsync 2>/dev/null || true
-                          xrandr --addmode default "1920x1080_60" 2>/dev/null || true
-                          xrandr --output default --mode "1920x1080_60" 2>/dev/null || true
+                          # Run Cinnamon inside Xephyr (a real X server) since Xvfb RandR is broken
+                          Xephyr -screen 1920x1080 -ac -br -noreset :100 &
+                          sleep 3
+                          export DISPLAY=:100
                           xrandr --query
                           muffin --replace --x11 & sleep 4
                           cinnamon --replace'
