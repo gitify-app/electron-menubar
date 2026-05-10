@@ -134,11 +134,14 @@ jobs:
                       panel_cmd: |
                           bash -c '
                           export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11
+                          export XDG_CURRENT_DESKTOP=X-Cinnamon DESKTOP_SESSION=cinnamon XDG_SESSION_TYPE=x11
                           xrandr --query 2>&1 | head -20
-                          muffin --replace --x11 & sleep 4
-                          cinnamon --replace'
-                      panel_warmup: 25
-                      post_ready_delay: 14000
+                          cinnamon-session-cinnamon &
+                          sleep 8
+                          cinnamon --replace 2>&1 | head -40 &
+                          wait'
+                      panel_warmup: 35
+                      post_ready_delay: 18000
                       experimental: true
                     - de: tint2
                       label: Linux (Tint2)
