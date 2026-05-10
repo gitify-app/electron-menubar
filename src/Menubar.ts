@@ -265,6 +265,11 @@ export class Menubar extends EventEmitter {
       this.tray.on(trigger as Parameters<Tray['on']>[0], this.clicked);
       this.tray.on('double-click', this.clicked);
     }
+    // macOS-only: ignore double-click so an accidental second click doesn't
+    // race the blur handler and cause a tray-icon flicker.
+    if (process.platform === 'darwin' && this._options.ignoreDoubleClickEvents) {
+      this.tray.setIgnoreDoubleClickEvents(true);
+    }
     this.tray.setToolTip(this._options.tooltip);
 
     if (!this._options.windowPosition) {

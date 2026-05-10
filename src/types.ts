@@ -76,6 +76,14 @@ export interface Options {
    */
   loadUrlOptions?: LoadURLOptions;
   /**
+   * Ignore the tray's `double-click` event on macOS. Prevents a flicker
+   * caused by the close-on-blur handler racing the second click of an
+   * accidental double-click. No-op on Linux/Windows. Calls
+   * [`tray.setIgnoreDoubleClickEvents`](https://electronjs.org/docs/api/tray#traysetignoredoubleclickeventsignore-macos).
+   * @default `true`
+   */
+  ignoreDoubleClickEvents?: boolean;
+  /**
    * Create BrowserWindow instance before it is used -- increasing resource
    * usage, but making the click on the menubar load faster.
    */

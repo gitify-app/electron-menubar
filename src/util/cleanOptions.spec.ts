@@ -14,6 +14,7 @@ const DEFAULT_OPTIONS = {
     width: 400,
   },
   dir: path.resolve(MOCK_APP_GETAPPPATH),
+  ignoreDoubleClickEvents: true,
   index: `file://${path.join(path.resolve(MOCK_APP_GETAPPPATH), 'index.html')}`,
   loadUrlOptions: {},
   tooltip: '',

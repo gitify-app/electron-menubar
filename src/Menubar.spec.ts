@@ -1,5 +1,5 @@
 import { app, BrowserWindow, Tray } from 'electron';
-import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
 import { Menubar } from './Menubar';
 
@@ -171,6 +171,54 @@ describe('Menubar hideOnClose option', () => {
         const event = { preventDefault: vi.fn() };
         handler?.(event);
         expect(event.preventDefault).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar ignoreDoubleClickEvents option', () => {
+  const originalPlatform = process.platform;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+  });
+
+  it('calls setIgnoreDoubleClickEvents(true) on macOS by default', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(mb.tray.setIgnoreDoubleClickEvents).toHaveBeenCalledWith(true);
+        resolve();
+      });
+    });
+  });
+
+  it('respects ignoreDoubleClickEvents: false on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      ignoreDoubleClickEvents: false,
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(mb.tray.setIgnoreDoubleClickEvents).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('is a no-op on non-macOS platforms', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(mb.tray.setIgnoreDoubleClickEvents).not.toHaveBeenCalled();
         resolve();
       });
     });
