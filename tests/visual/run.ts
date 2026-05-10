@@ -78,16 +78,21 @@ child.kill('SIGTERM');
 
 const png = PNG.sync.read(readFileSync(screenshotPath));
 let magenta = 0;
+let green = 0;
 for (let i = 0; i < png.data.length; i += 4) {
   const r = png.data[i];
   const g = png.data[i + 1];
   const b = png.data[i + 2];
   if (r > 200 && g < 80 && b > 200) magenta++;
+  else if (r < 80 && g > 200 && b < 80) green++;
 }
 
-const status: 'pass' | 'fail' = magenta >= PASS_THRESHOLD ? 'pass' : 'fail';
-console.log(`magenta=${magenta} threshold=${PASS_THRESHOLD} → ${status}`);
-writeResult({ status, magenta });
+const total = magenta + green;
+const status: 'pass' | 'fail' = total >= PASS_THRESHOLD ? 'pass' : 'fail';
+console.log(
+  `magenta=${magenta} green=${green} total=${total} threshold=${PASS_THRESHOLD} → ${status}`,
+);
+writeResult({ status, magenta, green, total });
 
 if (status === 'fail') process.exit(1);
 
