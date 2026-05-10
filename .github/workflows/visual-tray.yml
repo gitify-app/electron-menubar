@@ -156,11 +156,12 @@ jobs:
                       key: linux-gnome
                       apt: gnome-shell gnome-shell-extension-appindicator
                       panel_cmd: bash -c 'gnome-extensions enable ubuntu-appindicators@ubuntu.com 2>/dev/null || true; gnome-shell --x11'
-                    # Budgie is experimental: noble ships budgie-desktop 10.7 whose default
-                    # panel layout does not include a Status Notifier applet. Electron
-                    # registers an SNI tray icon successfully on DBus, but no Budgie applet
-                    # hosts the watcher, so nothing renders. Fixing this requires writing
-                    # a custom panel layout via dconf — left as follow-up.
+                    # Budgie: noble ships budgie-desktop 10.9, whose default panel layout
+                    # already includes the System Tray applet. The applet is a pure client
+                    # of org.freedesktop.StatusNotifierWatcher — and in 10.9+ that watcher
+                    # is owned by budgie-daemon, not the applet. Running budgie-wm +
+                    # budgie-panel without a session manager skips the daemon autostart,
+                    # leaving SNI items unobserved. Start budgie-daemon first.
                     - de: budgie
                       label: Linux (Budgie)
                       key: linux-budgie
@@ -168,12 +169,13 @@ jobs:
                       panel_cmd: |
                           bash -c '
                           export XDG_CURRENT_DESKTOP=Budgie:GNOME DESKTOP_SESSION=budgie-desktop
+                          budgie-daemon &
+                          sleep 2
                           budgie-wm --replace &
                           sleep 5
                           budgie-panel --replace'
                       panel_warmup: 18
                       post_ready_delay: 10000
-                      experimental: true
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
