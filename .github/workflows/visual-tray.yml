@@ -303,20 +303,16 @@ jobs:
                       label: Linux (Sway/Waybar)
                       key: linux-sway
                       apt: sway waybar grim
-                    # Hyprland is experimental: since v0.42 it uses the Aquamarine backend,
-                    # whose allocator is hardcoded to GBM (Backend.cpp:160-176). Headless
-                    # mode has drmFD=-1, so the GBM allocator can never be created and
-                    # CBackend::create() fails. There is no software (Pixman) allocator
-                    # path — upstream TODO since 2024. GHA's Azure kernel ships no vkms
-                    # module, and AQ_HEADLESS_ONLY is a non-existent env var. The only
-                    # viable workaround is pinning to Hyprland v0.41.2 (last wlroots-based
-                    # release), which would need a 5–10 min from-source build per CI run.
-                    # Sway already covers the wlroots+Waybar+SNI surface, so we accept
-                    # this and leave Hyprland here only for matrix completeness.
+                    # Hyprland is built from source pinned to v0.41.2 — the last release
+                    # using wlroots (post-0.42 switched to Aquamarine whose allocator
+                    # hardcodes GBM, which can't initialize without /dev/dri on GHA).
+                    # v0.41.2 honors WLR_BACKENDS=headless + WLR_RENDERER=pixman just
+                    # like Sway. Cached across runs to avoid the ~15 min cold build.
                     - de: hyprland
                       label: Linux (Hyprland/Waybar)
                       key: linux-hyprland
                       apt: waybar grim
+                      build_hyprland: true
                       experimental: true
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -353,16 +349,65 @@ jobs:
                       libxcomposite1 libxdamage1 libxfixes3 libcups2 \
                       libayatana-appindicator3-1 libdbusmenu-glib4 \
                       $APT_PACKAGES
-            - name: Install Hyprland (experimental, via cppiber PPA)
-              if: matrix.de == 'hyprland'
-              continue-on-error: true
+            - name: Restore Hyprland install set from cache
+              if: matrix.build_hyprland
+              id: hyprland-cache
+              uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+              with:
+                  path: /tmp/hyprland-install.tar.zst
+                  key: hyprland-noble-v0.41.2-r1
+            - name: Unpack cached Hyprland install set
+              if: matrix.build_hyprland && steps.hyprland-cache.outputs.cache-hit == 'true'
               run: |
-                  sudo add-apt-repository -y ppa:cppiber/hyprland || true
-                  sudo apt-get update -qq
-                  sudo apt-get install -y --no-install-recommends hyprland || {
-                      echo "::warning::cppiber PPA install failed; Hyprland unavailable on noble without source build"
-                      exit 1
+                  sudo tar -I zstd -xf /tmp/hyprland-install.tar.zst -C /
+                  sudo ldconfig
+                  Hyprland --version | head -3
+            - name: Build Hyprland v0.41.2 from source
+              if: matrix.build_hyprland && steps.hyprland-cache.outputs.cache-hit != 'true'
+              run: |
+                  set -e
+                  sudo apt-get install -y --no-install-recommends \
+                      build-essential cmake meson ninja-build pkg-config git ca-certificates zstd \
+                      libcairo2-dev libpango1.0-dev libpixman-1-dev \
+                      libwayland-dev wayland-protocols \
+                      libxkbcommon-dev libxkbcommon-x11-dev \
+                      libdrm-dev libgbm-dev libegl1-mesa-dev libgles2-mesa-dev libgl1-mesa-dev \
+                      libinput-dev libudev-dev libseat-dev seatd \
+                      libdisplay-info-dev libliftoff-dev libtomlplusplus-dev \
+                      hwdata uuid-dev \
+                      libxcb1-dev libxcb-composite0-dev libxcb-ewmh-dev libxcb-icccm4-dev \
+                      libxcb-render0-dev libxcb-res0-dev libxcb-util-dev libxcb-xfixes0-dev \
+                      libxcb-errors-dev xwayland \
+                      glslang-tools libcap-dev libpciaccess-dev libxml2-dev
+                  build_hypr_lib() {
+                      local repo=$1 tag=$2
+                      git clone --depth 1 -b "$tag" "https://github.com/hyprwm/$repo" "/tmp/$repo"
+                      cmake -S "/tmp/$repo" -B "/tmp/$repo/build" -G Ninja \
+                          -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+                      cmake --build "/tmp/$repo/build" -j$(nproc)
+                      sudo cmake --install "/tmp/$repo/build"
                   }
+                  build_hypr_lib hyprutils v0.2.1
+                  build_hypr_lib hyprlang v0.5.2
+                  build_hypr_lib hyprcursor v0.1.9
+                  build_hypr_lib hyprwayland-scanner v0.4.0
+                  sudo ldconfig
+                  git clone --recurse-submodules --depth 1 -b v0.41.2 https://github.com/hyprwm/Hyprland /tmp/Hyprland
+                  cd /tmp/Hyprland
+                  make release
+                  sudo make PREFIX=/usr install
+                  sudo ldconfig
+                  Hyprland --version | head -3
+                  # Snapshot the install set into a single tarball for cache
+                  sudo tar -I zstd -cf /tmp/hyprland-install.tar.zst \
+                      $(ls -d /usr/bin/Hyprland /usr/bin/hyprctl /usr/bin/hyprwayland-scanner 2>/dev/null) \
+                      $(ls /usr/lib/x86_64-linux-gnu/libhyprlang.so* 2>/dev/null) \
+                      $(ls /usr/lib/x86_64-linux-gnu/libhyprcursor.so* 2>/dev/null) \
+                      $(ls /usr/lib/x86_64-linux-gnu/libhyprutils.so* 2>/dev/null) \
+                      $(ls /usr/lib/libhyprlang.so* 2>/dev/null) \
+                      $(ls /usr/lib/libhyprcursor.so* 2>/dev/null) \
+                      $(ls /usr/lib/libhyprutils.so* 2>/dev/null) \
+                      /usr/lib/pkgconfig/hypr*.pc /usr/share/hyprland 2>/dev/null || true
             - name: Configure Waybar
               run: |
                   mkdir -p ~/.config/waybar
@@ -393,8 +438,19 @@ jobs:
                   mkdir -p ~/.config/hypr
                   cat > ~/.config/hypr/hyprland.conf <<'EOF'
                   monitor=HEADLESS-1,1920x1080@60,0x0,1
-                  exec-once = hyprctl output create headless
                   exec-once = waybar
+                  animations { enabled = false }
+                  decoration {
+                    rounding = 0
+                    blur { enabled = false }
+                    drop_shadow = false
+                  }
+                  misc {
+                    disable_hyprland_logo = true
+                    disable_splash_rendering = true
+                  }
+                  general { border_size = 1 }
+                  input { kb_layout = us }
                   EOF
             - name: Run visual test under ${{ matrix.de }}
               env:
@@ -411,7 +467,7 @@ jobs:
                       COMP_ENV="WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1"
                       COMP_CMD="sway"
                   else
-                      COMP_ENV="AQ_HEADLESS_ONLY=1 LIBGL_ALWAYS_SOFTWARE=1"
+                      COMP_ENV="WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman LIBGL_ALWAYS_SOFTWARE=1"
                       COMP_CMD="Hyprland"
                   fi
                   dbus-run-session -- bash -c "
