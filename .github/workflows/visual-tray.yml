@@ -480,8 +480,14 @@ jobs:
                       COMP_ENV="WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1"
                       COMP_CMD="sway"
                   else
-                      # Hyprland hardcodes wlr_renderer_is_gles2() assertion; pixman is
-                      # rejected. Use software GLES2 via Mesa llvmpipe instead.
+                      # Hyprland asserts wlr_renderer_is_gles2(); pixman is rejected.
+                      # GLES2 needs a DRM render node — try vkms (virtual kernel modesetting)
+                      # to provide a software DRM device, then llvmpipe gives us soft GLES2.
+                      echo "::group::vkms probe"
+                      sudo modprobe vkms num_crtcs=1 max_outputs=1 2>&1 || echo "modprobe vkms failed"
+                      lsmod | grep -i vkms || echo "vkms not loaded"
+                      ls -la /dev/dri/ 2>&1 || echo "no /dev/dri"
+                      echo "::endgroup::"
                       COMP_ENV="WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1 WLR_NO_HARDWARE_CURSORS=1 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3"
                       COMP_CMD="Hyprland"
                   fi
