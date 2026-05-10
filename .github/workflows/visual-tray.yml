@@ -153,6 +153,13 @@ jobs:
                       key: linux-gnome
                       apt: gnome-shell gnome-shell-extension-appindicator
                       panel_cmd: bash -c 'gnome-extensions enable ubuntu-appindicators@ubuntu.com 2>/dev/null || true; gnome-shell --x11'
+                    - de: budgie
+                      label: Linux (Budgie)
+                      key: linux-budgie
+                      apt: budgie-desktop
+                      panel_cmd: bash -c 'budgie-wm --replace & sleep 4; budgie-panel'
+                      panel_warmup: 12
+                      post_ready_delay: 6000
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
