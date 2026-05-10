@@ -67,10 +67,10 @@
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/pngjs": "^6.0.5",
-    "pngjs": "^7.0.0",
     "@voidzero-dev/vite-plus-core": "latest",
     "@voidzero-dev/vite-plus-test": "latest",
     "electron": "^39.0.0",
+    "pngjs": "^7.0.0",
     "standard-version": "^9.5.0",
     "typescript": "^5.9.3",
     "vite-plus": "latest",
