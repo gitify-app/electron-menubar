@@ -1,0 +1,469 @@
+name: Visual Tray
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+permissions: {}
+
+jobs:
+    macos:
+        name: Visual [${{ matrix.label }}]
+        runs-on: ${{ matrix.runner }}
+        permissions:
+            contents: read
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - runner: macos-26
+                      label: macOS 26 (Tahoe)
+                      key: macos-26
+                    - runner: macos-15
+                      label: macOS 15 (Sequoia)
+                      key: macos-15
+                    - runner: macos-14
+                      label: macOS 14 (Sonoma)
+                      key: macos-14
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  node-version-file: .node-version
+            - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+              with:
+                  bun-version-file: package.json
+            - name: Install dependencies
+              shell: bash
+              run: |
+                  for attempt in 1 2 3; do
+                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
+                      rm -rf node_modules/electron 2>/dev/null || true
+                      sleep $((attempt * 5))
+                  done
+                  exit 1
+            - name: Build library
+              run: bun run build
+            - name: Run visual test
+              env:
+                  VISUAL_KEY: ${{ matrix.key }}
+                  VISUAL_LABEL: ${{ matrix.label }}
+              run: bun run test:visual
+            - name: Upload artifacts
+              if: always()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: visual-${{ matrix.key }}
+                  path: test-results/visual/
+                  if-no-files-found: warn
+                  retention-days: 14
+
+    linux:
+        name: Visual [${{ matrix.label }}]
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+        continue-on-error: ${{ matrix.experimental || false }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - de: mate
+                      label: Linux (MATE)
+                      key: linux-mate
+                      apt: mate-panel mate-indicator-applet
+                      panel_cmd: mate-panel --replace
+                    - de: xfce
+                      label: Linux (Xfce)
+                      key: linux-xfce
+                      apt: xfce4-panel
+                      panel_cmd: xfce4-panel --disable-wm-check
+                    - de: lxqt
+                      label: Linux (LXQt)
+                      key: linux-lxqt
+                      apt: lxqt-panel lxqt-session
+                      panel_cmd: |
+                          mkdir -p ~/.config/lxqt && \
+                          printf '[General]\n__userfile__=true\npanels=p1\n[p1]\nplugins=statusnotifier\nposition=Top\nalignment=0\n[statusnotifier]\ntype=statusnotifier\nalignment=Right\n' > ~/.config/lxqt/panel.conf && \
+                          lxqt-panel
+                    - de: kde
+                      label: Linux (KDE Plasma)
+                      key: linux-kde
+                      apt: plasma-workspace plasma-desktop kwin-x11 systemsettings kde-cli-tools
+                      panel_cmd: |
+                          bash -c '
+                          kwin_x11 --replace & sleep 4
+                          plasmashell --no-respawn & PLASMA_PID=$!
+                          CFG=~/.config/plasma-org.kde.plasma.desktop-appletsrc
+                          for i in {1..20}; do
+                            [ -f "$CFG" ] && grep -q "org.kde.plasma.systemtray" "$CFG" && break
+                            sleep 1
+                          done
+                          # Brute-force showAllItems=true on every containment x applet pair
+                          for CID in 1 2 3 4 5 6 7 8 9 10; do
+                            for AID in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 20 25 30; do
+                              kwriteconfig5 --file "$CFG" --group Containments --group "$CID" --group Applets --group "$AID" --group Configuration --group General --key showAllItems true 2>/dev/null || true
+                            done
+                          done
+                          echo "=== plasma config after rewrite ==="; cat "$CFG"
+                          # Tell plasmashell to reload its config
+                          qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.refreshCurrentShell 2>/dev/null || true
+                          # If refresh did not pick it up, restart plasmashell with new config
+                          kquitapp5 plasmashell 2>/dev/null || pkill -TERM plasmashell
+                          sleep 4
+                          plasmashell --no-respawn &
+                          wait'
+                      panel_warmup: 35
+                      post_ready_delay: 18000
+                    # Cinnamon is experimental: Xvfb/Xvnc lack a working RRSetCrtcConfig,
+                    # so muffin's startup config-reconciler hits BadValue and never finishes.
+                    # Xdummy (Xorg + xserver-xorg-video-dummy) is a real Xorg with a complete
+                    # RandR 1.2+ implementation, which is the only theory that has a chance.
+                    - de: cinnamon
+                      label: Linux (Cinnamon)
+                      key: linux-cinnamon
+                      apt: cinnamon cinnamon-session muffin mesa-utils xserver-xorg-core xserver-xorg-video-dummy xserver-xorg-legacy x11-xserver-utils dconf-cli
+                      use_xdummy: true
+                      panel_cmd: |
+                          bash -c '
+                          export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11
+                          export XDG_CURRENT_DESKTOP=X-Cinnamon DESKTOP_SESSION=cinnamon XDG_SESSION_TYPE=x11
+                          xrandr --query 2>&1 | head -20
+                          cinnamon-session-cinnamon &
+                          sleep 8
+                          cinnamon --replace 2>&1 | head -40 &
+                          wait'
+                      panel_warmup: 35
+                      post_ready_delay: 18000
+                      experimental: true
+                    - de: tint2
+                      label: Linux (Tint2)
+                      key: linux-tint2
+                      apt: tint2 valac libgtk-3-dev libdbusmenu-glib-dev libdbusmenu-gtk3-dev pkg-config make git
+                      panel_cmd: bash -c 'tint2 & sleep 3; snixembed'
+                      build_snixembed: true
+                      panel_warmup: 12
+                      post_ready_delay: 6000
+                    - de: gnome
+                      label: Linux (GNOME)
+                      key: linux-gnome
+                      apt: gnome-shell gnome-shell-extension-appindicator
+                      panel_cmd: bash -c 'gnome-extensions enable ubuntu-appindicators@ubuntu.com 2>/dev/null || true; gnome-shell --x11'
+                    # Budgie: noble ships budgie-desktop 10.9, whose default panel layout
+                    # already includes the System Tray applet. The applet is a pure client
+                    # of org.freedesktop.StatusNotifierWatcher — and in 10.9+ that watcher
+                    # is owned by budgie-daemon, not the applet. Running budgie-wm +
+                    # budgie-panel without a session manager skips the daemon autostart,
+                    # leaving SNI items unobserved. Start budgie-daemon first.
+                    - de: budgie
+                      label: Linux (Budgie)
+                      key: linux-budgie
+                      apt: budgie-desktop
+                      panel_cmd: |
+                          bash -c '
+                          export XDG_CURRENT_DESKTOP=Budgie:GNOME DESKTOP_SESSION=budgie-desktop
+                          budgie-daemon &
+                          sleep 2
+                          budgie-wm --replace &
+                          sleep 5
+                          budgie-panel --replace'
+                      panel_warmup: 18
+                      post_ready_delay: 10000
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  node-version-file: .node-version
+            - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+              with:
+                  bun-version-file: package.json
+            - name: Install dependencies
+              shell: bash
+              run: |
+                  for attempt in 1 2 3; do
+                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
+                      rm -rf node_modules/electron 2>/dev/null || true
+                      sleep $((attempt * 5))
+                  done
+                  exit 1
+            - name: Build library
+              run: bun run build
+            - name: Install desktop environment
+              env:
+                  APT_PACKAGES: ${{ matrix.apt }}
+              run: |
+                  sudo apt-get update -qq
+                  sudo apt-get install -y --no-install-recommends \
+                      xvfb imagemagick dbus-x11 \
+                      libgtk-3-0 libnss3 libxss1 libasound2t64 \
+                      libgbm1 libatk-bridge2.0-0 libdrm2 \
+                      libxtst6 libnotify4 libxrandr2 \
+                      libxcomposite1 libxdamage1 libxfixes3 libcups2 \
+                      libayatana-appindicator3-1 \
+                      $APT_PACKAGES
+            - name: Build snixembed (SNI to XEmbed bridge)
+              if: matrix.build_snixembed
+              run: |
+                  git clone --depth 1 https://git.sr.ht/~steef/snixembed /tmp/snixembed
+                  cd /tmp/snixembed
+                  make
+                  sudo make install PREFIX=/usr/local
+                  snixembed --help 2>&1 | head -5 || true
+            - name: Configure Xdummy
+              if: matrix.use_xdummy
+              run: |
+                  sudo tee /etc/X11/xorg-dummy.conf >/dev/null <<'EOF'
+                  Section "Device"
+                      Identifier "Dummy"
+                      Driver "dummy"
+                      VideoRam 256000
+                  EndSection
+                  Section "Monitor"
+                      Identifier "DummyMonitor"
+                      HorizSync 28.0-80.0
+                      VertRefresh 48.0-75.0
+                      Modeline "1920x1080" 148.50 1920 2008 2052 2200 1080 1084 1089 1125 +HSync +VSync
+                  EndSection
+                  Section "Screen"
+                      Identifier "DummyScreen"
+                      Device "Dummy"
+                      Monitor "DummyMonitor"
+                      DefaultDepth 24
+                      SubSection "Display"
+                          Depth 24
+                          Modes "1920x1080"
+                      EndSubSection
+                  EndSection
+                  EOF
+                  sudo tee /etc/X11/Xwrapper.config >/dev/null <<'EOF'
+                  allowed_users=anybody
+                  needs_root_rights=yes
+                  EOF
+            - name: Run visual test under ${{ matrix.de }}
+              env:
+                  VISUAL_KEY: ${{ matrix.key }}
+                  VISUAL_LABEL: ${{ matrix.label }}
+                  VISUAL_POST_READY_DELAY_MS: ${{ matrix.post_ready_delay || 3000 }}
+                  PANEL_CMD: ${{ matrix.panel_cmd }}
+                  PANEL_WARMUP: ${{ matrix.panel_warmup || 8 }}
+                  TEST_DISPLAY: ${{ matrix.test_display || ':99' }}
+              run: |
+                  set -x
+                  if [ "${{ matrix.use_xdummy || 'false' }}" = "true" ]; then
+                      sudo Xorg :99 -config /etc/X11/xorg-dummy.conf -noreset -nolisten tcp -logfile /tmp/xorg.log &
+                  else
+                      Xvfb :99 -screen 0 ${{ matrix.xvfb_screen || '1920x1080x24' }} &
+                  fi
+                  XSERVER_PID=$!
+                  export DISPLAY=:99
+                  sleep 3
+                  dbus-run-session -- bash -c '
+                      export DISPLAY=:99
+                      eval "$PANEL_CMD" &
+                      PANEL_PID=$!
+                      sleep "$PANEL_WARMUP"
+                      DISPLAY="$TEST_DISPLAY" bun run test:visual
+                      EXIT=$?
+                      kill $PANEL_PID 2>/dev/null || true
+                      exit $EXIT
+                  '
+                  EXIT=$?
+                  kill $XSERVER_PID 2>/dev/null || true
+                  exit $EXIT
+            - name: Upload artifacts
+              if: always()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: visual-${{ matrix.key }}
+                  path: test-results/visual/
+                  if-no-files-found: warn
+                  retention-days: 14
+
+    linux-wayland:
+        name: Visual [${{ matrix.label }}]
+        runs-on: ubuntu-24.04
+        permissions:
+            contents: read
+        continue-on-error: ${{ matrix.experimental || false }}
+        strategy:
+            fail-fast: false
+            # Hyprland is not in this matrix. Investigation summary (see PR #10):
+            #   - v0.42+ uses Aquamarine, whose allocator hardcodes GBM and has no
+            #     software fallback (Backend.cpp:160-176, TODO open since 2024).
+            #   - v0.41.2 (last wlroots release) asserts wlr_renderer_is_gles2(),
+            #     rejecting wlroots' Pixman fallback when no DRM render node exists.
+            #   - GHA ubuntu-24.04 ships /dev/dri/card1 (hyperv_drm) but that driver
+            #     is modeset-only — no GBM, so wlroots can't create GLES2 against it.
+            #   - vkms (Virtual KMS) is not in the linux-azure kernel modules.
+            # Sway already covers wlroots+Waybar+SNI on this matrix; Hyprland would
+            # need either self-hosted runners with real GPU or KVM nested virt.
+            matrix:
+                include:
+                    - de: sway
+                      label: Linux (Sway/Waybar)
+                      key: linux-sway
+                      apt: sway waybar grim
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  node-version-file: .node-version
+            - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+              with:
+                  bun-version-file: package.json
+            - name: Install dependencies
+              shell: bash
+              run: |
+                  for attempt in 1 2 3; do
+                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
+                      rm -rf node_modules/electron 2>/dev/null || true
+                      sleep $((attempt * 5))
+                  done
+                  exit 1
+            - name: Build library
+              run: bun run build
+            - name: Install Wayland compositor
+              env:
+                  APT_PACKAGES: ${{ matrix.apt }}
+              run: |
+                  sudo apt-get update -qq
+                  sudo apt-get install -y --no-install-recommends \
+                      dbus-x11 \
+                      libgtk-3-0 libnss3 libxss1 libasound2t64 \
+                      libgbm1 libatk-bridge2.0-0 libdrm2 \
+                      libxtst6 libnotify4 libxrandr2 \
+                      libxcomposite1 libxdamage1 libxfixes3 libcups2 \
+                      libayatana-appindicator3-1 libdbusmenu-glib4 \
+                      $APT_PACKAGES
+            - name: Configure Waybar
+              run: |
+                  mkdir -p ~/.config/waybar
+                  cat > ~/.config/waybar/config.jsonc <<'EOF'
+                  {
+                    "layer": "top",
+                    "position": "top",
+                    "height": 32,
+                    "modules-right": ["tray"],
+                    "tray": { "icon-size": 22, "spacing": 10 }
+                  }
+                  EOF
+                  cat > ~/.config/waybar/style.css <<'EOF'
+                  * { font-family: sans-serif; font-size: 14px; }
+                  window#waybar { background: #222; color: #fff; }
+                  EOF
+            - name: Configure Sway
+              if: matrix.de == 'sway'
+              run: |
+                  mkdir -p ~/.config/sway
+                  cat > ~/.config/sway/config <<'EOF'
+                  output HEADLESS-1 resolution 1920x1080 position 0,0
+                  exec waybar
+                  EOF
+            - name: Run visual test under ${{ matrix.de }}
+              env:
+                  VISUAL_KEY: ${{ matrix.key }}
+                  VISUAL_LABEL: ${{ matrix.label }}
+                  VISUAL_POST_READY_DELAY_MS: ${{ matrix.post_ready_delay || 8000 }}
+                  DE: ${{ matrix.de }}
+              run: |
+                  set -x
+                  export XDG_RUNTIME_DIR=/tmp/xdg-runtime
+                  mkdir -p "$XDG_RUNTIME_DIR"
+                  chmod 700 "$XDG_RUNTIME_DIR"
+                  COMP_ENV="WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1"
+                  COMP_CMD="sway"
+                  dbus-run-session -- bash -c "
+                      export XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR
+                      env $COMP_ENV $COMP_CMD &
+                      COMP_PID=\$!
+                      sleep 8
+                      export WAYLAND_DISPLAY=wayland-1
+                      bun run test:visual
+                      EXIT=\$?
+                      kill \$COMP_PID 2>/dev/null || true
+                      exit \$EXIT
+                  "
+            - name: Upload artifacts
+              if: always()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: visual-${{ matrix.key }}
+                  path: test-results/visual/
+                  if-no-files-found: warn
+                  retention-days: 14
+
+    windows:
+        name: Visual [${{ matrix.label }}]
+        runs-on: ${{ matrix.runner }}
+        permissions:
+            contents: read
+        continue-on-error: ${{ matrix.experimental || false }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - runner: windows-2022
+                      label: Windows Server 2022
+                      key: windows-2022
+                    - runner: windows-2025
+                      label: Windows Server 2025
+                      key: windows-2025
+        steps:
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  node-version-file: .node-version
+            - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+              with:
+                  bun-version-file: package.json
+            - name: Install dependencies
+              shell: bash
+              run: |
+                  for attempt in 1 2 3; do
+                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
+                      rm -rf node_modules/electron 2>/dev/null || true
+                      sleep $((attempt * 5))
+                  done
+                  exit 1
+            - name: Build library
+              run: bun run build
+            - name: Set EnableAutoTray=0 (legacy Win10/2022 path, best-effort)
+              shell: pwsh
+              continue-on-error: true
+              run: |
+                  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer' -Name 'EnableAutoTray' -Value 0 -Type DWord -ErrorAction SilentlyContinue
+                  taskkill /F /IM explorer.exe 2>$null; Start-Process explorer; Start-Sleep -Seconds 5
+            - name: Run visual test
+              env:
+                  VISUAL_KEY: ${{ matrix.key }}
+                  VISUAL_LABEL: ${{ matrix.label }}
+                  VISUAL_PREPARE_CMD: |
+                      Get-ChildItem 'HKCU:\Control Panel\NotifyIconSettings' -ErrorAction SilentlyContinue | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name IsPromoted -Value 1 -Type DWord -Force };
+                      Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
+                      Start-Process explorer;
+                      Start-Sleep -Seconds 6
+              run: bun run test:visual
+            - name: Upload artifacts
+              if: always()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: visual-${{ matrix.key }}
+                  path: test-results/visual/
+                  if-no-files-found: warn
+                  retention-days: 14
