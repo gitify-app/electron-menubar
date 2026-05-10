@@ -125,11 +125,16 @@ jobs:
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
-                      apt: cinnamon cinnamon-session muffin mesa-utils tigervnc-standalone-server x11-xserver-utils
+                      apt: cinnamon cinnamon-session muffin mesa-utils tigervnc-standalone-server x11-xserver-utils dconf-cli
                       use_xvnc: true
                       panel_cmd: |
                           bash -c '
                           export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11
+                          # Virtual X servers report RandR 1.6 but error on scale ops; disable all fractional/scale features
+                          gsettings set org.cinnamon.muffin experimental-features "[]" 2>/dev/null || true
+                          gsettings set org.gnome.mutter experimental-features "[]" 2>/dev/null || true
+                          gsettings set org.cinnamon.desktop.interface scaling-factor 1 2>/dev/null || true
+                          export MUTTER_DEBUG_FORCE_X11_RANDR_NO_SCALING=1
                           xrandr --query 2>&1 | head -20
                           muffin --replace --x11 & sleep 4
                           cinnamon --replace'
