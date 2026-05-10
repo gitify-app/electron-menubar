@@ -100,8 +100,12 @@ jobs:
                           bash -c '
                           kwin_x11 --replace & sleep 4
                           plasmashell --no-respawn & PLASMA_PID=$!
-                          sleep 12
+                          # Wait for plasma to write its initial config
                           CFG=~/.config/plasma-org.kde.plasma.desktop-appletsrc
+                          for i in {1..20}; do
+                            [ -f "$CFG" ] && grep -q "org.kde.plasma.private.systemtray" "$CFG" && break
+                            sleep 1
+                          done
                           # Extract containment id whose plugin is the private systemtray
                           SYS_CID=$(awk "
                             /^\\[Containments\\]\\[[0-9]+\\]\$/ {
@@ -114,16 +118,12 @@ jobs:
                           if [ -n "$SYS_CID" ]; then
                             kwriteconfig5 --file "$CFG" --group Containments --group "$SYS_CID" --group General --key extraItems "menubar-visual-fixture,electron,Electron"
                             kwriteconfig5 --file "$CFG" --group Containments --group "$SYS_CID" --group General --key shownItems "menubar-visual-fixture,electron,Electron"
-                            # Try the systemtray applet variant (defaultStatus=Active = always shown)
-                            kwriteconfig5 --file "$CFG" --group Containments --group "$SYS_CID" --group General --key defaultStatus 2
+                            # Touch the config so plasma reloads it
+                            qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.refreshCurrentShell 2>/dev/null || true
                           fi
-                          echo "=== plasma config after rewrite ==="; cat "$CFG"
-                          kquitapp5 plasmashell 2>/dev/null || pkill -f plasmashell
-                          sleep 3
-                          plasmashell --no-respawn & sleep 8
                           wait'
-                      panel_warmup: 35
-                      post_ready_delay: 18000
+                      panel_warmup: 25
+                      post_ready_delay: 16000
                       experimental: true
                     - de: cinnamon
                       label: Linux (Cinnamon)
