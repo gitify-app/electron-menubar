@@ -43,8 +43,9 @@ jobs:
               shell: bash
               run: |
                   for attempt in 1 2 3; do
-                      if bun install --frozen-lockfile; then exit 0; fi
-                      echo "::warning::install attempt $attempt failed; retrying..."
+                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
+                      rm -rf node_modules/electron 2>/dev/null || true
                       sleep $((attempt * 5))
                   done
                   exit 1
@@ -167,8 +168,9 @@ jobs:
               shell: bash
               run: |
                   for attempt in 1 2 3; do
-                      if bun install --frozen-lockfile; then exit 0; fi
-                      echo "::warning::install attempt $attempt failed; retrying..."
+                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
+                      rm -rf node_modules/electron 2>/dev/null || true
                       sleep $((attempt * 5))
                   done
                   exit 1
@@ -261,8 +263,9 @@ jobs:
               shell: bash
               run: |
                   for attempt in 1 2 3; do
-                      if bun install --frozen-lockfile; then exit 0; fi
-                      echo "::warning::install attempt $attempt failed; retrying..."
+                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
+                      rm -rf node_modules/electron 2>/dev/null || true
                       sleep $((attempt * 5))
                   done
                   exit 1
