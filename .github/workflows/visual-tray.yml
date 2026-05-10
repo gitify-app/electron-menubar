@@ -122,6 +122,10 @@ jobs:
                           wait'
                       panel_warmup: 35
                       post_ready_delay: 18000
+                    # Cinnamon stays experimental: muffin always tries to set CRTC scaling
+                    # via XRRSetCrtcConfigs, which all virtual X servers (Xvfb, Xephyr, Xvnc)
+                    # return BadValue for. This is hard-coded and not gated by any feature flag,
+                    # so the shell never finishes initializing. Needs a KVM-based real session.
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
