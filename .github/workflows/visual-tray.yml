@@ -95,16 +95,24 @@ jobs:
                     - de: kde
                       label: Linux (KDE Plasma)
                       key: linux-kde
-                      apt: plasma-workspace plasma-desktop kwin-x11 systemsettings
-                      panel_cmd: plasmashell --no-respawn
-                      panel_warmup: 18
-                      post_ready_delay: 12000
+                      apt: plasma-workspace plasma-desktop kwin-x11 systemsettings kde-cli-tools
+                      panel_cmd: |
+                          bash -c 'kwin_x11 --replace & sleep 4; plasmashell --no-respawn & sleep 12;
+                          APPLET_ID=$(awk -F"=" "/^plugin=org.kde.plasma.private.systemtray/{print prev}{prev=\$0}" ~/.config/plasma-org.kde.plasma.desktop-appletsrc 2>/dev/null | grep -oP "Applets\]\[\K[0-9]+" | head -1);
+                          if [ -n "$APPLET_ID" ]; then
+                            kwriteconfig5 --file plasma-org.kde.plasma.desktop-appletsrc --group Containments --group 1 --group Applets --group "$APPLET_ID" --group Configuration --group General --key defaultStatus Active 2>/dev/null || true;
+                            kquitapp5 plasmashell 2>/dev/null; sleep 2; plasmashell --no-respawn &
+                            sleep 8;
+                          fi; wait'
+                      panel_warmup: 30
+                      post_ready_delay: 14000
                       experimental: true
                     - de: cinnamon
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
-                      apt: cinnamon cinnamon-session muffin
-                      panel_cmd: bash -c 'export LIBGL_ALWAYS_SOFTWARE=1 MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11; muffin --replace --x11 & sleep 4; cinnamon --replace'
+                      apt: cinnamon cinnamon-session muffin mesa-utils
+                      panel_cmd: bash -c 'export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3 CLUTTER_BACKEND=x11 MUTTER_DEBUG_DUMMY_MONITOR_SPECS=1024x768@60; muffin --replace --x11 & sleep 4; cinnamon --replace'
+                      xvfb_screen: 1024x768x24
                       panel_warmup: 20
                       post_ready_delay: 12000
                       experimental: true
@@ -172,7 +180,7 @@ jobs:
                   PANEL_WARMUP: ${{ matrix.panel_warmup || 8 }}
               run: |
                   set -x
-                  Xvfb :99 -screen 0 1920x1080x24 &
+                  Xvfb :99 -screen 0 ${{ matrix.xvfb_screen || '1920x1080x24' }} &
                   XVFB_PID=$!
                   export DISPLAY=:99
                   sleep 2
