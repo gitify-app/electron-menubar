@@ -480,7 +480,9 @@ jobs:
                       COMP_ENV="WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1"
                       COMP_CMD="sway"
                   else
-                      COMP_ENV="WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman LIBGL_ALWAYS_SOFTWARE=1"
+                      # Hyprland hardcodes wlr_renderer_is_gles2() assertion; pixman is
+                      # rejected. Use software GLES2 via Mesa llvmpipe instead.
+                      COMP_ENV="WLR_BACKENDS=headless WLR_HEADLESS_OUTPUTS=1 WLR_LIBINPUT_NO_DEVICES=1 WLR_NO_HARDWARE_CURSORS=1 LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3"
                       COMP_CMD="Hyprland"
                   fi
                   dbus-run-session -- bash -c "
