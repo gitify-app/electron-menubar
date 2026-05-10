@@ -243,12 +243,11 @@ jobs:
                   exit 1
             - name: Build library
               run: bun run build
-            - name: Set EnableAutoTray=0 (legacy Win10/2022 path)
+            - name: Set EnableAutoTray=0 (legacy Win10/2022 path, best-effort)
               shell: pwsh
+              continue-on-error: true
               run: |
-                  $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer'
-                  New-Item -Path $key -Force | Out-Null
-                  Set-ItemProperty -Path $key -Name 'EnableAutoTray' -Value 0 -Type DWord
+                  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer' -Name 'EnableAutoTray' -Value 0 -Type DWord -ErrorAction SilentlyContinue
                   taskkill /F /IM explorer.exe 2>$null; Start-Process explorer; Start-Sleep -Seconds 5
             - name: Run visual test
               env:
