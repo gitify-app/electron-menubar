@@ -354,7 +354,9 @@ export class Menubar extends EventEmitter {
       });
     }
 
-    this._browserWindow.on('close', this.windowClear.bind(this));
+    // Use `closed` (not `close`) so consumer `close` listeners can still read
+    // `mb.window` and call `event.preventDefault()` without racing our cleanup.
+    this._browserWindow.on('closed', this.windowClear.bind(this));
 
     this.emit('before-load');
 

@@ -86,6 +86,27 @@ describe('Menubar', () => {
     });
   });
 
+  it('keeps `window` accessible inside a user `close` listener', () => {
+    return new Promise<void>((resolve) => {
+      mb!.on('after-create-window', () => {
+        const win = mb!.window!;
+        const onCalls = (win.on as Mock).mock.calls;
+        const closedHandler = onCalls.find(([event]) => event === 'closed')?.[1];
+        const closeHandler = onCalls.find(([event]) => event === 'close')?.[1];
+
+        expect(closedHandler).toBeTypeOf('function');
+        // Library MUST listen on `closed`, not `close`, so user handlers win.
+        expect(closeHandler).toBeUndefined();
+        expect(mb!.window).toBe(win);
+
+        // Once `closed` fires, the window is gone.
+        closedHandler?.();
+        expect(mb!.window).toBeUndefined();
+        resolve();
+      });
+    });
+  });
+
   it('is idempotent: calling `destroy()` twice is a no-op', () => {
     return new Promise<void>((resolve) => {
       mb!.on('ready', () => {
