@@ -4,6 +4,8 @@ import type {
   Tray,
 } from 'electron';
 
+import type { WindowPosition } from './Positioner';
+
 /**
  * Options for creating a menubar application
  */
@@ -93,23 +95,8 @@ export interface Options {
    */
   tray?: Tray;
   /**
-   * Sets the window position (x and y will still override this), check
-   * electron-positioner docs for valid values.
+   * Sets the window position (x and y will still override this). See
+   * {@link WindowPosition} for the list of valid values.
    */
-  windowPosition?:
-    | 'trayLeft'
-    | 'trayBottomLeft'
-    | 'trayRight'
-    | 'trayBottomRight'
-    | 'trayCenter'
-    | 'trayBottomCenter'
-    | 'topLeft'
-    | 'topRight'
-    | 'bottomLeft'
-    | 'bottomRight'
-    | 'topCenter'
-    | 'bottomCenter'
-    | 'leftCenter'
-    | 'rightCenter'
-    | 'center';
+  windowPosition?: WindowPosition;
 }

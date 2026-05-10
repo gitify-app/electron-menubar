@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { BrowserWindow, Tray } from 'electron';
-import Positioner from 'electron-positioner';
 
+import { Positioner } from './Positioner';
 import type { Options } from './types';
 import { cleanOptions } from './util/cleanOptions';
 import { getWindowPosition } from './util/getWindowPosition';
@@ -47,8 +47,8 @@ export class Menubar extends EventEmitter {
   }
 
   /**
-   * The [electron-positioner](https://github.com/jenslind/electron-positioner)
-   * instance.
+   * The {@link Positioner} instance used to compute where the menubar window
+   * should appear on screen. Available after the `after-create-window` event.
    */
   get positioner(): Positioner {
     if (!this._positioner) {
