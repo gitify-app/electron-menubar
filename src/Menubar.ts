@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { BrowserWindow, type Menu, Tray } from 'electron';
+import { BrowserWindow, globalShortcut, type Menu, Tray } from 'electron';
 
 import { Positioner } from './Positioner';
 import type { Options } from './types';
@@ -23,6 +23,7 @@ export class Menubar extends EventEmitter {
   private _cachedBounds?: Electron.Rectangle; // _cachedBounds are needed for double-clicked event
   private _options: Options;
   private _positioner: Positioner | undefined;
+  private _shortcut?: Electron.Accelerator;
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -99,6 +100,11 @@ export class Menubar extends EventEmitter {
     // intercepting it.
     this._isDestroyed = true;
 
+    if (this._shortcut) {
+      globalShortcut.unregister(this._shortcut);
+      this._shortcut = undefined;
+    }
+
     if (this._browserWindow) {
       this._browserWindow.destroy();
       this._browserWindow = undefined;
@@ -153,6 +159,59 @@ export class Menubar extends EventEmitter {
       this._blurTimeout = null;
     }
     this.refreshLinuxContextMenu();
+  }
+
+  /**
+   * Register a global keyboard accelerator that toggles the menubar window.
+   * Replaces any previously registered shortcut owned by this Menubar.
+   * Pass `undefined` to clear the current shortcut without registering a new
+   * one. Returns whether the registration succeeded.
+   *
+   * @param accelerator - An Electron
+   * [Accelerator](https://electronjs.org/docs/api/accelerator) string, or
+   * `undefined` to clear.
+   */
+  setGlobalShortcut(accelerator: Electron.Accelerator | undefined): boolean {
+    if (this._shortcut) {
+      globalShortcut.unregister(this._shortcut);
+      this._shortcut = undefined;
+    }
+    this._options.globalShortcut = accelerator;
+    if (!accelerator) {
+      return true;
+    }
+    const ok = globalShortcut.register(accelerator, () => this.toggleWindow());
+    if (ok) {
+      this._shortcut = accelerator;
+    }
+    return ok;
+  }
+
+  /**
+   * Toggle the menubar window: hide it if visible, show it otherwise.
+   * Resolves once the window finishes showing or hiding.
+   */
+  async toggleWindow(): Promise<void> {
+    if (this._browserWindow && this._isVisible) {
+      this.hideWindow();
+      return;
+    }
+    await this.showWindow();
+  }
+
+  /**
+   * Re-center the menubar window over the tray icon. Convenience wrapper for
+   * `positioner.move('trayCenter', tray.getBounds())` that's safe to call
+   * after the `after-create-window` event. No-op if the window doesn't
+   * exist yet.
+   */
+  recenterOnTray(): void {
+    if (!this._browserWindow || !this._tray) {
+      return;
+    }
+    const bounds = this._tray.getBounds();
+    const { x, y } = this.positioner.calculate('trayCenter', bounds);
+    this._browserWindow.setPosition(Math.round(x), Math.round(y));
   }
 
   /**
@@ -296,6 +355,10 @@ export class Menubar extends EventEmitter {
 
     if (this._options.contextMenu) {
       this.bindContextMenu(this._options.contextMenu);
+    }
+
+    if (this._options.globalShortcut) {
+      this.setGlobalShortcut(this._options.globalShortcut);
     }
 
     if (!this._options.windowPosition) {

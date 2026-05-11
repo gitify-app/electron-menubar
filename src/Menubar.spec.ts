@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray } from 'electron';
+import { app, BrowserWindow, globalShortcut, Tray } from 'electron';
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 
 import { Menubar } from './Menubar';
@@ -171,6 +171,138 @@ describe('Menubar hideOnClose option', () => {
         const event = { preventDefault: vi.fn() };
         handler?.(event);
         expect(event.preventDefault).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar global shortcut', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('registers the configured accelerator on ready', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      globalShortcut: 'CmdOrCtrl+Shift+G',
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(globalShortcut.register).toHaveBeenCalledWith(
+          'CmdOrCtrl+Shift+G',
+          expect.any(Function),
+        );
+        resolve();
+      });
+    });
+  });
+
+  it('unregisters the previous accelerator when replacing it', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      globalShortcut: 'CmdOrCtrl+Shift+G',
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setGlobalShortcut('Alt+Space');
+        expect(globalShortcut.unregister).toHaveBeenCalledWith(
+          'CmdOrCtrl+Shift+G',
+        );
+        expect(globalShortcut.register).toHaveBeenLastCalledWith(
+          'Alt+Space',
+          expect.any(Function),
+        );
+        resolve();
+      });
+    });
+  });
+
+  it('clears the accelerator when called with undefined', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      globalShortcut: 'CmdOrCtrl+Shift+G',
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        (globalShortcut.register as Mock).mockClear();
+        mb.setGlobalShortcut(undefined);
+        expect(globalShortcut.unregister).toHaveBeenCalledWith(
+          'CmdOrCtrl+Shift+G',
+        );
+        expect(globalShortcut.register).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('does not retain a failed registration', () => {
+    (globalShortcut.register as Mock).mockReturnValueOnce(false);
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        const ok = mb.setGlobalShortcut('CmdOrCtrl+Shift+G');
+        expect(ok).toBe(false);
+        (globalShortcut.unregister as Mock).mockClear();
+        mb.destroy();
+        expect(globalShortcut.unregister).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('unregisters on destroy()', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      globalShortcut: 'CmdOrCtrl+Shift+G',
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.destroy();
+        expect(globalShortcut.unregister).toHaveBeenCalledWith(
+          'CmdOrCtrl+Shift+G',
+        );
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar toggleWindow and recenterOnTray', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('toggleWindow shows when hidden and hides when visible', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', async () => {
+        await mb.toggleWindow();
+        expect(mb.window!.show).toHaveBeenCalledTimes(1);
+        await mb.toggleWindow();
+        expect(mb.window!.hide).toHaveBeenCalledTimes(1);
+        resolve();
+      });
+    });
+  });
+
+  it('recenterOnTray sets a new position from tray bounds', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        (mb.window!.setPosition as Mock).mockClear();
+        mb.recenterOnTray();
+        expect(mb.window!.setPosition).toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('recenterOnTray is a no-op without a window', () => {
+    const mb = new Menubar(app, {});
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(() => mb.recenterOnTray()).not.toThrow();
         resolve();
       });
     });

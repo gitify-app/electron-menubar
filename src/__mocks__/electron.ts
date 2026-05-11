@@ -29,6 +29,16 @@ export class BrowserWindow {
   webContents: { on: Mock } = { on: vi.fn() };
 }
 
+export const globalShortcut: {
+  isRegistered: Mock;
+  register: Mock;
+  unregister: Mock;
+} = {
+  isRegistered: vi.fn(() => false),
+  register: vi.fn(() => true),
+  unregister: vi.fn(),
+};
+
 export class Tray {
   getBounds: Mock = vi.fn(() => ({ x: 0, y: 0, width: 32, height: 32 }));
   isDestroyed: Mock = vi.fn(() => false);

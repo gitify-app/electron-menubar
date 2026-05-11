@@ -48,6 +48,15 @@ export interface Options {
    */
   dir: string;
   /**
+   * Register this accelerator as a global shortcut that toggles the menubar
+   * window. Calls
+   * [`globalShortcut.register`](https://electronjs.org/docs/api/global-shortcut#globalshortcutregisteraccelerator-callback)
+   * after `ready` and unregisters it on {@link Menubar.destroy}. The same
+   * accelerator can be set or cleared later via
+   * {@link Menubar.setGlobalShortcut}.
+   */
+  globalShortcut?: Electron.Accelerator;
+  /**
    * Hide the window on `close` instead of letting it be destroyed, so the
    * next tray click re-uses the same {@link BrowserWindow} instance. On
    * Linux/Wayland the hide is deferred via `setImmediate` to work around a
