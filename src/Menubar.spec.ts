@@ -1,5 +1,13 @@
 import { app, BrowserWindow, globalShortcut, Tray } from 'electron';
-import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type Mock,
+  vi,
+} from 'vitest';
 
 import { Menubar } from './Menubar';
 
@@ -91,7 +99,9 @@ describe('Menubar', () => {
       mb!.on('after-create-window', () => {
         const win = mb!.window!;
         const onCalls = (win.on as Mock).mock.calls;
-        const closedHandler = onCalls.find(([event]) => event === 'closed')?.[1];
+        const closedHandler = onCalls.find(
+          ([event]) => event === 'closed',
+        )?.[1];
         const closeHandler = onCalls.find(([event]) => event === 'close')?.[1];
 
         expect(closedHandler).toBeTypeOf('function');
@@ -128,9 +138,13 @@ describe('Menubar hideOnClose option', () => {
     vi.clearAllMocks();
   });
 
-  const closeHandler = (mb: Menubar): ((event: { preventDefault: Mock }) => void) | undefined => {
+  const closeHandler = (
+    mb: Menubar,
+  ): ((event: { preventDefault: Mock }) => void) | undefined => {
     const win = mb.window!;
-    return (win.on as Mock).mock.calls.find(([event]) => event === 'close')?.[1];
+    return (win.on as Mock).mock.calls.find(
+      ([event]) => event === 'close',
+    )?.[1];
   };
 
   it('does not register a `close` handler by default', () => {
@@ -328,7 +342,9 @@ describe('Menubar contextMenu option', () => {
       mb.on('ready', () => {
         expect(mb.tray.setContextMenu).toHaveBeenCalledWith(fakeMenu);
         const trayOnCalls = (mb.tray.on as Mock).mock.calls;
-        expect(trayOnCalls.map(([event]) => event)).not.toContain('right-click');
+        expect(trayOnCalls.map(([event]) => event)).not.toContain(
+          'right-click',
+        );
         resolve();
       });
     });
@@ -452,7 +468,9 @@ describe('Menubar escapeToHide option', () => {
     return new Promise<void>((resolve) => {
       mb.on('after-create-window', () => {
         const calls = (mb.window!.webContents.on as Mock).mock.calls;
-        expect(calls.map(([event]) => event)).not.toContain('before-input-event');
+        expect(calls.map(([event]) => event)).not.toContain(
+          'before-input-event',
+        );
         resolve();
       });
     });

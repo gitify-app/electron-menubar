@@ -348,7 +348,10 @@ export class Menubar extends EventEmitter {
     }
     // macOS-only: ignore double-click so an accidental second click doesn't
     // race the blur handler and cause a tray-icon flicker.
-    if (process.platform === 'darwin' && this._options.ignoreDoubleClickEvents) {
+    if (
+      process.platform === 'darwin' &&
+      this._options.ignoreDoubleClickEvents
+    ) {
       this.tray.setIgnoreDoubleClickEvents(true);
     }
     this.tray.setToolTip(this._options.tooltip);
@@ -500,11 +503,14 @@ export class Menubar extends EventEmitter {
     }
 
     if (this._options.escapeToHide) {
-      this._browserWindow.webContents.on('before-input-event', (_event, input) => {
-        if (input.type === 'keyDown' && input.key === 'Escape') {
-          this.hideWindow();
-        }
-      });
+      this._browserWindow.webContents.on(
+        'before-input-event',
+        (_event, input) => {
+          if (input.type === 'keyDown' && input.key === 'Escape') {
+            this.hideWindow();
+          }
+        },
+      );
     }
 
     // Use `closed` (not `close`) so consumer `close` listeners can still read
