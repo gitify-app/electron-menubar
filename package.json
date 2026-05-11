@@ -70,8 +70,7 @@
     "pngjs": "^7.0.0",
     "standard-version": "^9.5.0",
     "typescript": "^5.9.3",
-    "vite-plus": "latest",
-    "vitest": "latest"
+    "vite-plus": "latest"
   },
   "peerDependencies": {
     "electron": ">=9.0.0 <40.0.0"
