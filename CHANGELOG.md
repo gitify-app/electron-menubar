@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [10.0.0](https://github.com/gitify-app/menubar/compare/v9.5.2...v10.0.0) (2026-05-11)
+
+First release under the `@gitify/menubar` scope. This is a hard fork of [`menubar`](https://github.com/maxogden/menubar), now independently maintained by the Gitify team with its own roadmap, release cadence, and toolchain. New package name, new repository, new owners.
+
+### Rebrand
+
+* Renamed package from `menubar` to `@gitify/menubar` ([#2](https://github.com/gitify-app/menubar/issues/2))
+* Repository moved to [`gitify-app/menubar`](https://github.com/gitify-app/menubar)
+* Default branch renamed from `master` to `main` ([#3](https://github.com/gitify-app/menubar/issues/3))
+
+### Features
+
+* Import menubar patterns from Gitify: `hideOnClose`, `contextMenu`, `globalShortcut`, plus helpers ([#13](https://github.com/gitify-app/menubar/pull/13))
+* Add `trigger` option for tray event binding ([#6](https://github.com/gitify-app/menubar/pull/6))
+* Add `destroy()` method for tearing down a menubar instance ([#5](https://github.com/gitify-app/menubar/pull/5))
+
+### Refactor
+
+* Inline `Positioner` and drop the `electron-positioner` dependency ([#12](https://github.com/gitify-app/menubar/pull/12))
+
+### Build
+
+* Migrate toolchain to bun + Vite+ ([#4](https://github.com/gitify-app/menubar/pull/4))
+* Ship dual ESM/CJS output with separate type declarations
+* Modernize `tsconfig.json` to ES2022 with bundler resolution
+* Switch lint/format from biome to oxlint + oxfmt via `vp check`
+* Replace jest with vitest
+
+### CI
+
+* E2E matrix smoke tests with auto-updating `PLATFORMS.md` ([#8](https://github.com/gitify-app/menubar/pull/8))
+* Visual tray rendering matrix across macOS, Linux DEs, and Windows ([#10](https://github.com/gitify-app/menubar/pull/10))
+* Publish workflow for npm releases on tag push
+* PR title validation against Conventional Commits
+
 ### [9.5.2](https://github.com/maxogden/menubar/compare/v9.5.1...v9.5.2) (2025-10-10)
 
 ### [9.5.1](https://github.com/maxogden/menubar/compare/v9.5.0...v9.5.1) (2024-10-11)
