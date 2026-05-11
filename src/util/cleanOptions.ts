@@ -26,6 +26,9 @@ export function cleanOptions(opts?: Partial<Options>): Options {
   if (options.activateWithApp === undefined) {
     options.activateWithApp = true;
   }
+  if (options.ignoreDoubleClickEvents === undefined) {
+    options.ignoreDoubleClickEvents = true;
+  }
   if (!options.dir) {
     options.dir = app.getAppPath();
   }

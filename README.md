@@ -72,6 +72,10 @@ The return value of `menubar()` is a `Menubar` class instance, which has these p
 - `getOption(option)`: get an menubar option,
 - `showWindow()`: show the menubar window,
 - `hideWindow()`: hide the menubar window,
+- `toggleWindow()`: show the window if hidden, hide it if visible,
+- `recenterOnTray()`: re-center the window over the tray icon,
+- `setContextMenu(menu)`: replace the tray context menu (auto-re-publishes on Linux),
+- `setGlobalShortcut(accelerator)`: register a global accelerator that toggles the window — returns `false` on registration failure,
 - `destroy()`: tear down the menubar instance,
 - `isDestroyed()`: whether the menubar is currently destroyed.
 
@@ -97,6 +101,11 @@ You can pass an optional options object into the `menubar({ ... })` function:
 - `showDockIcon` (default false) - Configure the visibility of the application dock icon.
 - `trigger` (default `'click'`) - Tray event that toggles the menubar window. One of `'click'`, `'right-click'`, or `'none'`. Use `'none'` to disable automatic toggling — useful when a single tray icon serves multiple windows. The window can still be shown by calling `mb.showWindow()` directly.
 - `showOnRightClick` (default false) - **Deprecated**, use `trigger: 'right-click'` instead. Show the window on 'right-click' event instead of regular 'click'.
+- `contextMenu` - An Electron `Menu` to attach to the tray icon. On Linux it is bound via `tray.setContextMenu` (required by libappindicator / StatusNotifierItem) and re-published on every show/hide to defeat the indicator's menu cache. On macOS and Windows it pops up on right-click via `tray.popUpContextMenu`, so left-click continues to toggle the window. Combine with `trigger: 'none'` if you want right-click to be the only interaction.
+- `hideOnClose` (default false) - Hide the window on `close` instead of destroying it, so the next tray click re-uses the same `BrowserWindow`. On Linux/Wayland the hide is deferred via `setImmediate` to work around a compositor bug that leaves frameless surfaces in a half-closed state when hidden synchronously from the `close` handler. The library tracks the app's `before-quit` event internally, so real quits go through unimpeded.
+- `escapeToHide` (default false) - Hide the menubar window when the user presses `Escape` while it has focus.
+- `ignoreDoubleClickEvents` (default true, macOS only) - Calls `tray.setIgnoreDoubleClickEvents(true)` so an accidental double-click doesn't race the close-on-blur handler and flicker the tray icon. Pass `false` to opt out. No-op on Linux/Windows.
+- `globalShortcut` - An [Accelerator](https://electronjs.org/docs/api/accelerator) string registered as a global keyboard shortcut that toggles the menubar window. Unregistered automatically on `destroy()`. Use `mb.setGlobalShortcut(accelerator)` to change or clear it at runtime.
 
 ## Events
 
@@ -128,7 +137,7 @@ The `Menubar` class is an event emitter:
 - Use `mb.on('after-create-window', callback)` to run things after your app has loaded. For example you could run `mb.window.openDevTools()` to open the developer tools for debugging, or load a different URL with `mb.window.loadURL()`
 - Use `mb.on('focus-lost')` if you would like to perform some operation when using the option `browserWindow.alwaysOnTop: true`
 - To restore focus of previous window after menubar hide, use `mb.on('after-hide', () => { mb.app.hide() } )` or similar
-- To create a native menu, you can use `tray.setContextMenu(contextMenu)`, and pass this custom tray to menubar: `const mb = menubar({ tray });`. See [this example](https://github.com/gitify-app/menubar/tree/main/examples/native-menu) for more information.
+- To attach a native context menu, pass it as `contextMenu`: `menubar({ contextMenu })`. The library wires it via `setContextMenu` on Linux and `popUpContextMenu` on right-click on macOS/Windows so left-click still toggles the window. See [this example](https://github.com/gitify-app/menubar/tree/main/examples/native-menu) for more information.
 - To avoid a flash when opening your menubar app, you can disable backgrounding the app using the following: `mb.app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');`
 
 ## Credits

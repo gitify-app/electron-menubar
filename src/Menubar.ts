@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { BrowserWindow, Tray } from 'electron';
+import { BrowserWindow, globalShortcut, type Menu, Tray } from 'electron';
 
 import { Positioner } from './Positioner';
 import type { Options } from './types';
@@ -15,12 +15,16 @@ import { getWindowPosition } from './util/getWindowPosition';
 export class Menubar extends EventEmitter {
   private _app: Electron.App;
   private _browserWindow?: BrowserWindow;
+  private _contextMenu?: Menu;
   private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
   private _isDestroyed: boolean;
+  private _isQuitting: boolean; // set on app `before-quit`, used by hideOnClose
   private _isVisible: boolean; // track visibility
   private _cachedBounds?: Electron.Rectangle; // _cachedBounds are needed for double-clicked event
   private _options: Options;
   private _positioner: Positioner | undefined;
+  private _shortcut?: Electron.Accelerator;
+  private _rightClickContextMenuBound = false;
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -28,7 +32,10 @@ export class Menubar extends EventEmitter {
     this._app = app;
     this._options = cleanOptions(options);
     this._isDestroyed = false;
+    this._isQuitting = false;
     this._isVisible = false;
+
+    app.on('before-quit', this.onBeforeQuit);
 
     if (app.isReady()) {
       // See https://github.com/maxogden/menubar/pull/151
@@ -90,6 +97,14 @@ export class Menubar extends EventEmitter {
     if (this.isDestroyed()) {
       return;
     }
+    // Set first so `hideOnClose` lets the close go through instead of
+    // intercepting it.
+    this._isDestroyed = true;
+
+    if (this._shortcut) {
+      globalShortcut.unregister(this._shortcut);
+      this._shortcut = undefined;
+    }
 
     if (this._browserWindow) {
       this._browserWindow.destroy();
@@ -110,8 +125,7 @@ export class Menubar extends EventEmitter {
 
     this._app.removeListener('ready', this.onAppReady);
     this._app.removeListener('activate', this.onAppActivate);
-
-    this._isDestroyed = true;
+    this._app.removeListener('before-quit', this.onBeforeQuit);
   }
 
   /**
@@ -144,6 +158,89 @@ export class Menubar extends EventEmitter {
     if (this._blurTimeout) {
       clearTimeout(this._blurTimeout);
       this._blurTimeout = null;
+    }
+    this.refreshLinuxContextMenu();
+  }
+
+  /**
+   * Register a global keyboard accelerator that toggles the menubar window.
+   * Replaces any previously registered shortcut owned by this Menubar.
+   * Pass `undefined` to clear the current shortcut without registering a new
+   * one. Returns whether the registration succeeded.
+   *
+   * @param accelerator - An Electron
+   * [Accelerator](https://electronjs.org/docs/api/accelerator) string, or
+   * `undefined` to clear.
+   */
+  setGlobalShortcut(accelerator: Electron.Accelerator | undefined): boolean {
+    if (this._shortcut) {
+      globalShortcut.unregister(this._shortcut);
+      this._shortcut = undefined;
+    }
+    this._options.globalShortcut = accelerator;
+    if (!accelerator) {
+      return true;
+    }
+    const ok = globalShortcut.register(accelerator, () => this.toggleWindow());
+    if (ok) {
+      this._shortcut = accelerator;
+    }
+    return ok;
+  }
+
+  /**
+   * Toggle the menubar window: hide it if visible, show it otherwise.
+   * Resolves once the window finishes showing or hiding.
+   */
+  async toggleWindow(): Promise<void> {
+    if (this._browserWindow && this._isVisible) {
+      this.hideWindow();
+      return;
+    }
+    await this.showWindow();
+  }
+
+  /**
+   * Re-center the menubar window over the tray icon. Convenience wrapper for
+   * `positioner.move('trayCenter', tray.getBounds())` that's safe to call
+   * after the `after-create-window` event. No-op if the window doesn't
+   * exist yet.
+   */
+  recenterOnTray(): void {
+    if (!this._browserWindow || !this._tray) {
+      return;
+    }
+    const bounds = this._tray.getBounds();
+    const { x, y } = this.positioner.calculate('trayCenter', bounds);
+    this._browserWindow.setPosition(Math.round(x), Math.round(y));
+  }
+
+  /**
+   * Replace the tray context menu after construction. On Linux this also
+   * re-publishes the menu to the SNI host, which is required after mutating
+   * items in-place since libappindicator caches the previous serialization.
+   * On macOS/Windows the right-click popup handler reads the current menu
+   * reference, so swapping or clearing here takes effect immediately.
+   *
+   * @param menu - The new menu, or `null` to clear it.
+   */
+  setContextMenu(menu: Menu | null): void {
+    this._contextMenu = menu ?? undefined;
+    this._options.contextMenu = menu ?? undefined;
+    if (!this._tray) {
+      return;
+    }
+    if (process.platform === 'linux') {
+      // `setContextMenu(null)` clears the menu on Linux.
+      this._tray.setContextMenu(menu);
+      return;
+    }
+    // macOS / Windows: bind the right-click popup once on first non-empty
+    // assignment. The handler reads `this._contextMenu` at invoke time, so
+    // later swaps and clears take effect without rebinding (and never leak
+    // a stale closure reference).
+    if (menu && !this._rightClickContextMenuBound) {
+      this.bindRightClickContextMenu();
     }
   }
 
@@ -228,6 +325,7 @@ export class Menubar extends EventEmitter {
     this._browserWindow.show();
     this._isVisible = true;
     this.emit('after-show');
+    this.refreshLinuxContextMenu();
     return;
   }
 
@@ -259,7 +357,23 @@ export class Menubar extends EventEmitter {
       this.tray.on(trigger as Parameters<Tray['on']>[0], this.clicked);
       this.tray.on('double-click', this.clicked);
     }
+    // macOS-only: ignore double-click so an accidental second click doesn't
+    // race the blur handler and cause a tray-icon flicker.
+    if (
+      process.platform === 'darwin' &&
+      this._options.ignoreDoubleClickEvents
+    ) {
+      this.tray.setIgnoreDoubleClickEvents(true);
+    }
     this.tray.setToolTip(this._options.tooltip);
+
+    if (this._options.contextMenu) {
+      this.bindContextMenu(this._options.contextMenu);
+    }
+
+    if (this._options.globalShortcut) {
+      this.setGlobalShortcut(this._options.globalShortcut);
+    }
 
     if (!this._options.windowPosition) {
       this._options.windowPosition = getWindowPosition(this.tray);
@@ -308,6 +422,50 @@ export class Menubar extends EventEmitter {
     }
   };
 
+  private onBeforeQuit = (): void => {
+    this._isQuitting = true;
+  };
+
+  private bindContextMenu(menu: Menu): void {
+    this._contextMenu = menu;
+    if (process.platform === 'linux') {
+      // libappindicator / StatusNotifierItem requires the menu to live on the
+      // tray itself; right-click is handled by the desktop environment.
+      this.tray.setContextMenu(menu);
+      return;
+    }
+    this.bindRightClickContextMenu();
+  }
+
+  private bindRightClickContextMenu(): void {
+    // macOS / Windows: pop up the current menu on right-click so left-click
+    // stays bound to toggling the menubar window. Read `this._contextMenu`
+    // at invoke time so `setContextMenu()` swaps and clears take effect
+    // without rebinding (and without leaking a stale closure reference).
+    this.tray.on('right-click', (_event, bounds) => {
+      const current = this._contextMenu;
+      if (!current) {
+        return;
+      }
+      this.tray.popUpContextMenu(current, { x: bounds.x, y: bounds.y });
+    });
+    this._rightClickContextMenuBound = true;
+  }
+
+  private refreshLinuxContextMenu(): void {
+    // libappindicator caches the menu's serialized state, so consumers that
+    // mutate items in-place need the menu re-published. Cheap to do; safe to
+    // call unconditionally on every show/hide.
+    if (
+      process.platform === 'linux' &&
+      this._contextMenu &&
+      this._tray &&
+      !this._tray.isDestroyed?.()
+    ) {
+      this._tray.setContextMenu(this._contextMenu);
+    }
+  }
+
   private onAppReady = (): void => {
     // Guard against `destroy()` being called between construction and the
     // scheduled `process.nextTick`/`'ready'` firing.
@@ -354,7 +512,32 @@ export class Menubar extends EventEmitter {
       });
     }
 
-    this._browserWindow.on('close', this.windowClear.bind(this));
+    if (this._options.hideOnClose) {
+      this._browserWindow.on('close', (event) => {
+        if (this._isDestroyed || this._isQuitting) {
+          return;
+        }
+        event.preventDefault();
+        // Defer the hide for Wayland: hiding synchronously from the `close`
+        // handler can leave frameless surfaces in a half-closed state.
+        setImmediate(() => this.hideWindow());
+      });
+    }
+
+    if (this._options.escapeToHide) {
+      this._browserWindow.webContents.on(
+        'before-input-event',
+        (_event, input) => {
+          if (input.type === 'keyDown' && input.key === 'Escape') {
+            this.hideWindow();
+          }
+        },
+      );
+    }
+
+    // Use `closed` (not `close`) so consumer `close` listeners can still read
+    // `mb.window` and call `event.preventDefault()` without racing our cleanup.
+    this._browserWindow.on('closed', this.windowClear.bind(this));
 
     this.emit('before-load');
 

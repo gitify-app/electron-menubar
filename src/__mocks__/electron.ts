@@ -19,20 +19,39 @@ export const app: {
 export class BrowserWindow {
   destroy: Mock = vi.fn();
   getSize: Mock = vi.fn(() => [400, 400]);
+  hide: Mock = vi.fn();
+  isAlwaysOnTop: Mock = vi.fn(() => false);
   loadURL: Mock = vi.fn();
   on: Mock = vi.fn();
   setPosition: Mock = vi.fn();
   setVisibleOnAllWorkspaces: Mock = vi.fn();
   show: Mock = vi.fn();
+  webContents: { on: Mock } = { on: vi.fn() };
 }
 
+export const globalShortcut: {
+  isRegistered: Mock;
+  register: Mock;
+  unregister: Mock;
+} = {
+  isRegistered: vi.fn(() => false),
+  register: vi.fn(() => true),
+  unregister: vi.fn(),
+};
+
 export class Tray {
+  getBounds: Mock = vi.fn(() => ({ x: 0, y: 0, width: 32, height: 32 }));
+  isDestroyed: Mock = vi.fn(() => false);
   on: Mock = vi.fn();
+  popUpContextMenu: Mock = vi.fn();
   removeListener: Mock = vi.fn();
+  setContextMenu: Mock = vi.fn();
+  setIgnoreDoubleClickEvents: Mock = vi.fn();
   setToolTip: Mock = vi.fn();
 }
 
 const defaultWorkArea = { x: 0, y: 0, width: 1920, height: 1080 };
+const defaultBounds = { x: 0, y: 0, width: 1920, height: 1080 };
 
 export const screen: {
   getCursorScreenPoint: Mock;
@@ -40,6 +59,12 @@ export const screen: {
   getDisplayNearestPoint: Mock;
 } = {
   getCursorScreenPoint: vi.fn(() => ({ x: 0, y: 0 })),
-  getDisplayMatching: vi.fn(() => ({ workArea: defaultWorkArea })),
-  getDisplayNearestPoint: vi.fn(() => ({ workArea: defaultWorkArea })),
+  getDisplayMatching: vi.fn(() => ({
+    bounds: { ...defaultBounds },
+    workArea: { ...defaultWorkArea },
+  })),
+  getDisplayNearestPoint: vi.fn(() => ({
+    bounds: { ...defaultBounds },
+    workArea: { ...defaultWorkArea },
+  })),
 };

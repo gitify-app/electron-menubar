@@ -1,6 +1,7 @@
 import type {
   BrowserWindowConstructorOptions,
   LoadURLOptions,
+  Menu,
   Tray,
 } from 'electron';
 
@@ -29,9 +30,51 @@ export interface Options {
    */
   browserWindow: BrowserWindowConstructorOptions;
   /**
+   * A native context menu to attach to the tray icon.
+   *
+   * On Linux this is bound via {@link Tray.setContextMenu} (required by
+   * libappindicator / StatusNotifierItem) and re-published whenever the
+   * menubar window shows or hides to defeat the indicator's menu cache.
+   *
+   * On macOS and Windows it is shown via {@link Tray.popUpContextMenu} on
+   * right-click, so left-click continues to toggle the menubar window.
+   * Setting this option therefore implies `trigger: 'click'` on those
+   * platforms — pass `trigger: 'none'` to disable left-click toggling
+   * entirely.
+   */
+  contextMenu?: Menu;
+  /**
    * The app source directory.
    */
   dir: string;
+  /**
+   * Register this accelerator as a global shortcut that toggles the menubar
+   * window. Calls
+   * [`globalShortcut.register`](https://electronjs.org/docs/api/global-shortcut#globalshortcutregisteraccelerator-callback)
+   * after `ready` and unregisters it on {@link Menubar.destroy}. The same
+   * accelerator can be set or cleared later via
+   * {@link Menubar.setGlobalShortcut}.
+   */
+  globalShortcut?: Electron.Accelerator;
+  /**
+   * Hide the window on `close` instead of letting it be destroyed, so the
+   * next tray click re-uses the same {@link BrowserWindow} instance. On
+   * Linux/Wayland the hide is deferred via `setImmediate` to work around a
+   * compositor bug that leaves frameless surfaces in a half-closed state
+   * when hidden synchronously from the `close` handler.
+   *
+   * Respects `app.isQuitting === true` (set this in your `before-quit`
+   * handler) so the close goes through during real quits. Has no effect
+   * when the close event was triggered by {@link Menubar.destroy}.
+   * @default `false`
+   */
+  hideOnClose?: boolean;
+  /**
+   * Hide the menubar window when the user presses `Escape` while it has
+   * focus. Wires up a `before-input-event` listener on the BrowserWindow.
+   * @default `false`
+   */
+  escapeToHide?: boolean;
   /**
    * The png icon to use for the menubar. A good size to start with is 20x20.
    * To support retina, supply a 2x sized image (e.g. 40x40) with @2x added to
@@ -56,6 +99,14 @@ export interface Options {
    * @see https://electronjs.org/docs/api/browser-window#winloadurlurl-options
    */
   loadUrlOptions?: LoadURLOptions;
+  /**
+   * Ignore the tray's `double-click` event on macOS. Prevents a flicker
+   * caused by the close-on-blur handler racing the second click of an
+   * accidental double-click. No-op on Linux/Windows. Calls
+   * [`tray.setIgnoreDoubleClickEvents`](https://electronjs.org/docs/api/tray#traysetignoredoubleclickeventsignore-macos).
+   * @default `true`
+   */
+  ignoreDoubleClickEvents?: boolean;
   /**
    * Create BrowserWindow instance before it is used -- increasing resource
    * usage, but making the click on the menubar load faster.

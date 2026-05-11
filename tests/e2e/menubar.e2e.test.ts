@@ -1,34 +1,55 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { _electron as electron, expect, test } from '@playwright/test';
+import {
+  type ElectronApplication,
+  _electron as electron,
+  expect,
+  test,
+} from '@playwright/test';
 
-test('menubar boots, emits ready, opens window, exposes tray', async () => {
-  const app = await electron.launch({
+type MenubarGlobal = {
+  __menubar?: import('../../src/Menubar').Menubar;
+  __electron?: {
+    globalShortcut: Electron.GlobalShortcut;
+  };
+};
+
+const launchFixture = (scenario?: string): Promise<ElectronApplication> =>
+  electron.launch({
     args: [join(__dirname, 'fixture', 'main.js')],
-    env: { ...process.env, NODE_ENV: 'test' },
+    env: {
+      ...process.env,
+      NODE_ENV: 'test',
+      ...(scenario ? { E2E_SCENARIO: scenario } : {}),
+    },
   });
 
-  const ready = await app.evaluate(
+const waitForReady = (app: ElectronApplication): Promise<void> =>
+  app.evaluate(
     () =>
-      new Promise<{ trayBounds: Electron.Rectangle }>((resolve) => {
-        const mb = (
-          globalThis as { __menubar?: import('../../src/Menubar').Menubar }
-        ).__menubar;
+      new Promise<void>((resolve) => {
+        const mb = (globalThis as MenubarGlobal).__menubar;
         if (!mb) throw new Error('fixture did not expose __menubar');
-        const finish = () => resolve({ trayBounds: mb.tray.getBounds() });
-        if (mb.tray) finish();
-        else mb.on('ready', finish);
+        if (mb.tray) resolve();
+        else mb.on('ready', () => resolve());
       }),
   );
 
-  expect(ready.trayBounds).toBeDefined();
-  expect(typeof ready.trayBounds.width).toBe('number');
+test('menubar boots, emits ready, opens window, exposes tray', async () => {
+  const app = await launchFixture();
+
+  await waitForReady(app);
+
+  const trayBounds = await app.evaluate(() => {
+    const mb = (globalThis as MenubarGlobal).__menubar!;
+    return mb.tray.getBounds();
+  });
+  expect(trayBounds).toBeDefined();
+  expect(typeof trayBounds.width).toBe('number');
 
   await app.evaluate(() => {
-    const mb = (
-      globalThis as { __menubar?: import('../../src/Menubar').Menubar }
-    ).__menubar!;
+    const mb = (globalThis as MenubarGlobal).__menubar!;
     return mb.showWindow();
   });
 
@@ -37,11 +58,90 @@ test('menubar boots, emits ready, opens window, exposes tray', async () => {
   expect(await window.title()).toBe('menubar e2e fixture');
 
   await app.evaluate(() => {
-    const mb = (
-      globalThis as { __menubar?: import('../../src/Menubar').Menubar }
-    ).__menubar!;
+    const mb = (globalThis as MenubarGlobal).__menubar!;
     return mb.hideWindow();
   });
+
+  await app.close();
+});
+
+test('toggleWindow alternates visibility', async () => {
+  const app = await launchFixture();
+  await waitForReady(app);
+
+  const result = await app.evaluate(async () => {
+    const mb = (globalThis as MenubarGlobal).__menubar!;
+    await mb.toggleWindow();
+    const afterFirst = mb.window!.isVisible();
+    await mb.toggleWindow();
+    const afterSecond = mb.window!.isVisible();
+    return { afterFirst, afterSecond };
+  });
+
+  expect(result.afterFirst).toBe(true);
+  expect(result.afterSecond).toBe(false);
+
+  await app.close();
+});
+
+test('hideOnClose: window survives a close() call', async () => {
+  const app = await launchFixture('hideOnClose');
+  await waitForReady(app);
+
+  const result = await app.evaluate(
+    () =>
+      new Promise<{ stillDefined: boolean; isVisible: boolean }>((resolve) => {
+        const mb = (globalThis as MenubarGlobal).__menubar!;
+        mb.showWindow().then(() => {
+          mb.window!.close();
+          // hideOnClose defers the hide via setImmediate; give it a tick.
+          setImmediate(() => {
+            resolve({
+              stillDefined: mb.window !== undefined,
+              isVisible: mb.window?.isVisible() ?? false,
+            });
+          });
+        });
+      }),
+  );
+
+  expect(result.stillDefined).toBe(true);
+  expect(result.isVisible).toBe(false);
+
+  await app.close();
+});
+
+test('globalShortcut registers the configured accelerator', async () => {
+  const app = await launchFixture('globalShortcut');
+  await waitForReady(app);
+
+  const registered = await app.evaluate(() => {
+    const gs = (globalThis as MenubarGlobal).__electron!.globalShortcut;
+    return gs.isRegistered('CmdOrCtrl+Alt+Shift+E');
+  });
+  expect(registered).toBe(true);
+
+  // setGlobalShortcut(undefined) clears and isRegistered should report false.
+  const clearedRegistered = await app.evaluate(() => {
+    const mb = (globalThis as MenubarGlobal).__menubar!;
+    mb.setGlobalShortcut(undefined);
+    const gs = (globalThis as MenubarGlobal).__electron!.globalShortcut;
+    return gs.isRegistered('CmdOrCtrl+Alt+Shift+E');
+  });
+  expect(clearedRegistered).toBe(false);
+
+  await app.close();
+});
+
+test('contextMenu option binds without throwing on this platform', async () => {
+  const app = await launchFixture('contextMenu');
+  await waitForReady(app);
+
+  const stored = await app.evaluate(() => {
+    const mb = (globalThis as MenubarGlobal).__menubar!;
+    return mb.getOption('contextMenu') !== undefined;
+  });
+  expect(stored).toBe(true);
 
   await app.close();
 });

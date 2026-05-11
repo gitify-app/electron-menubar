@@ -1,5 +1,13 @@
-import { app, BrowserWindow, Tray } from 'electron';
-import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { app, BrowserWindow, globalShortcut, Tray } from 'electron';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type Mock,
+  vi,
+} from 'vitest';
 
 import { Menubar } from './Menubar';
 
@@ -86,6 +94,29 @@ describe('Menubar', () => {
     });
   });
 
+  it('keeps `window` accessible inside a user `close` listener', () => {
+    return new Promise<void>((resolve) => {
+      mb!.on('after-create-window', () => {
+        const win = mb!.window!;
+        const onCalls = (win.on as Mock).mock.calls;
+        const closedHandler = onCalls.find(
+          ([event]) => event === 'closed',
+        )?.[1];
+        const closeHandler = onCalls.find(([event]) => event === 'close')?.[1];
+
+        expect(closedHandler).toBeTypeOf('function');
+        // Library MUST listen on `closed`, not `close`, so user handlers win.
+        expect(closeHandler).toBeUndefined();
+        expect(mb!.window).toBe(win);
+
+        // Once `closed` fires, the window is gone.
+        closedHandler?.();
+        expect(mb!.window).toBeUndefined();
+        resolve();
+      });
+    });
+  });
+
   it('is idempotent: calling `destroy()` twice is a no-op', () => {
     return new Promise<void>((resolve) => {
       mb!.on('ready', () => {
@@ -95,6 +126,407 @@ describe('Menubar', () => {
         expect(mb!.isDestroyed()).toBe(true);
         expect((app.removeListener as Mock).mock.calls.length).toBe(
           callsAfterFirst,
+        );
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar hideOnClose option', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const closeHandler = (
+    mb: Menubar,
+  ): ((event: Electron.Event) => void) | undefined => {
+    const win = mb.window!;
+    return (win.on as Mock).mock.calls.find(
+      ([event]) => event === 'close',
+    )?.[1];
+  };
+
+  it('does not register a `close` handler by default', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        expect(closeHandler(mb)).toBeUndefined();
+        resolve();
+      });
+    });
+  });
+
+  it('intercepts close when `hideOnClose: true`', () => {
+    const mb = new Menubar(app, { preloadWindow: true, hideOnClose: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        const handler = closeHandler(mb);
+        expect(handler).toBeTypeOf('function');
+        const event = { preventDefault: vi.fn(), defaultPrevented: false };
+        handler?.(event);
+        expect(event.preventDefault).toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('lets close through during `before-quit`', () => {
+    const mb = new Menubar(app, { preloadWindow: true, hideOnClose: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        // Simulate before-quit firing
+        const beforeQuitHandler = (app.on as Mock).mock.calls.find(
+          ([event]) => event === 'before-quit',
+        )?.[1];
+        beforeQuitHandler?.();
+
+        const handler = closeHandler(mb);
+        const event = { preventDefault: vi.fn(), defaultPrevented: false };
+        handler?.(event);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar global shortcut', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('registers the configured accelerator on ready', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      globalShortcut: 'CmdOrCtrl+Shift+G',
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(globalShortcut.register).toHaveBeenCalledWith(
+          'CmdOrCtrl+Shift+G',
+          expect.any(Function),
+        );
+        resolve();
+      });
+    });
+  });
+
+  it('unregisters the previous accelerator when replacing it', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      globalShortcut: 'CmdOrCtrl+Shift+G',
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setGlobalShortcut('Alt+Space');
+        expect(globalShortcut.unregister).toHaveBeenCalledWith(
+          'CmdOrCtrl+Shift+G',
+        );
+        expect(globalShortcut.register).toHaveBeenLastCalledWith(
+          'Alt+Space',
+          expect.any(Function),
+        );
+        resolve();
+      });
+    });
+  });
+
+  it('clears the accelerator when called with undefined', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      globalShortcut: 'CmdOrCtrl+Shift+G',
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        (globalShortcut.register as Mock).mockClear();
+        mb.setGlobalShortcut(undefined);
+        expect(globalShortcut.unregister).toHaveBeenCalledWith(
+          'CmdOrCtrl+Shift+G',
+        );
+        expect(globalShortcut.register).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('does not retain a failed registration', () => {
+    (globalShortcut.register as Mock).mockReturnValueOnce(false);
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        const ok = mb.setGlobalShortcut('CmdOrCtrl+Shift+G');
+        expect(ok).toBe(false);
+        (globalShortcut.unregister as Mock).mockClear();
+        mb.destroy();
+        expect(globalShortcut.unregister).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('unregisters on destroy()', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      globalShortcut: 'CmdOrCtrl+Shift+G',
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.destroy();
+        expect(globalShortcut.unregister).toHaveBeenCalledWith(
+          'CmdOrCtrl+Shift+G',
+        );
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar toggleWindow and recenterOnTray', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('toggleWindow shows when hidden and hides when visible', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', async () => {
+        await mb.toggleWindow();
+        expect(mb.window!.show).toHaveBeenCalledTimes(1);
+        await mb.toggleWindow();
+        expect(mb.window!.hide).toHaveBeenCalledTimes(1);
+        resolve();
+      });
+    });
+  });
+
+  it('recenterOnTray sets a new position from tray bounds', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        (mb.window!.setPosition as Mock).mockClear();
+        mb.recenterOnTray();
+        expect(mb.window!.setPosition).toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('recenterOnTray is a no-op without a window', () => {
+    const mb = new Menubar(app, {});
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(() => mb.recenterOnTray()).not.toThrow();
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar contextMenu option', () => {
+  const originalPlatform = process.platform;
+  const fakeMenu = { __menu: true } as unknown as Electron.Menu;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+  });
+
+  it('binds via setContextMenu on Linux', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(mb.tray.setContextMenu).toHaveBeenCalledWith(fakeMenu);
+        const trayOnCalls = (mb.tray.on as Mock).mock.calls;
+        expect(trayOnCalls.map(([event]) => event)).not.toContain(
+          'right-click',
+        );
+        resolve();
+      });
+    });
+  });
+
+  it('binds via right-click popup on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        const trayOn = (mb.tray.on as Mock).mock.calls;
+        const handler = trayOn.find(([event]) => event === 'right-click')?.[1];
+        expect(handler).toBeTypeOf('function');
+        handler?.({}, { x: 5, y: 9, width: 32, height: 32 });
+        expect(mb.tray.popUpContextMenu).toHaveBeenCalledWith(fakeMenu, {
+          x: 5,
+          y: 9,
+        });
+        resolve();
+      });
+    });
+  });
+
+  it('re-publishes the menu on show/hide on Linux', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', async () => {
+        (mb.tray.setContextMenu as Mock).mockClear();
+        await mb.showWindow();
+        expect(mb.tray.setContextMenu).toHaveBeenCalledWith(fakeMenu);
+        (mb.tray.setContextMenu as Mock).mockClear();
+        mb.hideWindow();
+        expect(mb.tray.setContextMenu).toHaveBeenCalledWith(fakeMenu);
+        resolve();
+      });
+    });
+  });
+
+  it('replaces the menu via setContextMenu()', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    const replacement = { __menu: 'replacement' } as unknown as Electron.Menu;
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setContextMenu(replacement);
+        expect(mb.tray.setContextMenu).toHaveBeenLastCalledWith(replacement);
+        expect(mb.getOption('contextMenu')).toBe(replacement);
+        resolve();
+      });
+    });
+  });
+
+  it('right-click popup reads the current menu reference on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    const replacement = { __menu: 'replacement' } as unknown as Electron.Menu;
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setContextMenu(replacement);
+        const handler = (mb.tray.on as Mock).mock.calls.find(
+          ([event]) => event === 'right-click',
+        )?.[1];
+        handler?.({}, { x: 1, y: 2, width: 32, height: 32 });
+        expect(mb.tray.popUpContextMenu).toHaveBeenLastCalledWith(replacement, {
+          x: 1,
+          y: 2,
+        });
+        resolve();
+      });
+    });
+  });
+
+  it('setContextMenu(null) makes the right-click popup a no-op on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setContextMenu(null);
+        (mb.tray.popUpContextMenu as Mock).mockClear();
+        const handler = (mb.tray.on as Mock).mock.calls.find(
+          ([event]) => event === 'right-click',
+        )?.[1];
+        handler?.({}, { x: 1, y: 2, width: 32, height: 32 });
+        expect(mb.tray.popUpContextMenu).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('setContextMenu() wires popup on macOS even without an initial menu', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setContextMenu(fakeMenu);
+        const handler = (mb.tray.on as Mock).mock.calls.find(
+          ([event]) => event === 'right-click',
+        )?.[1];
+        expect(handler).toBeTypeOf('function');
+        handler?.({}, { x: 3, y: 4, width: 32, height: 32 });
+        expect(mb.tray.popUpContextMenu).toHaveBeenLastCalledWith(fakeMenu, {
+          x: 3,
+          y: 4,
+        });
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar ignoreDoubleClickEvents option', () => {
+  const originalPlatform = process.platform;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+  });
+
+  it('calls setIgnoreDoubleClickEvents(true) on macOS by default', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(mb.tray.setIgnoreDoubleClickEvents).toHaveBeenCalledWith(true);
+        resolve();
+      });
+    });
+  });
+
+  it('respects ignoreDoubleClickEvents: false on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      ignoreDoubleClickEvents: false,
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(mb.tray.setIgnoreDoubleClickEvents).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('is a no-op on non-macOS platforms', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(mb.tray.setIgnoreDoubleClickEvents).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+});
+
+describe('Menubar escapeToHide option', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('wires up a before-input-event listener when enabled', () => {
+    const mb = new Menubar(app, { preloadWindow: true, escapeToHide: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        const calls = (mb.window!.webContents.on as Mock).mock.calls;
+        expect(calls.map(([event]) => event)).toContain('before-input-event');
+        resolve();
+      });
+    });
+  });
+
+  it('does not wire a listener when disabled', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        const calls = (mb.window!.webContents.on as Mock).mock.calls;
+        expect(calls.map(([event]) => event)).not.toContain(
+          'before-input-event',
         );
         resolve();
       });
