@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { BrowserWindow, Tray } from 'electron';
+import { BrowserWindow, type Menu, Tray } from 'electron';
 
 import { Positioner } from './Positioner';
 import type { Options } from './types';
@@ -15,6 +15,7 @@ import { getWindowPosition } from './util/getWindowPosition';
 export class Menubar extends EventEmitter {
   private _app: Electron.App;
   private _browserWindow?: BrowserWindow;
+  private _contextMenu?: Menu;
   private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
   private _isDestroyed: boolean;
   private _isQuitting: boolean; // set on app `before-quit`, used by hideOnClose
@@ -151,6 +152,26 @@ export class Menubar extends EventEmitter {
       clearTimeout(this._blurTimeout);
       this._blurTimeout = null;
     }
+    this.refreshLinuxContextMenu();
+  }
+
+  /**
+   * Replace the tray context menu after construction. On Linux this also
+   * re-publishes the menu to the SNI host, which is required after mutating
+   * items in-place since libappindicator caches the previous serialization.
+   *
+   * @param menu - The new menu, or `undefined` to clear it.
+   */
+  setContextMenu(menu: Menu | undefined): void {
+    this._contextMenu = menu;
+    this._options.contextMenu = menu;
+    if (!this._tray) {
+      return;
+    }
+    if (process.platform === 'linux') {
+      // `setContextMenu(null)` clears the menu on Linux.
+      this._tray.setContextMenu(menu ?? null);
+    }
   }
 
   /**
@@ -234,6 +255,7 @@ export class Menubar extends EventEmitter {
     this._browserWindow.show();
     this._isVisible = true;
     this.emit('after-show');
+    this.refreshLinuxContextMenu();
     return;
   }
 
@@ -271,6 +293,10 @@ export class Menubar extends EventEmitter {
       this.tray.setIgnoreDoubleClickEvents(true);
     }
     this.tray.setToolTip(this._options.tooltip);
+
+    if (this._options.contextMenu) {
+      this.bindContextMenu(this._options.contextMenu);
+    }
 
     if (!this._options.windowPosition) {
       this._options.windowPosition = getWindowPosition(this.tray);
@@ -322,6 +348,35 @@ export class Menubar extends EventEmitter {
   private onBeforeQuit = (): void => {
     this._isQuitting = true;
   };
+
+  private bindContextMenu(menu: Menu): void {
+    this._contextMenu = menu;
+    if (process.platform === 'linux') {
+      // libappindicator / StatusNotifierItem requires the menu to live on the
+      // tray itself; right-click is handled by the desktop environment.
+      this.tray.setContextMenu(menu);
+    } else {
+      // macOS / Windows: pop up the menu on right-click so left-click stays
+      // bound to toggling the menubar window.
+      this.tray.on('right-click', (_event, bounds) => {
+        this.tray.popUpContextMenu(menu, { x: bounds.x, y: bounds.y });
+      });
+    }
+  }
+
+  private refreshLinuxContextMenu(): void {
+    // libappindicator caches the menu's serialized state, so consumers that
+    // mutate items in-place need the menu re-published. Cheap to do; safe to
+    // call unconditionally on every show/hide.
+    if (
+      process.platform === 'linux' &&
+      this._contextMenu &&
+      this._tray &&
+      !this._tray.isDestroyed?.()
+    ) {
+      this._tray.setContextMenu(this._contextMenu);
+    }
+  }
 
   private onAppReady = (): void => {
     // Guard against `destroy()` being called between construction and the

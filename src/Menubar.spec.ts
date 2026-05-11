@@ -177,6 +177,80 @@ describe('Menubar hideOnClose option', () => {
   });
 });
 
+describe('Menubar contextMenu option', () => {
+  const originalPlatform = process.platform;
+  const fakeMenu = { __menu: true } as unknown as Electron.Menu;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+  });
+
+  it('binds via setContextMenu on Linux', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        expect(mb.tray.setContextMenu).toHaveBeenCalledWith(fakeMenu);
+        const trayOnCalls = (mb.tray.on as Mock).mock.calls;
+        expect(trayOnCalls.map(([event]) => event)).not.toContain('right-click');
+        resolve();
+      });
+    });
+  });
+
+  it('binds via right-click popup on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        const trayOn = (mb.tray.on as Mock).mock.calls;
+        const handler = trayOn.find(([event]) => event === 'right-click')?.[1];
+        expect(handler).toBeTypeOf('function');
+        handler?.({}, { x: 5, y: 9, width: 32, height: 32 });
+        expect(mb.tray.popUpContextMenu).toHaveBeenCalledWith(fakeMenu, {
+          x: 5,
+          y: 9,
+        });
+        resolve();
+      });
+    });
+  });
+
+  it('re-publishes the menu on show/hide on Linux', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', async () => {
+        (mb.tray.setContextMenu as Mock).mockClear();
+        await mb.showWindow();
+        expect(mb.tray.setContextMenu).toHaveBeenCalledWith(fakeMenu);
+        (mb.tray.setContextMenu as Mock).mockClear();
+        mb.hideWindow();
+        expect(mb.tray.setContextMenu).toHaveBeenCalledWith(fakeMenu);
+        resolve();
+      });
+    });
+  });
+
+  it('replaces the menu via setContextMenu()', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    const replacement = { __menu: 'replacement' } as unknown as Electron.Menu;
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setContextMenu(replacement);
+        expect(mb.tray.setContextMenu).toHaveBeenLastCalledWith(replacement);
+        expect(mb.getOption('contextMenu')).toBe(replacement);
+        resolve();
+      });
+    });
+  });
+});
+
 describe('Menubar ignoreDoubleClickEvents option', () => {
   const originalPlatform = process.platform;
 

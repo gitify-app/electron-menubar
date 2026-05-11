@@ -19,6 +19,8 @@ export const app: {
 export class BrowserWindow {
   destroy: Mock = vi.fn();
   getSize: Mock = vi.fn(() => [400, 400]);
+  hide: Mock = vi.fn();
+  isAlwaysOnTop: Mock = vi.fn(() => false);
   loadURL: Mock = vi.fn();
   on: Mock = vi.fn();
   setPosition: Mock = vi.fn();
@@ -29,8 +31,11 @@ export class BrowserWindow {
 
 export class Tray {
   getBounds: Mock = vi.fn(() => ({ x: 0, y: 0, width: 32, height: 32 }));
+  isDestroyed: Mock = vi.fn(() => false);
   on: Mock = vi.fn();
+  popUpContextMenu: Mock = vi.fn();
   removeListener: Mock = vi.fn();
+  setContextMenu: Mock = vi.fn();
   setIgnoreDoubleClickEvents: Mock = vi.fn();
   setToolTip: Mock = vi.fn();
 }

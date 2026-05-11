@@ -1,6 +1,7 @@
 import type {
   BrowserWindowConstructorOptions,
   LoadURLOptions,
+  Menu,
   Tray,
 } from 'electron';
 
@@ -28,6 +29,20 @@ export interface Options {
    * ```
    */
   browserWindow: BrowserWindowConstructorOptions;
+  /**
+   * A native context menu to attach to the tray icon.
+   *
+   * On Linux this is bound via {@link Tray.setContextMenu} (required by
+   * libappindicator / StatusNotifierItem) and re-published whenever the
+   * menubar window shows or hides to defeat the indicator's menu cache.
+   *
+   * On macOS and Windows it is shown via {@link Tray.popUpContextMenu} on
+   * right-click, so left-click continues to toggle the menubar window.
+   * Setting this option therefore implies `trigger: 'click'` on those
+   * platforms — pass `trigger: 'none'` to disable left-click toggling
+   * entirely.
+   */
+  contextMenu?: Menu;
   /**
    * The app source directory.
    */
