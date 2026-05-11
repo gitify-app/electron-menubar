@@ -64,7 +64,7 @@ type WindowPosition =
   | 'trayCenter'
   | 'topRight'
   | 'trayBottomCenter'
-  | 'bottomLeft'
+  | 'leftCenter'
   | 'bottomRight';
 
 /**
@@ -94,7 +94,13 @@ export function getWindowPosition(tray: Tray): WindowPosition {
         return 'bottomRight';
       }
       if (traySide === 'left') {
-        return 'bottomLeft';
+        // Vertically centered against the left edge of the work area.
+        // `bottomLeft` would put the window in the screen's bottom-left
+        // corner — visually disconnected from the tray icon, which sits
+        // somewhere on the left strip. Tray-anchored y isn't available
+        // through `Positioner` for side taskbars, so center is the best
+        // compromise that stays close to the tray.
+        return 'leftCenter';
       }
       if (traySide === 'right') {
         return 'bottomRight';
