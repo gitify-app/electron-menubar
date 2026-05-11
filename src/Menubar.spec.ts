@@ -397,6 +397,63 @@ describe('Menubar contextMenu option', () => {
       });
     });
   });
+
+  it('right-click popup reads the current menu reference on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    const replacement = { __menu: 'replacement' } as unknown as Electron.Menu;
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setContextMenu(replacement);
+        const handler = (mb.tray.on as Mock).mock.calls.find(
+          ([event]) => event === 'right-click',
+        )?.[1];
+        handler?.({}, { x: 1, y: 2, width: 32, height: 32 });
+        expect(mb.tray.popUpContextMenu).toHaveBeenLastCalledWith(replacement, {
+          x: 1,
+          y: 2,
+        });
+        resolve();
+      });
+    });
+  });
+
+  it('setContextMenu(undefined) makes the right-click popup a no-op on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setContextMenu(undefined);
+        (mb.tray.popUpContextMenu as Mock).mockClear();
+        const handler = (mb.tray.on as Mock).mock.calls.find(
+          ([event]) => event === 'right-click',
+        )?.[1];
+        handler?.({}, { x: 1, y: 2, width: 32, height: 32 });
+        expect(mb.tray.popUpContextMenu).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('setContextMenu() wires popup on macOS even without an initial menu', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        mb.setContextMenu(fakeMenu);
+        const handler = (mb.tray.on as Mock).mock.calls.find(
+          ([event]) => event === 'right-click',
+        )?.[1];
+        expect(handler).toBeTypeOf('function');
+        handler?.({}, { x: 3, y: 4, width: 32, height: 32 });
+        expect(mb.tray.popUpContextMenu).toHaveBeenLastCalledWith(fakeMenu, {
+          x: 3,
+          y: 4,
+        });
+        resolve();
+      });
+    });
+  });
 });
 
 describe('Menubar ignoreDoubleClickEvents option', () => {

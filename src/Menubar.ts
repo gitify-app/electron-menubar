@@ -24,6 +24,7 @@ export class Menubar extends EventEmitter {
   private _options: Options;
   private _positioner: Positioner | undefined;
   private _shortcut?: Electron.Accelerator;
+  private _rightClickContextMenuBound = false;
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -218,6 +219,8 @@ export class Menubar extends EventEmitter {
    * Replace the tray context menu after construction. On Linux this also
    * re-publishes the menu to the SNI host, which is required after mutating
    * items in-place since libappindicator caches the previous serialization.
+   * On macOS/Windows the right-click popup handler reads the current menu
+   * reference, so swapping or clearing here takes effect immediately.
    *
    * @param menu - The new menu, or `undefined` to clear it.
    */
@@ -230,6 +233,14 @@ export class Menubar extends EventEmitter {
     if (process.platform === 'linux') {
       // `setContextMenu(null)` clears the menu on Linux.
       this._tray.setContextMenu(menu ?? null);
+      return;
+    }
+    // macOS / Windows: bind the right-click popup once on first non-empty
+    // assignment. The handler reads `this._contextMenu` at invoke time, so
+    // later swaps and clears take effect without rebinding (and never leak
+    // a stale closure reference).
+    if (menu && !this._rightClickContextMenuBound) {
+      this.bindRightClickContextMenu();
     }
   }
 
@@ -421,13 +432,24 @@ export class Menubar extends EventEmitter {
       // libappindicator / StatusNotifierItem requires the menu to live on the
       // tray itself; right-click is handled by the desktop environment.
       this.tray.setContextMenu(menu);
-    } else {
-      // macOS / Windows: pop up the menu on right-click so left-click stays
-      // bound to toggling the menubar window.
-      this.tray.on('right-click', (_event, bounds) => {
-        this.tray.popUpContextMenu(menu, { x: bounds.x, y: bounds.y });
-      });
+      return;
     }
+    this.bindRightClickContextMenu();
+  }
+
+  private bindRightClickContextMenu(): void {
+    // macOS / Windows: pop up the current menu on right-click so left-click
+    // stays bound to toggling the menubar window. Read `this._contextMenu`
+    // at invoke time so `setContextMenu()` swaps and clears take effect
+    // without rebinding (and without leaking a stale closure reference).
+    this.tray.on('right-click', (_event, bounds) => {
+      const current = this._contextMenu;
+      if (!current) {
+        return;
+      }
+      this.tray.popUpContextMenu(current, { x: bounds.x, y: bounds.y });
+    });
+    this._rightClickContextMenuBound = true;
   }
 
   private refreshLinuxContextMenu(): void {
