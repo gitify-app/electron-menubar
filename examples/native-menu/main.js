@@ -1,29 +1,23 @@
-const { app, Menu, Tray } = require('electron');
-const path = require('node:path');
+const { app, Menu } = require('electron');
 
 const { menubar } = require('../../');
 
-const iconPath = path.join(__dirname, '..', '..', 'assets', 'IconTemplate.png');
-
 app.on('ready', () => {
-  const tray = new Tray(iconPath);
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Item1', type: 'radio' },
     { label: 'Item2', type: 'radio' },
     { label: 'Item3', type: 'radio', checked: true },
     { label: 'Item4', type: 'radio' },
+    { type: 'separator' },
+    { role: 'quit' },
   ]);
-  tray.setContextMenu(contextMenu);
 
-  const mb = menubar({
-    tray,
-  });
+  // Pass `contextMenu` to menubar — it wires `setContextMenu` on Linux and
+  // `popUpContextMenu` on right-click on macOS/Windows so left-click still
+  // toggles the menubar window.
+  const mb = menubar({ contextMenu });
 
   mb.on('ready', () => {
-    // needed for macos to remove white screen
-    // ref: https://github.com/max-mapper/menubar/issues/345
-    tray.removeAllListeners();
-
     console.log('Menubar app is ready.');
     // your app code here
   });
