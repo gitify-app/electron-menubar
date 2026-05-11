@@ -140,7 +140,7 @@ describe('Menubar hideOnClose option', () => {
 
   const closeHandler = (
     mb: Menubar,
-  ): ((event: { preventDefault: Mock }) => void) | undefined => {
+  ): ((event: Electron.Event) => void) | undefined => {
     const win = mb.window!;
     return (win.on as Mock).mock.calls.find(
       ([event]) => event === 'close',
@@ -163,7 +163,7 @@ describe('Menubar hideOnClose option', () => {
       mb.on('after-create-window', () => {
         const handler = closeHandler(mb);
         expect(handler).toBeTypeOf('function');
-        const event = { preventDefault: vi.fn() };
+        const event = { preventDefault: vi.fn(), defaultPrevented: false };
         handler?.(event);
         expect(event.preventDefault).toHaveBeenCalled();
         resolve();
@@ -182,7 +182,7 @@ describe('Menubar hideOnClose option', () => {
         beforeQuitHandler?.();
 
         const handler = closeHandler(mb);
-        const event = { preventDefault: vi.fn() };
+        const event = { preventDefault: vi.fn(), defaultPrevented: false };
         handler?.(event);
         expect(event.preventDefault).not.toHaveBeenCalled();
         resolve();
@@ -418,12 +418,12 @@ describe('Menubar contextMenu option', () => {
     });
   });
 
-  it('setContextMenu(undefined) makes the right-click popup a no-op on macOS', () => {
+  it('setContextMenu(null) makes the right-click popup a no-op on macOS', () => {
     Object.defineProperty(process, 'platform', { value: 'darwin' });
     const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
     return new Promise<void>((resolve) => {
       mb.on('ready', () => {
-        mb.setContextMenu(undefined);
+        mb.setContextMenu(null);
         (mb.tray.popUpContextMenu as Mock).mockClear();
         const handler = (mb.tray.on as Mock).mock.calls.find(
           ([event]) => event === 'right-click',

@@ -222,17 +222,17 @@ export class Menubar extends EventEmitter {
    * On macOS/Windows the right-click popup handler reads the current menu
    * reference, so swapping or clearing here takes effect immediately.
    *
-   * @param menu - The new menu, or `undefined` to clear it.
+   * @param menu - The new menu, or `null` to clear it.
    */
-  setContextMenu(menu: Menu | undefined): void {
-    this._contextMenu = menu;
-    this._options.contextMenu = menu;
+  setContextMenu(menu: Menu | null): void {
+    this._contextMenu = menu ?? undefined;
+    this._options.contextMenu = menu ?? undefined;
     if (!this._tray) {
       return;
     }
     if (process.platform === 'linux') {
       // `setContextMenu(null)` clears the menu on Linux.
-      this._tray.setContextMenu(menu ?? null);
+      this._tray.setContextMenu(menu);
       return;
     }
     // macOS / Windows: bind the right-click popup once on first non-empty
