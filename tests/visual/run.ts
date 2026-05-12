@@ -21,7 +21,11 @@ const POST_READY_DELAY_MS = Number(
 );
 const TRAY_EXACT_THRESHOLD = 50;
 const TRAY_SATURATED_FALLBACK = 100;
-const WINDOW_EXACT_THRESHOLD = 50;
+// Fixture window is 200x100 = 20000 cyan+yellow pixels when fully visible.
+// 2000 tolerates up to ~90% occlusion while rejecting pixel noise from
+// stray app windows (windows-2022 was passing on 81 noise pixels from
+// background JSON text before this was tightened).
+const WINDOW_EXACT_THRESHOLD = 2000;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
