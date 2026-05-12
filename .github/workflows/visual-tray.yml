@@ -106,6 +106,7 @@ jobs:
                       label: Linux (KDE Plasma)
                       key: linux-kde
                       apt: plasma-workspace plasma-desktop kwin-x11 systemsettings kde-cli-tools
+                      cache_apt: true
                       panel_cmd: |
                           bash -c '
                           kwin_x11 --replace & sleep 4
@@ -139,6 +140,7 @@ jobs:
                       label: Linux (Cinnamon)
                       key: linux-cinnamon
                       apt: cinnamon cinnamon-session muffin mesa-utils xserver-xorg-core xserver-xorg-video-dummy xserver-xorg-legacy x11-xserver-utils dconf-cli
+                      cache_apt: true
                       use_xdummy: true
                       panel_cmd: |
                           bash -c '
@@ -175,6 +177,7 @@ jobs:
                       label: Linux (Budgie)
                       key: linux-budgie
                       apt: budgie-desktop
+                      cache_apt: true
                       panel_cmd: |
                           bash -c '
                           export XDG_CURRENT_DESKTOP=Budgie:GNOME DESKTOP_SESSION=budgie-desktop
@@ -207,9 +210,7 @@ jobs:
                   exit 1
             - name: Build library
               run: bun run build
-            - name: Install desktop environment
-              env:
-                  APT_PACKAGES: ${{ matrix.apt }}
+            - name: Install base dependencies
               run: |
                   sudo apt-get update -qq
                   sudo apt-get install -y --no-install-recommends \
@@ -218,8 +219,21 @@ jobs:
                       libgbm1 libatk-bridge2.0-0 libdrm2 \
                       libxtst6 libnotify4 libxrandr2 \
                       libxcomposite1 libxdamage1 libxfixes3 libcups2 \
-                      libayatana-appindicator3-1 \
-                      $APT_PACKAGES
+                      libayatana-appindicator3-1
+            # Heavy DEs (KDE, Cinnamon, Budgie) pull hundreds of MB of packages;
+            # cache them by package set so subsequent runs skip the download.
+            - name: Install desktop environment (cached)
+              if: matrix.cache_apt
+              uses: awalsh128/cache-apt-pkgs-action@v1.6.0
+              with:
+                  packages: ${{ matrix.apt }}
+                  version: '1.0'
+            - name: Install desktop environment (uncached)
+              if: '!matrix.cache_apt'
+              env:
+                  APT_PACKAGES: ${{ matrix.apt }}
+              run: |
+                  sudo apt-get install -y --no-install-recommends $APT_PACKAGES
             - name: Build snixembed (SNI to XEmbed bridge)
               if: matrix.build_snixembed
               run: |
