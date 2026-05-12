@@ -28,7 +28,16 @@ const mb = menubar({
   preloadWindow: false,
   showDockIcon: false,
   tooltip: 'menubar-visual-fixture',
-  browserWindow: { width: 200, height: 100, show: false },
+  browserWindow: {
+    width: 200,
+    height: 100,
+    show: false,
+    // Force opaque white background — Electron's default leaves the window
+    // transparent on Linux, which let GNOME's dark mode backdrop bleed
+    // through and made the bounds-rect detection see 0 white pixels.
+    transparent: false,
+    backgroundColor: '#FFFFFF',
+  },
 });
 
 mb.on('ready', () => {
