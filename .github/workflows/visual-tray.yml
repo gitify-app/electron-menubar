@@ -222,12 +222,26 @@ jobs:
                       libayatana-appindicator3-1
             # Heavy DEs (KDE, Cinnamon, Budgie) pull hundreds of MB of packages;
             # cache them by package set so subsequent runs skip the download.
+            # execute_install_scripts: true is required because the DE setup
+            # depends on postinstall hooks like glib-compile-schemas — without
+            # it the cached restore leaves gsettings schemas uncompiled and
+            # budgie-daemon/cinnamon-session crash with "Settings schema
+            # 'com.solus-project.budgie-panel' is not installed".
             - name: Install desktop environment (cached)
               if: matrix.cache_apt
               uses: awalsh128/cache-apt-pkgs-action@v1.6.0
               with:
                   packages: ${{ matrix.apt }}
                   version: '1.0'
+                  execute_install_scripts: 'true'
+            # The action's execute_install_scripts only runs a subset of
+            # postinst (e.g. polkitd) — glib-compile-schemas is silently
+            # skipped, so we run it explicitly. Without this, budgie-daemon
+            # and cinnamon-session crash with "Settings schema ... not
+            # installed" on cache restore.
+            - name: Compile glib schemas after cache restore
+              if: matrix.cache_apt
+              run: sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
             - name: Install desktop environment (uncached)
               if: '!matrix.cache_apt'
               env:
