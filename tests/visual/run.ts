@@ -179,7 +179,11 @@ const windowDetectedBounded =
   winRect !== null &&
   windowWhite >= WINDOW_WHITE_THRESHOLD &&
   windowBlack >= WINDOW_BLACK_THRESHOLD;
-const windowDetectedGlobal = globalWhite >= 14000 && globalBlack >= 2500;
+// globalBlack varies wildly with wallpaper (macOS black is huge, others are
+// tiny) so we don't use it. globalWhite at >= 14000 reliably signals the
+// rendered white window background even when GNOME's Mutter paints the
+// window at a position that diverges from getBounds().
+const windowDetectedGlobal = globalWhite >= 14000;
 const windowDetected = windowDetectedBounded || windowDetectedGlobal;
 const status: 'pass' | 'fail' =
   trayDetected && windowDetected ? 'pass' : 'fail';
