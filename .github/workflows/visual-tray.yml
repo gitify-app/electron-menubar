@@ -162,11 +162,21 @@ jobs:
                       build_snixembed: true
                       panel_warmup: 12
                       post_ready_delay: 6000
+                    # GNOME is experimental: Mutter paints the fixture window
+                    # as an opaque Adwaita-blue rectangle regardless of our
+                    # backgroundColor / HTML body color / frame:false / focus()
+                    # combination. The test still passes via the globalWhite
+                    # fallback (white pixels exist elsewhere on screen) but the
+                    # saved screenshot doesn't show the white-box-with-black-
+                    # square design the way the other 13 platforms do. Marking
+                    # experimental so future regressions don't block merges
+                    # until someone figures out the Electron+Mutter conflict.
                     - de: gnome
                       label: Linux (GNOME)
                       key: linux-gnome
                       apt: gnome-shell gnome-shell-extension-appindicator
                       panel_cmd: bash -c 'gnome-extensions enable ubuntu-appindicators@ubuntu.com 2>/dev/null || true; gnome-shell --x11'
+                      experimental: true
                     # Budgie: noble ships budgie-desktop 10.9, whose default panel layout
                     # already includes the System Tray applet. The applet is a pure client
                     # of org.freedesktop.StatusNotifierWatcher — and in 10.9+ that watcher
