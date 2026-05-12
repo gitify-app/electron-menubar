@@ -460,6 +460,7 @@ jobs:
                   VISUAL_LABEL: ${{ matrix.label }}
                   VISUAL_PREPARE_CMD: |
                       Get-ChildItem 'HKCU:\Control Panel\NotifyIconSettings' -ErrorAction SilentlyContinue | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name IsPromoted -Value 1 -Type DWord -Force };
+                      Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name HideClock -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue;
                       Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
                       Start-Process explorer;
                       Start-Sleep -Seconds 6
