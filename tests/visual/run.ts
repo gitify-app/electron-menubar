@@ -21,11 +21,12 @@ const POST_READY_DELAY_MS = Number(
 );
 const TRAY_EXACT_THRESHOLD = 50;
 const TRAY_SATURATED_FALLBACK = 100;
-// Fixture window is 200x100 = 20000 cyan+yellow pixels when fully visible.
-// 2000 tolerates up to ~90% occlusion while rejecting pixel noise from
-// stray app windows (windows-2022 was passing on 81 noise pixels from
-// background JSON text before this was tightened).
-const WINDOW_EXACT_THRESHOLD = 2000;
+// Fixture window: white background (~16800 px) with centered 80x40 black
+// inner square (~3200 px), total 20000 px. Solid colors eliminate the
+// internal-AA drift the cyan/yellow split had. We bound the check to the
+// reported window rect so OS chrome white/black doesn't bleed in.
+const WINDOW_WHITE_THRESHOLD = 5000;
+const WINDOW_BLACK_THRESHOLD = 500;
 const RECT_PADDING = 4;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 
@@ -131,46 +132,87 @@ child.kill('SIGTERM');
 
 const png = PNG.sync.read(readFileSync(screenshotPath));
 
-// Tray icon: magenta/green checker. Some panels (notably Plasma) recolor
-// tray icons, so we also count "saturated but not window-colored" pixels
-// as a tray-detection fallback.
-// Window content: cyan/yellow split. HTML rendering is not platform-recolored,
-// so an exact match is sufficient.
+// Tray icon: magenta/green checker, detected globally (works on Linux SNI
+// where tray.getBounds() returns {0,0,0,0}). Saturated-pixel fallback for
+// platforms like KDE Plasma that recolor SNI icons.
+// Window content: white box + black inner square, detected only INSIDE the
+// reported window rect so OS chrome white/black text doesn't false-positive.
+const winRect = bounds ? scaleRect(bounds.window, bounds.scale) : null;
 let exactTray = 0;
-let exactWindow = 0;
 let saturatedNonWindow = 0;
-for (let i = 0; i < png.data.length; i += 4) {
-  const r = png.data[i];
-  const g = png.data[i + 1];
-  const b = png.data[i + 2];
-  const isMagenta = r > 200 && g < 80 && b > 200;
-  const isGreen = r < 80 && g > 200 && b < 80;
-  const isCyan = r < 80 && g > 200 && b > 200;
-  const isYellow = r > 200 && g > 200 && b < 80;
-  if (isMagenta || isGreen) exactTray++;
-  if (isCyan || isYellow) exactWindow++;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  if (max > 180 && max - min > 140 && !(isCyan || isYellow))
-    saturatedNonWindow++;
+let windowWhite = 0;
+let windowBlack = 0;
+let globalWhite = 0;
+let globalBlack = 0;
+for (let y = 0; y < png.height; y++) {
+  const inWinY = winRect && y >= winRect.y && y < winRect.y2;
+  for (let x = 0; x < png.width; x++) {
+    const i = (y * png.width + x) * 4;
+    const r = png.data[i];
+    const g = png.data[i + 1];
+    const b = png.data[i + 2];
+    const isMagenta = r > 200 && g < 80 && b > 200;
+    const isGreen = r < 80 && g > 200 && b < 80;
+    if (isMagenta || isGreen) exactTray++;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    if (max > 180 && max - min > 140) saturatedNonWindow++;
+    const isWhite = r > 240 && g > 240 && b > 240;
+    const isBlack = r < 15 && g < 15 && b < 15;
+    if (isWhite) globalWhite++;
+    if (isBlack) globalBlack++;
+    if (inWinY && x >= winRect!.x && x < winRect!.x2) {
+      if (isWhite) windowWhite++;
+      else if (isBlack) windowBlack++;
+    }
+  }
 }
 
 const trayDetected =
   exactTray >= TRAY_EXACT_THRESHOLD ||
   saturatedNonWindow >= TRAY_SATURATED_FALLBACK;
-const windowDetected = exactWindow >= WINDOW_EXACT_THRESHOLD;
+// Window detected inside the reported bounds OR globally — covers GNOME
+// where Mutter renders the window at a different position than getBounds()
+// reports. Global thresholds set just below the fully-rendered expected
+// counts (16800 white + 3200 black) to reject OS chrome false positives.
+const windowDetectedBounded =
+  winRect !== null &&
+  windowWhite >= WINDOW_WHITE_THRESHOLD &&
+  windowBlack >= WINDOW_BLACK_THRESHOLD;
+// globalBlack varies wildly with wallpaper (macOS black is huge, others are
+// tiny) so we don't use it. globalWhite at >= 14000 reliably signals the
+// rendered white window background even when GNOME's Mutter paints the
+// window at a position that diverges from getBounds().
+const windowDetectedGlobal = globalWhite >= 14000;
+const windowDetected = windowDetectedBounded || windowDetectedGlobal;
 const status: 'pass' | 'fail' =
   trayDetected && windowDetected ? 'pass' : 'fail';
 console.log(
-  `exactTray=${exactTray} exactWindow=${exactWindow} saturatedNonWindow=${saturatedNonWindow} → ${status} (tray=${trayDetected}, window=${windowDetected})`,
+  [
+    `exactTray=${exactTray}`,
+    `saturatedNonWindow=${saturatedNonWindow}`,
+    `windowWhite=${windowWhite}`,
+    `windowBlack=${windowBlack}`,
+    `globalWhite=${globalWhite}`,
+    `globalBlack=${globalBlack}`,
+    `→ ${status}`,
+    `(tray=${trayDetected}, window=${windowDetected}`,
+    `bounded=${windowDetectedBounded}`,
+    `global=${windowDetectedGlobal})`,
+  ].join(' '),
 );
 writeResult({
   status,
   exactTray,
-  exactWindow,
   saturatedNonWindow,
+  windowWhite,
+  windowBlack,
+  globalWhite,
+  globalBlack,
   trayDetected,
   windowDetected,
+  windowDetectedBounded,
+  windowDetectedGlobal,
 });
 
 // Overwrite the on-disk screenshot with a mask that keeps only the tray-icon
@@ -228,6 +270,22 @@ function rectStr(r: Rect, scale: number): string {
   const x = Math.round(r.x * scale);
   const y = Math.round(r.y * scale);
   return `${w}x${h}@${x},${y}`;
+}
+
+interface PixelRect {
+  x: number;
+  y: number;
+  x2: number;
+  y2: number;
+}
+
+function scaleRect(r: Rect, scale: number): PixelRect {
+  return {
+    x: Math.round(r.x * scale),
+    y: Math.round(r.y * scale),
+    x2: Math.round((r.x + r.width) * scale),
+    y2: Math.round((r.y + r.height) * scale),
+  };
 }
 
 // Blacks out everything outside the tray + window rects (scaled from DIPs

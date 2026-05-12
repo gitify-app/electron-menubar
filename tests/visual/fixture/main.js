@@ -28,7 +28,16 @@ const mb = menubar({
   preloadWindow: false,
   showDockIcon: false,
   tooltip: 'menubar-visual-fixture',
-  browserWindow: { width: 200, height: 100, show: false },
+  browserWindow: {
+    width: 200,
+    height: 100,
+    show: false,
+    // Force opaque white background — Electron's default leaves the window
+    // transparent on Linux, which let GNOME's dark mode backdrop bleed
+    // through and made the bounds-rect detection see 0 white pixels.
+    transparent: false,
+    backgroundColor: '#FFFFFF',
+  },
 });
 
 mb.on('ready', () => {
@@ -38,21 +47,24 @@ mb.on('ready', () => {
       // Force topmost so the screenshot captures our window even when GHA
       // runners pre-launch File Explorer / Notepad windows over the tray area.
       mb.window?.setAlwaysOnTop(true, 'screen-saver');
-      // Emit screen coords of tray icon + popover window so run.ts can mask
-      // the screenshot to just these rects (eliminating clock/dock/wallpaper
-      // drift between runs). Bounds are in DIPs; scale up for physical pixels.
-      const trayBounds = mb.tray.getBounds();
-      const windowBounds = mb.window?.getBounds() ?? {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      };
-      const scale = screen.getPrimaryDisplay().scaleFactor;
-      console.log(
-        `VISUAL:bounds=${JSON.stringify({ tray: trayBounds, window: windowBounds, scale })}`,
-      );
-      console.log('VISUAL:window-shown');
+      // Wait for the WM (especially Mutter on GNOME) to settle the window's
+      // final position before querying — getBounds() right after showWindow()
+      // returned a stale/intended coord on GNOME while the actual paint was
+      // elsewhere.
+      setTimeout(() => {
+        const trayBounds = mb.tray.getBounds();
+        const windowBounds = mb.window?.getBounds() ?? {
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+        };
+        const scale = screen.getPrimaryDisplay().scaleFactor;
+        console.log(
+          `VISUAL:bounds=${JSON.stringify({ tray: trayBounds, window: windowBounds, scale })}`,
+        );
+        console.log('VISUAL:window-shown');
+      }, 1500);
     })
     .catch((err) => {
       console.error('VISUAL:window-error', err);
