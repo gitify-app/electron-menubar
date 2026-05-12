@@ -1,7 +1,5 @@
 # Platforms where `menubar` is known to work
 
-This document is still a work-in-progress. If you have tested `menubar` with a platform that is not listed under here, I would greatly appreciate a PR!
-
 <!-- platforms:start -->
 
 _Continuously verified by [E2E smoke tests](.github/workflows/e2e.yml)._
@@ -40,27 +38,3 @@ _Continuously verified by [visual tray rendering tests](.github/workflows/visual
 | Windows Server 2025 | ✅ Pass | <details><summary>view</summary><img src=".github/visual-screenshots/windows-2025.png" width="600" alt="windows-2025 screenshot"></details> |
 
 <!-- visual:end -->
-
-## macOS
-
-| Version           | Working Status | Known Issues                                                                                                   |
-| ----------------- | -------------- | -------------------------------------------------------------------------------------------------------------- |
-| 14.15 Sonoma      | ✅ Good        |                                                                                                                |
-| 10.14 Mojave      | ✅ Good        | [#147](https://github.com/maxogden/menubar/issues/147), [#215](https://github.com/maxogden/menubar/issues/215) |
-| 10.13 High Sierra | ✅ Good        |                                                                                                                |
-
-## Windows
-
-| Version    | Working Status | Known Issues |
-| ---------- | -------------- | ------------ |
-| Windows 11 | ✅ Good        |              |
-| Windows 10 | ✅ Good        |              |
-| Windows 8  | ✅ Good        |              |
-
-## Linux
-
-| Distribution  | Desktop Environment | Working Status | Known Issues                                           |
-| ------------- | ------------------- | -------------- | ------------------------------------------------------ |
-| openSUSE 13.1 | Xfce 4.10.1         | ❌ Bad         | [#123](https://github.com/maxogden/menubar/issues/123) |
-| Ubuntu 18.04  | Unity               | ✅ Good        |                                                        |
-| Ubuntu 14.04  | Unity               | ❌ Bad         | [#68](https://github.com/maxogden/menubar/issues/68)   |
