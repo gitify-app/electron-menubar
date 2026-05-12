@@ -51,11 +51,15 @@ jobs:
                   exit 1
             - name: Build library
               run: bun run build
-            - name: Hide menu bar clock
+            - name: Hide menu bar clock and dock
               run: |
+                  defaults -currentHost write com.apple.controlcenter Clock -int 16
                   defaults write com.apple.controlcenter "NSStatusItem Visible Clock" -bool false
-                  killall ControlCenter SystemUIServer 2>/dev/null || true
-                  sleep 5
+                  defaults write com.apple.dock autohide -bool true
+                  defaults write com.apple.dock autohide-delay -float 1000
+                  defaults write com.apple.dock no-bouncing -bool true
+                  killall ControlCenter Dock SystemUIServer 2>/dev/null || true
+                  sleep 8
             - name: Run visual test
               env:
                   VISUAL_KEY: ${{ matrix.key }}
@@ -274,7 +278,7 @@ jobs:
                   sleep 3
                   dbus-run-session -- bash -c '
                       export DISPLAY=:99
-                      LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1 FAKETIME="@2026-01-01 00:00:00" bash -c "$PANEL_CMD" &
+                      LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketimeMT.so.1 FAKETIME="@2026-01-01 00:00:00" bash -c "$PANEL_CMD" &
                       PANEL_PID=$!
                       sleep "$PANEL_WARMUP"
                       DISPLAY="$TEST_DISPLAY" bun run test:visual
@@ -461,9 +465,15 @@ jobs:
                   VISUAL_PREPARE_CMD: |
                       Get-ChildItem 'HKCU:\Control Panel\NotifyIconSettings' -ErrorAction SilentlyContinue | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name IsPromoted -Value 1 -Type DWord -Force };
                       Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name HideClock -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue;
+                      Set-Service -Name w32time -StartupType Disabled -ErrorAction SilentlyContinue;
+                      Stop-Service -Name w32time -Force -ErrorAction SilentlyContinue;
+                      Set-Date -Date '2026-01-01 00:00:00' -ErrorAction SilentlyContinue;
+                      Stop-Process -Name notepad -Force -ErrorAction SilentlyContinue;
                       Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
                       Start-Process explorer;
-                      Start-Sleep -Seconds 6
+                      Start-Sleep -Seconds 6;
+                      (New-Object -ComObject Shell.Application).MinimizeAll();
+                      Start-Sleep -Seconds 2
               run: bun run test:visual
             - name: Upload artifacts
               if: always()

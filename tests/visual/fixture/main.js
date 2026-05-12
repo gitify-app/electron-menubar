@@ -35,6 +35,9 @@ mb.on('ready', () => {
   console.log('VISUAL:ready');
   mb.showWindow()
     .then(() => {
+      // Force topmost so the screenshot captures our window even when GHA
+      // runners pre-launch File Explorer / Notepad windows over the tray area.
+      mb.window?.setAlwaysOnTop(true, 'screen-saver');
       console.log('VISUAL:window-shown');
     })
     .catch((err) => {
