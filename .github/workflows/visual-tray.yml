@@ -274,7 +274,7 @@ jobs:
                   sleep 3
                   dbus-run-session -- bash -c '
                       export DISPLAY=:99
-                      faketime "@2026-01-01 00:00:00" bash -c "$PANEL_CMD" &
+                      faketime "2026-01-01 00:00:00 x0.0" bash -c "$PANEL_CMD" &
                       PANEL_PID=$!
                       sleep "$PANEL_WARMUP"
                       DISPLAY="$TEST_DISPLAY" bun run test:visual
