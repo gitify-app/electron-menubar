@@ -1,5 +1,5 @@
 const path = require('node:path');
-const { nativeImage } = require('electron');
+const { nativeImage, screen } = require('electron');
 const { menubar } = require('../../../lib/index.cjs');
 
 const SIZE = 22;
@@ -38,6 +38,20 @@ mb.on('ready', () => {
       // Force topmost so the screenshot captures our window even when GHA
       // runners pre-launch File Explorer / Notepad windows over the tray area.
       mb.window?.setAlwaysOnTop(true, 'screen-saver');
+      // Emit screen coords of tray icon + popover window so run.ts can mask
+      // the screenshot to just these rects (eliminating clock/dock/wallpaper
+      // drift between runs). Bounds are in DIPs; scale up for physical pixels.
+      const trayBounds = mb.tray.getBounds();
+      const windowBounds = mb.window?.getBounds() ?? {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+      };
+      const scale = screen.getPrimaryDisplay().scaleFactor;
+      console.log(
+        `VISUAL:bounds=${JSON.stringify({ tray: trayBounds, window: windowBounds, scale })}`,
+      );
       console.log('VISUAL:window-shown');
     })
     .catch((err) => {

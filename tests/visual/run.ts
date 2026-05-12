@@ -26,6 +26,7 @@ const TRAY_SATURATED_FALLBACK = 100;
 // stray app windows (windows-2022 was passing on 81 noise pixels from
 // background JSON text before this was tightened).
 const WINDOW_EXACT_THRESHOLD = 2000;
+const RECT_PADDING = 4;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
@@ -45,13 +46,40 @@ const child = spawn(electronBin, electronArgs, {
   env: { ...process.env, ELECTRON_DISABLE_SANDBOX: '1' },
 });
 
+interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+interface Bounds {
+  tray: Rect;
+  window: Rect;
+  scale: number;
+}
+
 let ready = false;
 let windowShown = false;
+let bounds: Bounds | null = null;
+let stdoutBuf = '';
 child.stdout.on('data', (chunk: Buffer) => {
   const s = chunk.toString();
   process.stdout.write(s);
-  if (s.includes('VISUAL:ready')) ready = true;
-  if (s.includes('VISUAL:window-shown')) windowShown = true;
+  stdoutBuf += s;
+  const lines = stdoutBuf.split('\n');
+  stdoutBuf = lines.pop() ?? '';
+  for (const line of lines) {
+    if (line.includes('VISUAL:ready')) ready = true;
+    if (line.includes('VISUAL:window-shown')) windowShown = true;
+    const m = line.match(/VISUAL:bounds=(\{.+\})/);
+    if (m) {
+      try {
+        bounds = JSON.parse(m[1]) as Bounds;
+      } catch {
+        console.error('failed to parse VISUAL:bounds payload:', m[1]);
+      }
+    }
+  }
 });
 child.stderr.on('data', (chunk: Buffer) => process.stderr.write(chunk));
 child.on('exit', (code) => {
@@ -102,6 +130,7 @@ try {
 child.kill('SIGTERM');
 
 const png = PNG.sync.read(readFileSync(screenshotPath));
+
 // Tray icon: magenta/green checker. Some panels (notably Plasma) recolor
 // tray icons, so we also count "saturated but not window-colored" pixels
 // as a tray-detection fallback.
@@ -144,6 +173,19 @@ writeResult({
   windowDetected,
 });
 
+// Overwrite the on-disk screenshot with a mask that keeps only the tray-icon
+// and popover-window rects. The pixel-check above ran on the original
+// full-screen capture; the saved PNG is the clean version for diffing.
+if (bounds) {
+  const masked = maskToRects(png, bounds);
+  writeFileSync(screenshotPath, PNG.sync.write(masked));
+  console.log(
+    `masked screenshot to tray=${rectStr(bounds.tray, bounds.scale)} window=${rectStr(bounds.window, bounds.scale)}`,
+  );
+} else {
+  console.warn('VISUAL:bounds not received; leaving screenshot unmasked');
+}
+
 if (status === 'fail') process.exit(1);
 
 function capture(path: string): void {
@@ -178,4 +220,52 @@ function writeResult(payload: Record<string, unknown>): void {
       2,
     ),
   );
+}
+
+function rectStr(r: Rect, scale: number): string {
+  const w = Math.round(r.width * scale);
+  const h = Math.round(r.height * scale);
+  const x = Math.round(r.x * scale);
+  const y = Math.round(r.y * scale);
+  return `${w}x${h}@${x},${y}`;
+}
+
+// Blacks out everything outside the tray + window rects (scaled from DIPs
+// to physical pixels). Drops OS chrome, wallpaper, clocks, dock icons —
+// only marker content survives so diffs reflect real rendering changes.
+function maskToRects(src: PNG, b: Bounds): PNG {
+  const scale = b.scale || 1;
+  const keep = [b.tray, b.window]
+    .filter((r) => r.width > 0 && r.height > 0)
+    .map((r) => ({
+      x: Math.max(0, Math.round(r.x * scale) - RECT_PADDING),
+      y: Math.max(0, Math.round(r.y * scale) - RECT_PADDING),
+      x2: Math.min(
+        src.width,
+        Math.round((r.x + r.width) * scale) + RECT_PADDING,
+      ),
+      y2: Math.min(
+        src.height,
+        Math.round((r.y + r.height) * scale) + RECT_PADDING,
+      ),
+    }));
+  const out = new PNG({ width: src.width, height: src.height });
+  for (let i = 0; i < out.data.length; i += 4) {
+    out.data[i] = 0;
+    out.data[i + 1] = 0;
+    out.data[i + 2] = 0;
+    out.data[i + 3] = 255;
+  }
+  for (const r of keep) {
+    for (let y = r.y; y < r.y2; y++) {
+      for (let x = r.x; x < r.x2; x++) {
+        const i = (y * src.width + x) * 4;
+        out.data[i] = src.data[i];
+        out.data[i + 1] = src.data[i + 1];
+        out.data[i + 2] = src.data[i + 2];
+        out.data[i + 3] = 255;
+      }
+    }
+  }
+  return out;
 }
