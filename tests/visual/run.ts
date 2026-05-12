@@ -142,6 +142,8 @@ let exactTray = 0;
 let saturatedNonWindow = 0;
 let windowWhite = 0;
 let windowBlack = 0;
+let globalWhite = 0;
+let globalBlack = 0;
 for (let y = 0; y < png.height; y++) {
   const inWinY = winRect && y >= winRect.y && y < winRect.y2;
   for (let x = 0; x < png.width; x++) {
@@ -155,9 +157,13 @@ for (let y = 0; y < png.height; y++) {
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
     if (max > 180 && max - min > 140) saturatedNonWindow++;
+    const isWhite = r > 240 && g > 240 && b > 240;
+    const isBlack = r < 15 && g < 15 && b < 15;
+    if (isWhite) globalWhite++;
+    if (isBlack) globalBlack++;
     if (inWinY && x >= winRect!.x && x < winRect!.x2) {
-      if (r > 240 && g > 240 && b > 240) windowWhite++;
-      else if (r < 15 && g < 15 && b < 15) windowBlack++;
+      if (isWhite) windowWhite++;
+      else if (isBlack) windowBlack++;
     }
   }
 }
@@ -165,14 +171,21 @@ for (let y = 0; y < png.height; y++) {
 const trayDetected =
   exactTray >= TRAY_EXACT_THRESHOLD ||
   saturatedNonWindow >= TRAY_SATURATED_FALLBACK;
-const windowDetected =
+// Window detected inside the reported bounds OR globally — covers GNOME
+// where Mutter renders the window at a different position than getBounds()
+// reports. Global thresholds set just below the fully-rendered expected
+// counts (16800 white + 3200 black) to reject OS chrome false positives.
+const windowDetectedBounded =
   winRect !== null &&
   windowWhite >= WINDOW_WHITE_THRESHOLD &&
   windowBlack >= WINDOW_BLACK_THRESHOLD;
+const windowDetectedGlobal =
+  globalWhite >= 14000 && globalBlack >= 2500;
+const windowDetected = windowDetectedBounded || windowDetectedGlobal;
 const status: 'pass' | 'fail' =
   trayDetected && windowDetected ? 'pass' : 'fail';
 console.log(
-  `exactTray=${exactTray} saturatedNonWindow=${saturatedNonWindow} windowWhite=${windowWhite} windowBlack=${windowBlack} → ${status} (tray=${trayDetected}, window=${windowDetected})`,
+  `exactTray=${exactTray} saturatedNonWindow=${saturatedNonWindow} windowWhite=${windowWhite} windowBlack=${windowBlack} globalWhite=${globalWhite} globalBlack=${globalBlack} → ${status} (tray=${trayDetected}, window=${windowDetected} bounded=${windowDetectedBounded} global=${windowDetectedGlobal})`,
 );
 writeResult({
   status,
@@ -180,8 +193,12 @@ writeResult({
   saturatedNonWindow,
   windowWhite,
   windowBlack,
+  globalWhite,
+  globalBlack,
   trayDetected,
   windowDetected,
+  windowDetectedBounded,
+  windowDetectedGlobal,
 });
 
 // Overwrite the on-disk screenshot with a mask that keeps only the tray-icon
