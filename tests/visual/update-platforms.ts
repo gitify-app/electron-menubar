@@ -18,7 +18,8 @@ const targetPath = process.argv[3] ?? 'PLATFORMS.md';
 const files = readdirSync(resultsDir).filter((f) => f.endsWith('.json'));
 const results: VisualResult[] = files
   .map(
-    (f) => JSON.parse(readFileSync(join(resultsDir, f), 'utf8')) as VisualResult,
+    (f) =>
+      JSON.parse(readFileSync(join(resultsDir, f), 'utf8')) as VisualResult,
   )
   .sort((a, b) => a.label.localeCompare(b.label));
 
