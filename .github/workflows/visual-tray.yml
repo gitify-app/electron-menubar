@@ -51,6 +51,11 @@ jobs:
                   exit 1
             - name: Build library
               run: bun run build
+            - name: Hide menu bar clock
+              run: |
+                  defaults write com.apple.controlcenter "NSStatusItem Visible Clock" -bool false
+                  killall ControlCenter SystemUIServer 2>/dev/null || true
+                  sleep 5
             - name: Run visual test
               env:
                   VISUAL_KEY: ${{ matrix.key }}
@@ -204,7 +209,7 @@ jobs:
               run: |
                   sudo apt-get update -qq
                   sudo apt-get install -y --no-install-recommends \
-                      xvfb imagemagick dbus-x11 \
+                      xvfb imagemagick dbus-x11 faketime \
                       libgtk-3-0 libnss3 libxss1 libasound2t64 \
                       libgbm1 libatk-bridge2.0-0 libdrm2 \
                       libxtst6 libnotify4 libxrandr2 \
@@ -269,7 +274,7 @@ jobs:
                   sleep 3
                   dbus-run-session -- bash -c '
                       export DISPLAY=:99
-                      eval "$PANEL_CMD" &
+                      LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketime.so.1 FAKETIME="@2026-01-01 00:00:00" bash -c "$PANEL_CMD" &
                       PANEL_PID=$!
                       sleep "$PANEL_WARMUP"
                       DISPLAY="$TEST_DISPLAY" bun run test:visual
@@ -455,6 +460,7 @@ jobs:
                   VISUAL_LABEL: ${{ matrix.label }}
                   VISUAL_PREPARE_CMD: |
                       Get-ChildItem 'HKCU:\Control Panel\NotifyIconSettings' -ErrorAction SilentlyContinue | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name IsPromoted -Value 1 -Type DWord -Force };
+                      Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name HideClock -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue;
                       Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
                       Start-Process explorer;
                       Start-Sleep -Seconds 6
