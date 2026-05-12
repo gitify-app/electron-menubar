@@ -9,23 +9,20 @@
         padding: 0;
         width: 100vw;
         height: 100vh;
+        background: rgb(255, 255, 255);
       }
-      body {
-        display: flex;
-        flex-direction: column;
-      }
-      .cyan {
-        flex: 1;
-        background: rgb(0, 255, 255);
-      }
-      .yellow {
-        flex: 1;
-        background: rgb(255, 255, 0);
+      .square {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 80px;
+        height: 40px;
+        background: rgb(0, 0, 0);
       }
     </style>
   </head>
   <body>
-    <div class="cyan"></div>
-    <div class="yellow"></div>
+    <div class="square"></div>
   </body>
 </html>
