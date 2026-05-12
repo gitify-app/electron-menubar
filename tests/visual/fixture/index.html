@@ -2,8 +2,30 @@
 <html>
   <head>
     <title>menubar visual fixture</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .cyan {
+        flex: 1;
+        background: rgb(0, 255, 255);
+      }
+      .yellow {
+        flex: 1;
+        background: rgb(255, 255, 0);
+      }
+    </style>
   </head>
   <body>
-    <p>tray-icon visual fixture</p>
+    <div class="cyan"></div>
+    <div class="yellow"></div>
   </body>
 </html>
