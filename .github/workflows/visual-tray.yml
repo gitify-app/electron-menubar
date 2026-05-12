@@ -234,6 +234,14 @@ jobs:
                   packages: ${{ matrix.apt }}
                   version: '1.0'
                   execute_install_scripts: 'true'
+            # The action's execute_install_scripts only runs a subset of
+            # postinst (e.g. polkitd) — glib-compile-schemas is silently
+            # skipped, so we run it explicitly. Without this, budgie-daemon
+            # and cinnamon-session crash with "Settings schema ... not
+            # installed" on cache restore.
+            - name: Compile glib schemas after cache restore
+              if: matrix.cache_apt
+              run: sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
             - name: Install desktop environment (uncached)
               if: '!matrix.cache_apt'
               env:
