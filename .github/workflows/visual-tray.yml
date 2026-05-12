@@ -209,7 +209,7 @@ jobs:
               run: |
                   sudo apt-get update -qq
                   sudo apt-get install -y --no-install-recommends \
-                      xvfb imagemagick dbus-x11 \
+                      xvfb imagemagick dbus-x11 faketime \
                       libgtk-3-0 libnss3 libxss1 libasound2t64 \
                       libgbm1 libatk-bridge2.0-0 libdrm2 \
                       libxtst6 libnotify4 libxrandr2 \
@@ -274,7 +274,7 @@ jobs:
                   sleep 3
                   dbus-run-session -- bash -c '
                       export DISPLAY=:99
-                      eval "$PANEL_CMD" &
+                      faketime "@2026-01-01 00:00:00" bash -c "$PANEL_CMD" &
                       PANEL_PID=$!
                       sleep "$PANEL_WARMUP"
                       DISPLAY="$TEST_DISPLAY" bun run test:visual
