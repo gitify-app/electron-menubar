@@ -47,6 +47,13 @@ mb.on('ready', () => {
       // Force topmost so the screenshot captures our window even when GHA
       // runners pre-launch File Explorer / Notepad windows over the tray area.
       mb.window?.setAlwaysOnTop(true, 'screen-saver');
+      // Move the window away from any OS panel/taskbar. Linux SNI panels
+      // return {0,0,0,0} for tray bounds, so menubar's Positioner falls back
+      // to the bottom-right corner — which on bottom-panel DEs (Budgie,
+      // Cinnamon, KDE) puts our opaque window right on top of the tray icon
+      // and the test can no longer detect it. Moving to a fixed mid-screen
+      // position guarantees no overlap on any platform.
+      mb.window?.setPosition(400, 200);
       // Wait for the WM (especially Mutter on GNOME) to settle the window's
       // final position before querying — getBounds() right after showWindow()
       // returned a stale/intended coord on GNOME while the actual paint was
