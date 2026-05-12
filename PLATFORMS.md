@@ -24,6 +24,20 @@ _Continuously verified by [visual tray rendering tests](.github/workflows/visual
 
 | Platform | Tray + Window |
 | -------- | ------------- |
+| Linux (Budgie) | ✅ Pass |
+| Linux (Cinnamon) | ✅ Pass |
+| Linux (GNOME) | ✅ Pass |
+| Linux (KDE Plasma) | ✅ Pass |
+| Linux (LXQt) | ✅ Pass |
+| Linux (MATE) | ✅ Pass |
+| Linux (Sway/Waybar) | ✅ Pass |
+| Linux (Tint2) | ✅ Pass |
+| Linux (Xfce) | ✅ Pass |
+| macOS 14 (Sonoma) | ✅ Pass |
+| macOS 15 (Sequoia) | ✅ Pass |
+| macOS 26 (Tahoe) | ✅ Pass |
+| Windows Server 2022 | ✅ Pass |
+| Windows Server 2025 | ✅ Pass |
 
 <!-- visual:end -->
 
