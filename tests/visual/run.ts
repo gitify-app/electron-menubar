@@ -179,13 +179,23 @@ const windowDetectedBounded =
   winRect !== null &&
   windowWhite >= WINDOW_WHITE_THRESHOLD &&
   windowBlack >= WINDOW_BLACK_THRESHOLD;
-const windowDetectedGlobal =
-  globalWhite >= 14000 && globalBlack >= 2500;
+const windowDetectedGlobal = globalWhite >= 14000 && globalBlack >= 2500;
 const windowDetected = windowDetectedBounded || windowDetectedGlobal;
 const status: 'pass' | 'fail' =
   trayDetected && windowDetected ? 'pass' : 'fail';
 console.log(
-  `exactTray=${exactTray} saturatedNonWindow=${saturatedNonWindow} windowWhite=${windowWhite} windowBlack=${windowBlack} globalWhite=${globalWhite} globalBlack=${globalBlack} → ${status} (tray=${trayDetected}, window=${windowDetected} bounded=${windowDetectedBounded} global=${windowDetectedGlobal})`,
+  [
+    `exactTray=${exactTray}`,
+    `saturatedNonWindow=${saturatedNonWindow}`,
+    `windowWhite=${windowWhite}`,
+    `windowBlack=${windowBlack}`,
+    `globalWhite=${globalWhite}`,
+    `globalBlack=${globalBlack}`,
+    `→ ${status}`,
+    `(tray=${trayDetected}, window=${windowDetected}`,
+    `bounded=${windowDetectedBounded}`,
+    `global=${windowDetectedGlobal})`,
+  ].join(' '),
 );
 writeResult({
   status,
