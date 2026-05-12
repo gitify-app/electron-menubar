@@ -51,6 +51,11 @@ jobs:
                   exit 1
             - name: Build library
               run: bun run build
+            - name: Hide menu bar clock
+              run: |
+                  defaults write com.apple.controlcenter "NSStatusItem Visible Clock" -bool false
+                  killall ControlCenter SystemUIServer 2>/dev/null || true
+                  sleep 5
             - name: Run visual test
               env:
                   VISUAL_KEY: ${{ matrix.key }}
