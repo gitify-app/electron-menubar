@@ -18,6 +18,15 @@ _Continuously verified by [E2E smoke tests](.github/workflows/e2e.yml)._
 
 <!-- platforms:end -->
 
+<!-- visual:start -->
+
+_Continuously verified by [visual tray rendering tests](.github/workflows/visual-tray.yml). Each run boots the menubar fixture, screenshots the OS panel, and asserts both the tray icon and the popover window are painted._
+
+| Platform | Tray + Window |
+| -------- | ------------- |
+
+<!-- visual:end -->
+
 ## macOS
 
 | Version           | Working Status | Known Issues                                                                                                   |

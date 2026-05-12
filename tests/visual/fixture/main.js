@@ -33,4 +33,11 @@ const mb = menubar({
 
 mb.on('ready', () => {
   console.log('VISUAL:ready');
+  mb.showWindow()
+    .then(() => {
+      console.log('VISUAL:window-shown');
+    })
+    .catch((err) => {
+      console.error('VISUAL:window-error', err);
+    });
 });
