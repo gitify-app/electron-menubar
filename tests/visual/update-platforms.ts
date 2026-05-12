@@ -28,8 +28,14 @@ if (results.length === 0) {
   process.exit(1);
 }
 
+const screenshotCell = (key: string): string =>
+  `<details><summary>view</summary><img src=".github/visual-screenshots/${key}.png" width="600" alt="${key} screenshot"></details>`;
+
 const rows = results
-  .map((r) => `| ${r.label} | ${r.status === 'pass' ? '✅ Pass' : '❌ Fail'} |`)
+  .map(
+    (r) =>
+      `| ${r.label} | ${r.status === 'pass' ? '✅ Pass' : '❌ Fail'} | ${screenshotCell(r.key)} |`,
+  )
   .join('\n');
 
 const block = [
@@ -37,8 +43,8 @@ const block = [
   '',
   '_Continuously verified by [visual tray rendering tests](.github/workflows/visual-tray.yml). Each run boots the menubar fixture, screenshots the OS panel, and asserts both the tray icon and the popover window are painted._',
   '',
-  '| Platform | Tray + Window |',
-  '| -------- | ------------- |',
+  '| Platform | Tray + Window | Screenshot |',
+  '| -------- | ------------- | ---------- |',
   rows,
   '',
   END,
