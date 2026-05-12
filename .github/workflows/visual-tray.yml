@@ -471,9 +471,7 @@ jobs:
                       Stop-Process -Name notepad -Force -ErrorAction SilentlyContinue;
                       Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
                       Start-Process explorer;
-                      Start-Sleep -Seconds 6;
-                      (New-Object -ComObject Shell.Application).MinimizeAll();
-                      Start-Sleep -Seconds 2
+                      Start-Sleep -Seconds 6
               run: bun run test:visual
             - name: Upload artifacts
               if: always()
