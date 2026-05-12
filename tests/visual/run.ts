@@ -26,6 +26,7 @@ const TRAY_SATURATED_FALLBACK = 100;
 // stray app windows (windows-2022 was passing on 81 noise pixels from
 // background JSON text before this was tightened).
 const WINDOW_EXACT_THRESHOLD = 2000;
+const RECT_PADDING = 4;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
@@ -221,10 +222,12 @@ function writeResult(payload: Record<string, unknown>): void {
   );
 }
 
-const RECT_PADDING = 4;
-
 function rectStr(r: Rect, scale: number): string {
-  return `${Math.round(r.width * scale)}x${Math.round(r.height * scale)}@${Math.round(r.x * scale)},${Math.round(r.y * scale)}`;
+  const w = Math.round(r.width * scale);
+  const h = Math.round(r.height * scale);
+  const x = Math.round(r.x * scale);
+  const y = Math.round(r.y * scale);
+  return `${w}x${h}@${x},${y}`;
 }
 
 // Blacks out everything outside the tray + window rects (scaled from DIPs
@@ -237,8 +240,14 @@ function maskToRects(src: PNG, b: Bounds): PNG {
     .map((r) => ({
       x: Math.max(0, Math.round(r.x * scale) - RECT_PADDING),
       y: Math.max(0, Math.round(r.y * scale) - RECT_PADDING),
-      x2: Math.min(src.width, Math.round((r.x + r.width) * scale) + RECT_PADDING),
-      y2: Math.min(src.height, Math.round((r.y + r.height) * scale) + RECT_PADDING),
+      x2: Math.min(
+        src.width,
+        Math.round((r.x + r.width) * scale) + RECT_PADDING,
+      ),
+      y2: Math.min(
+        src.height,
+        Math.round((r.y + r.height) * scale) + RECT_PADDING,
+      ),
     }));
   const out = new PNG({ width: src.width, height: src.height });
   for (let i = 0; i < out.data.length; i += 4) {
