@@ -19,7 +19,9 @@ const READY_TIMEOUT_MS = 30_000;
 const POST_READY_DELAY_MS = Number(
   process.env.VISUAL_POST_READY_DELAY_MS ?? 3_000,
 );
-const PASS_THRESHOLD = 50;
+const TRAY_EXACT_THRESHOLD = 50;
+const TRAY_SATURATED_FALLBACK = 100;
+const WINDOW_EXACT_THRESHOLD = 50;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
@@ -40,10 +42,12 @@ const child = spawn(electronBin, electronArgs, {
 });
 
 let ready = false;
+let windowShown = false;
 child.stdout.on('data', (chunk: Buffer) => {
   const s = chunk.toString();
   process.stdout.write(s);
   if (s.includes('VISUAL:ready')) ready = true;
+  if (s.includes('VISUAL:window-shown')) windowShown = true;
 });
 child.stderr.on('data', (chunk: Buffer) => process.stderr.write(chunk));
 child.on('exit', (code) => {
@@ -63,6 +67,10 @@ if (!ready) {
 }
 
 await new Promise((r) => setTimeout(r, POST_READY_DELAY_MS));
+
+if (!windowShown) {
+  console.warn('fixture did not emit VISUAL:window-shown before screenshot');
+}
 
 const prepareCmd = process.env.VISUAL_PREPARE_CMD;
 if (prepareCmd) {
@@ -90,31 +98,47 @@ try {
 child.kill('SIGTERM');
 
 const png = PNG.sync.read(readFileSync(screenshotPath));
-// Some panels (notably Plasma) recolor tray icons. The checker pattern
-// guarantees that whatever color transform is applied, the result has
-// strongly saturated pixels — far brighter than typical wallpaper noise.
-let exactMatch = 0;
-let saturated = 0;
+// Tray icon: magenta/green checker. Some panels (notably Plasma) recolor
+// tray icons, so we also count "saturated but not window-colored" pixels
+// as a tray-detection fallback.
+// Window content: cyan/yellow split. HTML rendering is not platform-recolored,
+// so an exact match is sufficient.
+let exactTray = 0;
+let exactWindow = 0;
+let saturatedNonWindow = 0;
 for (let i = 0; i < png.data.length; i += 4) {
   const r = png.data[i];
   const g = png.data[i + 1];
   const b = png.data[i + 2];
   const isMagenta = r > 200 && g < 80 && b > 200;
   const isGreen = r < 80 && g > 200 && b < 80;
-  if (isMagenta || isGreen) exactMatch++;
+  const isCyan = r < 80 && g > 200 && b > 200;
+  const isYellow = r > 200 && g > 200 && b < 80;
+  if (isMagenta || isGreen) exactTray++;
+  if (isCyan || isYellow) exactWindow++;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  if (max > 180 && max - min > 140) saturated++;
+  if (max > 180 && max - min > 140 && !(isCyan || isYellow))
+    saturatedNonWindow++;
 }
 
+const trayDetected =
+  exactTray >= TRAY_EXACT_THRESHOLD ||
+  saturatedNonWindow >= TRAY_SATURATED_FALLBACK;
+const windowDetected = exactWindow >= WINDOW_EXACT_THRESHOLD;
 const status: 'pass' | 'fail' =
-  exactMatch >= PASS_THRESHOLD || saturated >= PASS_THRESHOLD * 2
-    ? 'pass'
-    : 'fail';
+  trayDetected && windowDetected ? 'pass' : 'fail';
 console.log(
-  `exactMatch=${exactMatch} saturated=${saturated} threshold=${PASS_THRESHOLD} → ${status}`,
+  `exactTray=${exactTray} exactWindow=${exactWindow} saturatedNonWindow=${saturatedNonWindow} → ${status} (tray=${trayDetected}, window=${windowDetected})`,
 );
-writeResult({ status, exactMatch, saturated });
+writeResult({
+  status,
+  exactTray,
+  exactWindow,
+  saturatedNonWindow,
+  trayDetected,
+  windowDetected,
+});
 
 if (status === 'fail') process.exit(1);
 
