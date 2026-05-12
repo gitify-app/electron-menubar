@@ -37,6 +37,13 @@ const mb = menubar({
     // through and made the bounds-rect detection see 0 white pixels.
     transparent: false,
     backgroundColor: '#FFFFFF',
+    // No window chrome: avoids GNOME Mutter's CSD header bar painting
+    // a blue/themed strip inside our 200x100 region.
+    frame: false,
+    // 200x100 is the *content* size; without this, the window's outer rect
+    // includes header bar/decorations and the inner HTML viewport ends up
+    // smaller, throwing off white-pixel counts.
+    useContentSize: true,
   },
 });
 
@@ -54,6 +61,9 @@ mb.on('ready', () => {
       // and the test can no longer detect it. Moving to a fixed mid-screen
       // position guarantees no overlap on any platform.
       mb.window?.setPosition(400, 200);
+      // Focus prevents Mutter from rendering the window as "unfocused" with
+      // a dimming/tint overlay (was producing a navy-blue rect on GNOME).
+      mb.window?.focus();
       // Wait for the WM (especially Mutter on GNOME) to settle the window's
       // final position before querying — getBounds() right after showWindow()
       // returned a stale/intended coord on GNOME while the actual paint was
