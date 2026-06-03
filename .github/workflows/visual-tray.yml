@@ -505,6 +505,12 @@ jobs:
               env:
                   VISUAL_KEY: ${{ matrix.key }}
                   VISUAL_LABEL: ${{ matrix.label }}
+                  # Longer settle than the 3000ms default: the frameless fixture
+                  # window is shown at screen-center then moved to (400,200), and
+                  # on the slower Windows runners the capture could land before the
+                  # move fully settled, shifting the painted window a few px between
+                  # runs (a real but cosmetic diff that churned windows-2025).
+                  VISUAL_POST_READY_DELAY_MS: '6000'
                   VISUAL_PREPARE_CMD: |
                       Get-ChildItem 'HKCU:\Control Panel\NotifyIconSettings' -ErrorAction SilentlyContinue | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name IsPromoted -Value 1 -Type DWord -Force };
                       Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name HideClock -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue;
@@ -514,7 +520,7 @@ jobs:
                       Stop-Process -Name notepad -Force -ErrorAction SilentlyContinue;
                       Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
                       Start-Process explorer;
-                      Start-Sleep -Seconds 6
+                      Start-Sleep -Seconds 10
               run: bun run test:visual
             - name: Upload artifacts
               if: always()
@@ -548,11 +554,48 @@ jobs:
                   pattern: visual-*
                   merge-multiple: true
                   path: test-results/visual
+            - name: Install ImageMagick
+              run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends imagemagick
             - name: Sync screenshots into repo
+              # Only overwrite a committed screenshot when the new capture differs
+              # by a meaningful number of pixels. macOS rounded-corner anti-aliasing
+              # flips a handful of sub-perceptual pixels on every run; copying them
+              # blindly opened a churn PR on each push to main. Compare with a fuzz
+              # tolerance and a pixel budget so cosmetic AA jitter is ignored while
+              # real tray/window changes still land. Anything compare can't measure
+              # (dimension change, new platform) falls through to an update.
+              env:
+                  DIFF_BUDGET: '100'
+                  FUZZ: 2%
               run: |
                   mkdir -p .github/visual-screenshots
-                  rm -f .github/visual-screenshots/*.png
-                  cp test-results/visual/*.png .github/visual-screenshots/
+                  for new in test-results/visual/*.png; do
+                      [ -e "$new" ] || continue
+                      name=$(basename "$new")
+                      cur=".github/visual-screenshots/$name"
+                      if [ ! -f "$cur" ]; then
+                          echo "$name: new platform -> add"
+                          cp "$new" "$cur"
+                          continue
+                      fi
+                      # AE prints the differing-pixel count, optionally followed by
+                      # a normalized value in parentheses ("256 (0.00032)"). Keep the
+                      # leading integer; anything else (error text, empty) -> update.
+                      raw=$(compare -metric AE -fuzz "$FUZZ" "$cur" "$new" null: 2>&1 || true)
+                      diff_px=${raw%%[!0-9]*}
+                      case "$diff_px" in
+                          '' | *[!0-9]*)
+                              echo "$name: compare error or dimension change ($raw) -> update"
+                              cp "$new" "$cur" ;;
+                          *)
+                              if [ "$diff_px" -gt "$DIFF_BUDGET" ]; then
+                                  echo "$name: $diff_px px changed (> $DIFF_BUDGET) -> update"
+                                  cp "$new" "$cur"
+                              else
+                                  echo "$name: $diff_px px changed (<= $DIFF_BUDGET) -> keep committed"
+                              fi ;;
+                      esac
+                  done
                   ls -la .github/visual-screenshots/
             - name: Regenerate visual block
               run: bun run tests/visual/update-platforms.ts
