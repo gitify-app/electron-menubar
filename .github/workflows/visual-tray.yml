@@ -505,6 +505,12 @@ jobs:
               env:
                   VISUAL_KEY: ${{ matrix.key }}
                   VISUAL_LABEL: ${{ matrix.label }}
+                  # Longer settle than the 3000ms default: the frameless fixture
+                  # window is shown at screen-center then moved to (400,200), and
+                  # on the slower Windows runners the capture could land before the
+                  # move fully settled, shifting the painted window a few px between
+                  # runs (a real but cosmetic diff that churned windows-2025).
+                  VISUAL_POST_READY_DELAY_MS: '6000'
                   VISUAL_PREPARE_CMD: |
                       Get-ChildItem 'HKCU:\Control Panel\NotifyIconSettings' -ErrorAction SilentlyContinue | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name IsPromoted -Value 1 -Type DWord -Force };
                       Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name HideClock -Value 1 -Type DWord -Force -ErrorAction SilentlyContinue;
