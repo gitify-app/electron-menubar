@@ -520,7 +520,7 @@ jobs:
                       Stop-Process -Name notepad -Force -ErrorAction SilentlyContinue;
                       Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
                       Start-Process explorer;
-                      Start-Sleep -Seconds 6
+                      Start-Sleep -Seconds 10
               run: bun run test:visual
             - name: Upload artifacts
               if: always()
