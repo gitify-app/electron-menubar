@@ -33,24 +33,23 @@ jobs:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   persist-credentials: false
+            - uses: pnpm/action-setup@d15e628ca66d93ee5f352c71671a7bc6a97af5c9 # v6.0.8
             - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
               with:
                   node-version-file: .node-version
-            - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-              with:
-                  bun-version-file: package.json
+                  cache: pnpm
             - name: Install dependencies
               shell: bash
               run: |
                   for attempt in 1 2 3; do
-                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      if pnpm install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
                       echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
                       rm -rf node_modules/electron 2>/dev/null || true
                       sleep $((attempt * 5))
                   done
                   exit 1
             - name: Build library
-              run: bun run build
+              run: pnpm run build
             - name: Hide menu bar clock and dock
               run: |
                   defaults -currentHost write com.apple.controlcenter Clock -int 16
@@ -64,7 +63,7 @@ jobs:
               env:
                   VISUAL_KEY: ${{ matrix.key }}
                   VISUAL_LABEL: ${{ matrix.label }}
-              run: bun run test:visual
+              run: pnpm run test:visual
             - name: Upload artifacts
               if: always()
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -202,24 +201,23 @@ jobs:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   persist-credentials: false
+            - uses: pnpm/action-setup@d15e628ca66d93ee5f352c71671a7bc6a97af5c9 # v6.0.8
             - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
               with:
                   node-version-file: .node-version
-            - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-              with:
-                  bun-version-file: package.json
+                  cache: pnpm
             - name: Install dependencies
               shell: bash
               run: |
                   for attempt in 1 2 3; do
-                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      if pnpm install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
                       echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
                       rm -rf node_modules/electron 2>/dev/null || true
                       sleep $((attempt * 5))
                   done
                   exit 1
             - name: Build library
-              run: bun run build
+              run: pnpm run build
             - name: Install base dependencies
               run: |
                   sudo apt-get update -qq
@@ -319,7 +317,7 @@ jobs:
                       LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketimeMT.so.1 FAKETIME="@2026-01-01 00:00:00" bash -c "$PANEL_CMD" &
                       PANEL_PID=$!
                       sleep "$PANEL_WARMUP"
-                      DISPLAY="$TEST_DISPLAY" bun run test:visual
+                      DISPLAY="$TEST_DISPLAY" pnpm run test:visual
                       EXIT=$?
                       kill $PANEL_PID 2>/dev/null || true
                       exit $EXIT
@@ -364,24 +362,23 @@ jobs:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   persist-credentials: false
+            - uses: pnpm/action-setup@d15e628ca66d93ee5f352c71671a7bc6a97af5c9 # v6.0.8
             - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
               with:
                   node-version-file: .node-version
-            - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-              with:
-                  bun-version-file: package.json
+                  cache: pnpm
             - name: Install dependencies
               shell: bash
               run: |
                   for attempt in 1 2 3; do
-                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      if pnpm install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
                       echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
                       rm -rf node_modules/electron 2>/dev/null || true
                       sleep $((attempt * 5))
                   done
                   exit 1
             - name: Build library
-              run: bun run build
+              run: pnpm run build
             - name: Install Wayland compositor
               env:
                   APT_PACKAGES: ${{ matrix.apt }}
@@ -443,7 +440,7 @@ jobs:
                       COMP_PID=\$!
                       sleep 8
                       export WAYLAND_DISPLAY=wayland-1
-                      bun run test:visual
+                      pnpm run test:visual
                       EXIT=\$?
                       kill \$COMP_PID 2>/dev/null || true
                       exit \$EXIT
@@ -477,24 +474,23 @@ jobs:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   persist-credentials: false
+            - uses: pnpm/action-setup@d15e628ca66d93ee5f352c71671a7bc6a97af5c9 # v6.0.8
             - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
               with:
                   node-version-file: .node-version
-            - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-              with:
-                  bun-version-file: package.json
+                  cache: pnpm
             - name: Install dependencies
               shell: bash
               run: |
                   for attempt in 1 2 3; do
-                      if bun install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
+                      if pnpm install --frozen-lockfile && node -e "require('electron')" >/dev/null 2>&1; then exit 0; fi
                       echo "::warning::install/electron-binary attempt $attempt failed; retrying..."
                       rm -rf node_modules/electron 2>/dev/null || true
                       sleep $((attempt * 5))
                   done
                   exit 1
             - name: Build library
-              run: bun run build
+              run: pnpm run build
             - name: Set EnableAutoTray=0 (legacy Win10/2022 path, best-effort)
               shell: pwsh
               continue-on-error: true
@@ -521,7 +517,7 @@ jobs:
                       Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue;
                       Start-Process explorer;
                       Start-Sleep -Seconds 10
-              run: bun run test:visual
+              run: pnpm run test:visual
             - name: Upload artifacts
               if: always()
               uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -544,10 +540,10 @@ jobs:
               uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   persist-credentials: false
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+            - name: Setup Node.js
+              uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
               with:
-                  bun-version-file: package.json
+                  node-version-file: .node-version
             - name: Download all visual artifacts
               uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
               with:
@@ -598,7 +594,7 @@ jobs:
                   done
                   ls -la .github/visual-screenshots/
             - name: Regenerate visual block
-              run: bun run tests/visual/update-platforms.ts
+              run: node tests/visual/update-platforms.mts
             - name: Open PR if changed
               uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
               with:
