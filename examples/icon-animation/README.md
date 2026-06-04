@@ -1,14 +1,8 @@
-# example-menubar-native-menu
+# example-menubar-icon-animation
 
 ## Description
 
-This will create a menubar app with a native menu.
-
-Courtesy of @tslater in https://github.com/maxogden/menubar/issues/178.
-
-## Screenshot
-
-![screenshot](./screenshot.png)
+A menubar app that animates the tray icon by swapping images on an interval, useful for showing a "syncing" state while data is being fetched.
 
 ## Instructions
 
