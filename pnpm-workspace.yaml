@@ -1,0 +1,11 @@
+# Force vite to resolve to the Vite+ core bundle. pnpm 11 reads overrides from
+# pnpm-workspace.yaml rather than the package.json "pnpm" field.
+overrides:
+  vite: npm:@voidzero-dev/vite-plus-core@latest
+
+# Dependencies allowed to run install scripts. electron downloads its prebuilt
+# binary here; esbuild (pulled in by vite-plus) fetches its platform binary.
+# Without these, pnpm skips the scripts and `require('electron')` throws.
+allowBuilds:
+  electron: true
+  esbuild: true
