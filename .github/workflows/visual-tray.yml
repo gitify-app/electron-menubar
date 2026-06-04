@@ -553,15 +553,23 @@ jobs:
             - name: Install ImageMagick
               run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends imagemagick
             - name: Sync screenshots into repo
-              # Only overwrite a committed screenshot when the new capture differs
-              # by a meaningful number of pixels. macOS rounded-corner anti-aliasing
-              # flips a handful of sub-perceptual pixels on every run; copying them
-              # blindly opened a churn PR on each push to main. Compare with a fuzz
-              # tolerance and a pixel budget so cosmetic AA jitter is ignored while
-              # real tray/window changes still land. Anything compare can't measure
-              # (dimension change, new platform) falls through to an update.
+              # Refresh a committed screenshot only when the new capture differs
+              # by more pixels than run-to-run cosmetic noise can explain.
+              # The saved PNG is masked to the tray + window rects but keeps
+              # pixels at their absolute screen coordinates, so when the OS places
+              # the tray icon a few pixels off between runs (the macOS menu bar
+              # relayout shifts the status item ~9px; Windows promotes the notify
+              # icon inconsistently) the identical icon diffs against the committed
+              # copy. Measured across recent refreshes this cosmetic churn reaches
+              # ~1700px, and the window's rounded-corner anti-aliasing adds more. A
+              # budget of 100 tripped on every push and opened an empty PR. 5000
+              # clears the cosmetic ceiling while staying far below any real
+              # rendering change. Regression detection does not rely on this gate:
+              # run.mts fails CI when the tray or window is not painted, and the
+              # status column is regenerated from the run JSON every push, so a
+              # real failure still surfaces even when the reference image is kept.
               env:
-                  DIFF_BUDGET: '100'
+                  DIFF_BUDGET: '5000'
                   FUZZ: 2%
               run: |
                   mkdir -p .github/visual-screenshots
