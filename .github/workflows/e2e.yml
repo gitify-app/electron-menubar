@@ -57,11 +57,14 @@ jobs:
             - name: Install dependencies
               shell: bash
               run: |
+                  # pnpm does not reliably run electron's postinstall via
+                  # allowBuilds, so invoke its installer explicitly to fetch the
+                  # binary (path.txt). Verify with a require() before proceeding.
                   for attempt in 1 2 3; do
-                      if pnpm install --frozen-lockfile; then
+                      if pnpm install --frozen-lockfile && node node_modules/electron/install.js && node -e "require('electron')" >/dev/null 2>&1; then
                           exit 0
                       fi
-                      echo "::warning::install attempt $attempt failed (often electron postinstall 502); retrying..."
+                      echo "::warning::install attempt $attempt failed (often electron 502); retrying..."
                       sleep $((attempt * 5))
                   done
                   echo "::error::install failed after 3 attempts"
