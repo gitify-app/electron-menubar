@@ -54,7 +54,6 @@
   },
   "scripts": {
     "build": "vp pack",
-    "deploy": "pnpm build && standard-version",
     "lint:check": "vp check",
     "lint": "vp check --fix",
     "test": "vp test",
@@ -69,7 +68,6 @@
     "@voidzero-dev/vite-plus-test": "latest",
     "electron": "^42.0.0",
     "pngjs": "^7.0.0",
-    "standard-version": "^9.5.0",
     "typescript": "^5.9.3",
     "vite-plus": "latest",
     "vitest": "npm:@voidzero-dev/vite-plus-test@latest"

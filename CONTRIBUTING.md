@@ -18,7 +18,11 @@ Thanks!
 
 ## Releases
 
-- commit your changes
-- `npm version <major|minor|patch>`
-- `git push && git push --tags` (or `git push` with `git config --global push.followTags true` on latest git)
-- `npm publish`
+Releases are automated with [release-please](https://github.com/googleapis/release-please) and driven entirely from [Conventional Commits](https://www.conventionalcommits.org/) on `main`:
+
+1. Merge PRs into `main` with Conventional Commit titles (`feat:`, `fix:`, `refactor:`, etc.). PR titles are validated in CI.
+2. release-please opens and maintains a "release" PR that bumps the version in `package.json`, updates `CHANGELOG.md`, and proposes the next [semver](https://semver.org/) version.
+3. Merge that release PR when ready. release-please then tags the release (`vX.Y.Z`) and creates the GitHub release.
+4. The tagged release triggers the publish workflow, which builds the library and publishes it to npm with provenance.
+
+No manual version bumping or `npm publish` is required.
