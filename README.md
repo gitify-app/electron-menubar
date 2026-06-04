@@ -1,8 +1,8 @@
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/gitify-app/menubar/test.yml)
-[![npm (scoped)](https://img.shields.io/npm/v/@gitify/menubar.svg)](https://www.npmjs.com/package/@gitify/menubar)
+[![npm](https://img.shields.io/npm/v/electron-menubar.svg)](https://www.npmjs.com/package/electron-menubar)
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/gitify-app/menubar)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/@gitify/menubar.svg)
-![npm bundle size](https://img.shields.io/bundlephobia/min/@gitify/menubar.svg)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/electron-menubar.svg)
+![npm bundle size](https://img.shields.io/bundlephobia/min/electron-menubar.svg)
 
 <br /><br /><br />
 
@@ -17,7 +17,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 
 ✅ Works on macOS, Windows and most Linuxes. See [tested platforms](./PLATFORMS.md).
 
-✅ 💥 [**3.6kB minified + gzipped**](https://bundlephobia.com/result?p=@gitify/menubar) 💥
+✅ 💥 [**3.6kB minified + gzipped**](https://bundlephobia.com/result?p=electron-menubar) 💥
 
 | <img src="assets/screenshot-macos-dark.png" height="250px" /> | <img src="assets/screenshot-windows.png" height="250px" /> | <img src="assets/screenshot-linux.png" height="250px" /> |
 | :-----------------------------------------------------------: | :--------------------------------------------------------: | :------------------------------------------------------: |
@@ -26,7 +26,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 ## Installation
 
 ```bash
-bun add @gitify/menubar
+bun add electron-menubar
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ bun add @gitify/menubar
 Starting with your own new project, run these commands:
 
 ```bash
-$ bun add @gitify/menubar
+$ bun add electron-menubar
 $ touch myApp.js
 $ touch index.html
 ```
@@ -42,7 +42,7 @@ $ touch index.html
 Fill `index.html` with some HTML, and `myApp.js` like this:
 
 ```javascript
-const { menubar } = require('@gitify/menubar');
+const { menubar } = require('electron-menubar');
 
 const mb = menubar();
 
