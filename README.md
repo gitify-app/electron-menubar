@@ -13,7 +13,7 @@
 
 This module provides boilerplate for setting up a menubar application using Electron. All you have to do is point it at your `index.html` and `menubar` will handle the rest.
 
-✅ Zero runtime dependencies, only one peer-dependency.
+✅ Zero runtime dependencies.
 
 ✅ Works on macOS, Windows and most Linuxes. See [tested platforms](./PLATFORMS.md).
 
