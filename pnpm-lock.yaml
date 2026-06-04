@@ -28,10 +28,10 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
       vite-plus:
-        specifier: latest
+        specifier: 0.1.24
         version: 0.1.24(@types/node@25.9.1)(typescript@5.9.3)(vite@8.0.16(@types/node@25.9.1))
       vitest:
-        specifier: npm:@voidzero-dev/vite-plus-test@latest
+        specifier: npm:@voidzero-dev/vite-plus-test@0.1.24
         version: '@voidzero-dev/vite-plus-test@0.1.24(@types/node@25.9.1)(typescript@5.9.3)(vite@8.0.16(@types/node@25.9.1))'
 
 packages:
