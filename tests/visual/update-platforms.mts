@@ -1,27 +1,25 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-interface PlatformResult {
+interface VisualResult {
   key: string;
   label: string;
   status: 'pass' | 'fail';
-  runUrl: string | null;
-  sha: string | null;
   date: string;
 }
 
-const START = '<!-- platforms:start -->';
-const END = '<!-- platforms:end -->';
+const START = '<!-- visual:start -->';
+const END = '<!-- visual:end -->';
 
-const resultsDir = process.argv[2] ?? 'test-results/platforms';
+const resultsDir = process.argv[2] ?? 'test-results/visual';
 const targetPath = process.argv[3] ?? 'PLATFORMS.md';
 
 const files = readdirSync(resultsDir).filter((f) => f.endsWith('.json'));
-const results: PlatformResult[] = files
+const results: VisualResult[] = files
   .map(
     (f) =>
-      JSON.parse(readFileSync(join(resultsDir, f), 'utf8')) as PlatformResult,
+      JSON.parse(readFileSync(join(resultsDir, f), 'utf8')) as VisualResult,
   )
   .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -30,17 +28,23 @@ if (results.length === 0) {
   process.exit(1);
 }
 
+const screenshotCell = (key: string): string =>
+  `<details><summary>view</summary><img src=".github/visual-screenshots/${key}.png" width="600" alt="${key} screenshot"></details>`;
+
 const rows = results
-  .map((r) => `| ${r.label} | ${r.status === 'pass' ? '✅ Pass' : '❌ Fail'} |`)
+  .map(
+    (r) =>
+      `| ${r.label} | ${r.status === 'pass' ? '✅ Pass' : '❌ Fail'} | ${screenshotCell(r.key)} |`,
+  )
   .join('\n');
 
 const block = [
   START,
   '',
-  '_Continuously verified by [E2E smoke tests](.github/workflows/e2e.yml)._',
+  '_Continuously verified by [visual tray rendering tests](.github/workflows/visual-tray.yml). Each run boots the menubar fixture, screenshots the OS panel, and asserts both the tray icon and the popover window are painted._',
   '',
-  '| Platform | Status |',
-  '| -------- | ------ |',
+  '| Platform | Tray + Window | Screenshot |',
+  '| -------- | ------------- | ---------- |',
   rows,
   '',
   END,
