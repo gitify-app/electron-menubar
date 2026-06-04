@@ -2,6 +2,56 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.0.1](https://github.com/gitify-app/menubar/compare/v10.0.0...v10.0.1) (2026-06-04)
+
+
+### Bug Fixes
+
+* position window beside tray on left taskbars ([#15](https://github.com/gitify-app/menubar/issues/15)) ([05fdfba](https://github.com/gitify-app/menubar/commit/05fdfba196bdb6157a74455e565b964c56e56c99))
+* reposition window on resize so setSize doesn't clip under taskbar ([#7](https://github.com/gitify-app/menubar/issues/7)) ([ad07479](https://github.com/gitify-app/menubar/commit/ad07479e6035d951b9f903028e92ab426b2bceb1))
+* **visual:** make sway respect window size and stop GNOME painting it blue ([#34](https://github.com/gitify-app/menubar/issues/34)) ([03f4b78](https://github.com/gitify-app/menubar/commit/03f4b785f9d6a534f11b3c1a3bb7f8397e0fc886))
+* **visual:** stop fixture window from covering Linux bottom panels ([#32](https://github.com/gitify-app/menubar/issues/32)) ([a0c0890](https://github.com/gitify-app/menubar/commit/a0c0890bb02c4e77c23e6d8fd67f403e240b3041))
+* **visual:** stop MinimizeAll from hiding our menubar window on Windows ([#26](https://github.com/gitify-app/menubar/issues/26)) ([1aab5fd](https://github.com/gitify-app/menubar/commit/1aab5fd899cebf4123a8fb6eacc0b536c3e95b2d))
+
+
+### Refactor
+
+* rename package to electron-menubar and slim published bundle ([#41](https://github.com/gitify-app/menubar/issues/41)) ([ce3b40c](https://github.com/gitify-app/menubar/commit/ce3b40c7c3fd15bbcbdbd7e73984cee242d67f3e))
+
+
+### Build
+
+* migrate package manager from bun to pnpm ([#40](https://github.com/gitify-app/menubar/issues/40)) ([f5791f3](https://github.com/gitify-app/menubar/commit/f5791f3f61db1d78c1bc194ed5d7f42e1bf330bb))
+* pin vite-plus toolchain and bump electron dev dependency ([#47](https://github.com/gitify-app/menubar/issues/47)) ([c8ab465](https://github.com/gitify-app/menubar/commit/c8ab46546cba524ea50cb725cc4632b150b8ac47))
+
+
+### CI
+
+* migrate from standard-version to release-please ([#43](https://github.com/gitify-app/menubar/issues/43)) ([ebda924](https://github.com/gitify-app/menubar/commit/ebda924bef7f02fd30a216ca2cf2a3a31c4f8cc3))
+* **visual:** cache apt packages for heavy Linux DEs ([#29](https://github.com/gitify-app/menubar/issues/29)) ([f2ddd8e](https://github.com/gitify-app/menubar/commit/f2ddd8ec1ae0c8d2d80b66b0d640727d03706957))
+* **visual:** commit screenshots and link them as collapsibles in PLATFORMS.md ([#18](https://github.com/gitify-app/menubar/issues/18)) ([b58b028](https://github.com/gitify-app/menubar/commit/b58b028572a50e29eefe179060625da9f53c0bf9))
+* **visual:** mark linux-gnome experimental until Mutter blue-paint is fixed ([#36](https://github.com/gitify-app/menubar/issues/36)) ([47a855d](https://github.com/gitify-app/menubar/commit/47a855d0c098bc79f03f4e1af59e653c110b5c67))
+* **visual:** pin time on screenshots to remove clock-driven diff noise ([#22](https://github.com/gitify-app/menubar/issues/22)) ([d06293d](https://github.com/gitify-app/menubar/commit/d06293d06c60fb2d2768ba4bd8efccbe68291a20))
+* **visual:** raise screenshot diff budget to stop empty churn PRs ([#48](https://github.com/gitify-app/menubar/issues/48)) ([3aff2ab](https://github.com/gitify-app/menubar/commit/3aff2ab1a3163612103abac6498ecdb3d4e57d5c))
+* **visual:** real per-platform clock suppression (v2) ([#25](https://github.com/gitify-app/menubar/issues/25)) ([cf87380](https://github.com/gitify-app/menubar/commit/cf873807db1ca702e4bd23884278803c4a755e29))
+* **visual:** stop churn PRs from non-deterministic tray screenshots ([#39](https://github.com/gitify-app/menubar/issues/39)) ([04cd05f](https://github.com/gitify-app/menubar/commit/04cd05f87cba119ec465407df8fae36b124b182d))
+
+
+### Documentation
+
+* drop manually maintained legacy platform tables from PLATFORMS.md ([#21](https://github.com/gitify-app/menubar/issues/21)) ([335fea4](https://github.com/gitify-app/menubar/commit/335fea41e8051da98c296c28bdc4744bb8ae59ec))
+* refresh visual tray rendering table ([#17](https://github.com/gitify-app/menubar/issues/17)) ([5029d7b](https://github.com/gitify-app/menubar/commit/5029d7bdfc58a405c583539e563f6b6d330c2e74))
+* refresh visual tray rendering table ([#19](https://github.com/gitify-app/menubar/issues/19)) ([0859faf](https://github.com/gitify-app/menubar/commit/0859faff4069a84308f96a2a8ea57c0df3520e9d))
+* refresh visual tray rendering table ([#20](https://github.com/gitify-app/menubar/issues/20)) ([267d037](https://github.com/gitify-app/menubar/commit/267d0374b9f0bc36f6abd44a6fd1147ee0ef2bdc))
+* refresh visual tray rendering table ([#23](https://github.com/gitify-app/menubar/issues/23)) ([3b69182](https://github.com/gitify-app/menubar/commit/3b69182054867bb1e3826bdb3a91122df8690093))
+* refresh visual tray rendering table ([#27](https://github.com/gitify-app/menubar/issues/27)) ([c8f74e4](https://github.com/gitify-app/menubar/commit/c8f74e4c0118d4504fe74fa4397c4afc7829b013))
+* refresh visual tray rendering table ([#30](https://github.com/gitify-app/menubar/issues/30)) ([dd0dd27](https://github.com/gitify-app/menubar/commit/dd0dd27c920eda188bf04f5d3a8016895a74c363))
+* refresh visual tray rendering table ([#33](https://github.com/gitify-app/menubar/issues/33)) ([3fed6a3](https://github.com/gitify-app/menubar/commit/3fed6a3a03c175312c959b7ff1133fa363595e56))
+* refresh visual tray rendering table ([#35](https://github.com/gitify-app/menubar/issues/35)) ([5aef134](https://github.com/gitify-app/menubar/commit/5aef13404be514416cb967349817562ebf24972c))
+* refresh visual tray rendering table ([#37](https://github.com/gitify-app/menubar/issues/37)) ([3aad2cd](https://github.com/gitify-app/menubar/commit/3aad2cddd78101ab521dcbadf3b024dfe6ac69f7))
+* refresh visual tray rendering table ([#38](https://github.com/gitify-app/menubar/issues/38)) ([6ce09d6](https://github.com/gitify-app/menubar/commit/6ce09d69823bf1e76a278da27fc4e96ab0bd44ba))
+* refresh visual tray rendering table ([#42](https://github.com/gitify-app/menubar/issues/42)) ([c757166](https://github.com/gitify-app/menubar/commit/c7571661a62de918e3385193c84cbe89f91aa510))
+
 ## [10.0.0](https://github.com/gitify-app/menubar/compare/v9.5.2...v10.0.0) (2026-05-11)
 
 First release under the `@gitify/menubar` scope. This is a hard fork of [`menubar`](https://github.com/maxogden/menubar), now independently maintained by the Gitify team with its own roadmap, release cadence, and toolchain. New package name, new repository, new owners.
