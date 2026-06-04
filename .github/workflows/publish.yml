@@ -12,7 +12,7 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
-            id-token: write # for npm provenance
+            id-token: write # for npm OIDC trusted publishing + provenance
 
         steps:
             - name: Checkout
@@ -36,6 +36,6 @@ jobs:
             - name: Build library
               run: pnpm run build
             - name: Publish to npm
+              # Auth + provenance via OIDC trusted publishing (no NPM_TOKEN needed).
+              # Requires the npm package to trust the entry-point workflow (release.yml).
               run: npm publish --provenance --access public
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
