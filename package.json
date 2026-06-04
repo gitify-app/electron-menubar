@@ -65,8 +65,6 @@
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/pngjs": "^6.0.5",
-    "@voidzero-dev/vite-plus-core": "latest",
-    "@voidzero-dev/vite-plus-test": "latest",
     "electron": "^42.0.0",
     "pngjs": "^7.0.0",
     "standard-version": "^9.5.0",

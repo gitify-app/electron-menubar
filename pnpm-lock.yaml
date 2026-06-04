@@ -18,12 +18,6 @@ importers:
       '@types/pngjs':
         specifier: ^6.0.5
         version: 6.0.5
-      '@voidzero-dev/vite-plus-core':
-        specifier: latest
-        version: 0.1.24(@types/node@25.9.1)(typescript@5.9.3)
-      '@voidzero-dev/vite-plus-test':
-        specifier: latest
-        version: 0.1.24(@types/node@25.9.1)(typescript@5.9.3)(vite@8.0.16(@types/node@25.9.1))
       electron:
         specifier: ^42.0.0
         version: 42.3.2
@@ -843,6 +837,7 @@ packages:
   electron@42.3.2:
     resolution: {integrity: sha512-R8qL6TMQ+u5r/l1mL6zWqqK3eQo6Bqi4ScmysgODcy+SNR76HQhvbZUEL/9GqNuF0fNFJxphz/bh/TC4jW8NbA==}
     engines: {node: '>= 22.12.0'}
+    deprecated: This version of Electron has a critical bug in Buffer handling, please upgrade to 42.3.3
     hasBin: true
 
   emoji-regex@8.0.0:
