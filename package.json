@@ -30,8 +30,9 @@
     "url": "https://github.com/gitify-app/menubar.git"
   },
   "files": [
-    "/assets",
-    "/lib"
+    "assets/IconTemplate.png",
+    "assets/IconTemplate@2x.png",
+    "lib"
   ],
   "main": "lib/index.cjs",
   "module": "lib/index.mjs",
