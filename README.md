@@ -17,7 +17,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 
 ✅ Works on macOS, Windows and most Linuxes. See [tested platforms](./PLATFORMS.md).
 
-✅ 💥 [**3.6kB minified + gzipped**](https://bundlephobia.com/result?p=electron-menubar) 💥
+✅ 💥 [**4.9kB minified + gzipped**](https://bundlephobia.com/result?p=electron-menubar) 💥
 
 | <img src="assets/screenshot-macos-dark.png" height="250px" /> | <img src="assets/screenshot-windows.png" height="250px" /> | <img src="assets/screenshot-linux.png" height="250px" /> |
 | :-----------------------------------------------------------: | :--------------------------------------------------------: | :------------------------------------------------------: |
@@ -121,16 +121,6 @@ The `Menubar` class is an event emitter:
 - `after-hide` - the line after `window.hide()` is called
 - `after-close` - after the `.window` (BrowserWindow) property has been deleted
 - `focus-lost` - emitted if always-on-top option is set and the user clicks away
-
-## Compatibility with Electron
-
-| menubar  | Electron                   | Notes                                                                                                                      |
-| -------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| 9.x.x    | >=9.x.x                    |                                                                                                                            |
-| 8.x.x    | 8.x.xx                     |                                                                                                                            |
-| 7.x.x    | 7.x.xx                     |                                                                                                                            |
-| 6.x.x    | >=4.x.x <7.x.x             | Not recommended for [security reasons](https://electronjs.org/docs/tutorial/security#17-use-a-current-version-of-electron) |
-| <= 5.x.x | <= 3.x.x                   | Please, _please_ don't use these old versions                                                                              |
 
 ## Tips
 
