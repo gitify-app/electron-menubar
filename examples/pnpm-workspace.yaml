@@ -1,0 +1,16 @@
+packages:
+  - arrow
+  - hello-world
+  - icon-animation
+  - native-menu
+
+overrides:
+  # Electron's installer hangs while extracting its binary (never writes
+  # path.txt) on Node 24.16+ because of a yauzl bug. Pin yauzl until the
+  # upstream fix ships. https://github.com/electron/electron/issues/51619
+  yauzl: 3.3.1
+
+# electron downloads its prebuilt binary in a postinstall script; without this
+# pnpm skips it and `electron .` fails to launch.
+allowBuilds:
+  electron: true
