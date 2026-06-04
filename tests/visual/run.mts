@@ -1,12 +1,16 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 import { PNG } from 'pngjs';
 
+// `electron`, required outside the Electron runtime, resolves to the binary
+// path. createRequire keeps that CJS behaviour in this ESM (.mts) module.
+const require = createRequire(import.meta.url);
 const electronBin: string = require('electron');
-const fixturePath = join(__dirname, 'fixture', 'main.js');
+const fixturePath = join(import.meta.dirname, 'fixture', 'main.js');
 
 const key = process.env.VISUAL_KEY ?? `${process.platform}-local`;
 const label = process.env.VISUAL_LABEL ?? key;
