@@ -605,3 +605,45 @@ describe('Menubar trigger option', () => {
     });
   });
 });
+
+describe('Menubar repositioning on resize', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const findHandler = (
+    win: BrowserWindow,
+    event: string,
+  ): ((...args: unknown[]) => void) | undefined => {
+    const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
+    return call?.[1] as ((...args: unknown[]) => void) | undefined;
+  };
+
+  it('positions the window on `showWindow`', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+    await mb.showWindow();
+
+    expect(mb.window!.setPosition).toHaveBeenCalledTimes(1);
+    const [x, y] = (mb.window!.setPosition as Mock).mock.calls[0] as [
+      number,
+      number,
+    ];
+    expect(Number.isInteger(x)).toBe(true);
+    expect(Number.isInteger(y)).toBe(true);
+  });
+
+  it('repositions the window when it resizes (e.g. via `setSize`)', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+    await mb.showWindow();
+
+    const onResize = findHandler(mb.window!, 'resize');
+    expect(onResize, 'a resize handler should be registered').toBeDefined();
+
+    onResize!();
+
+    expect(mb.window!.setPosition).toHaveBeenCalledTimes(2);
+  });
+});
