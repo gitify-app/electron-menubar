@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.0.2](https://github.com/gitify-app/menubar/compare/v10.0.1...v10.0.2) (2026-06-04)
+
+
+### CI
+
+* publish to npm via OIDC trusted publishing ([#49](https://github.com/gitify-app/menubar/issues/49)) ([8b31270](https://github.com/gitify-app/menubar/commit/8b31270f57c122375cb99d44c6bc12bb92fe3d8e))
+
 ## [10.0.1](https://github.com/gitify-app/menubar/compare/v10.0.0...v10.0.1) (2026-06-04)
 
 
