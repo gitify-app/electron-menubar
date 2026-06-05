@@ -26,7 +26,7 @@ This module provides boilerplate for setting up a menubar application using Elec
 ## Installation
 
 ```bash
-bun add electron-menubar
+pnpm add electron-menubar
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ bun add electron-menubar
 Starting with your own new project, run these commands:
 
 ```bash
-$ bun add electron-menubar
+$ pnpm add electron-menubar
 $ touch myApp.js
 $ touch index.html
 ```
