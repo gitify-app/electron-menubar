@@ -117,16 +117,18 @@ You can pass an optional options object into the `menubar({ ... })` function:
 
 The `Menubar` class is an event emitter:
 
-- `ready` - when `menubar`'s tray icon has been created and initialized, i.e. when `menubar` is ready to be used. Note: this is different than Electron app's `ready` event, which happens much earlier in the process
-- `create-window` - the line before `new BrowserWindow()` is called
-- `before-load` - after create window, before loadUrl (can be used for `require("@electron/remote/main").enable(webContents)`)
-- `after-create-window` - the line after all window init code is done and url was loaded
-- `show` - the line before `window.show()` is called
-- `after-show` - the line after `window.show()` is called
-- `hide` - the line before `window.hide()` is called (on window blur)
-- `after-hide` - the line after `window.hide()` is called
-- `after-close` - after the `.window` (BrowserWindow) property has been deleted
-- `focus-lost` - emitted if always-on-top option is set and the user clicks away
+| Event | Description |
+| --- | --- |
+| `ready` | When `menubar`'s tray icon has been created and initialized, i.e. when `menubar` is ready to be used. Note: this is different from the Electron app's `ready` event, which happens much earlier in the process. |
+| `create-window` | The line before `new BrowserWindow()` is called. |
+| `before-load` | After create window, before `loadUrl` (can be used for `require("@electron/remote/main").enable(webContents)`). |
+| `after-create-window` | The line after all window init code is done and the url was loaded. |
+| `show` | The line before `window.show()` is called. |
+| `after-show` | The line after `window.show()` is called. |
+| `hide` | The line before `window.hide()` is called (on window blur). |
+| `after-hide` | The line after `window.hide()` is called. |
+| `after-close` | After the `.window` (BrowserWindow) property has been deleted. |
+| `focus-lost` | Emitted if the always-on-top option is set and the user clicks away. |
 
 ## Tips
 
