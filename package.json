@@ -62,16 +62,16 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@playwright/test": "^1.60.0",
-    "@types/pngjs": "^6.0.5",
-    "electron": "^42.3.3",
-    "pngjs": "^7.0.0",
-    "typescript": "^6.0.3",
+    "@playwright/test": "1.60.0",
+    "@types/pngjs": "6.0.5",
+    "electron": "42.3.3",
+    "pngjs": "7.0.0",
+    "typescript": "6.0.3",
     "vite-plus": "0.1.24",
     "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.24"
   },
   "peerDependencies": {
-    "electron": ">=9.0.0 <43.0.0"
+    "electron": "42.3.3"
   },
   "packageManager": "pnpm@11.5.1"
 }
