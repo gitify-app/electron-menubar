@@ -25,6 +25,7 @@ export class Menubar extends EventEmitter {
   private _positioner: Positioner | undefined;
   private _shortcut?: Electron.Accelerator;
   private _rightClickContextMenuBound = false;
+  private _warnedNoPositioning = false; // guards the one-time Wayland warning
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -337,7 +338,37 @@ export class Menubar extends EventEmitter {
 
     // `.setPosition` crashed on non-integers
     // https://github.com/maxogden/menubar/issues/233
-    this._browserWindow.setPosition(Math.round(x), Math.round(y));
+    const targetX = Math.round(x);
+    const targetY = Math.round(y);
+    this._browserWindow.setPosition(targetX, targetY);
+
+    // Native Wayland gives an application no way to position its own window:
+    // `setPosition` is a no-op and `getPosition` reads back [0, 0]
+    // (https://github.com/electron/electron/issues/40886). The compositor
+    // decides where the window lands, usually centered, so the popover can't
+    // be anchored to the tray. Detect that the move didn't take and warn once,
+    // pointing at the X11 fallback. Gated on a Wayland session (`WAYLAND_DISPLAY`)
+    // so pure X11 never trips it; the tolerance absorbs the few-pixel offsets
+    // X11 window managers add for decorations, so XWayland (where positioning
+    // works) doesn't trip it either.
+    if (
+      process.platform === 'linux' &&
+      !!process.env.WAYLAND_DISPLAY &&
+      !this._warnedNoPositioning
+    ) {
+      const [actualX, actualY] = this._browserWindow.getPosition();
+      const ignored =
+        Math.abs(actualX - targetX) > 24 || Math.abs(actualY - targetY) > 24;
+      if (ignored) {
+        this._warnedNoPositioning = true;
+        console.warn(
+          '[menubar] The window could not be positioned programmatically, ' +
+            'which is expected on native Wayland where the compositor controls ' +
+            'placement. The popover will not be anchored to the tray icon. Run ' +
+            'with --ozone-platform=x11 to restore tray-relative positioning.',
+        );
+      }
+    }
   };
 
   private async appReady(): Promise<void> {

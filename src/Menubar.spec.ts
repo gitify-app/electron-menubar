@@ -647,3 +647,84 @@ describe('Menubar repositioning on resize', () => {
     expect(mb.window!.setPosition).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('Menubar Wayland positioning warning', () => {
+  const originalPlatform = process.platform;
+  const originalWaylandDisplay = process.env.WAYLAND_DISPLAY;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+    if (originalWaylandDisplay === undefined) {
+      delete process.env.WAYLAND_DISPLAY;
+    } else {
+      process.env.WAYLAND_DISPLAY = originalWaylandDisplay;
+    }
+    vi.restoreAllMocks();
+  });
+
+  const ready = (mb: Menubar): Promise<void> =>
+    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+  it('warns once in a Wayland session when the window position is ignored', async () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    process.env.WAYLAND_DISPLAY = 'wayland-0';
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    // Simulate native Wayland: the compositor ignores `setPosition`, so the
+    // window reports a position that diverges from what we requested.
+    (mb.window!.getPosition as Mock).mockReturnValue([0, 0]);
+
+    await mb.showWindow();
+    await mb.showWindow();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toContain('--ozone-platform=x11');
+  });
+
+  it('does not warn in a Wayland session when positioning takes effect (XWayland)', async () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    process.env.WAYLAND_DISPLAY = 'wayland-0';
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    // Default mock: `getPosition` echoes the value passed to `setPosition`.
+    await mb.showWindow();
+
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('does not warn on a pure X11 session (no WAYLAND_DISPLAY)', async () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    delete process.env.WAYLAND_DISPLAY;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    (mb.window!.getPosition as Mock).mockReturnValue([0, 0]);
+
+    await mb.showWindow();
+
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('does not warn on macOS even when positions diverge', async () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    process.env.WAYLAND_DISPLAY = 'wayland-0';
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    (mb.window!.getPosition as Mock).mockReturnValue([0, 0]);
+
+    await mb.showWindow();
+
+    expect(warn).not.toHaveBeenCalled();
+  });
+});
