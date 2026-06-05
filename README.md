@@ -62,22 +62,31 @@ See [`examples`][examples] folder for a selection of working examples.
 
 ### `Menubar` Class
 
-The return value of `menubar()` is a `Menubar` class instance, which has these properties:
+The return value of `menubar()` is a `Menubar` class instance, which exposes the following properties and methods.
 
-- `app`: the [Electron App][electron-docs-app] instance,
-- `window`: the [Electron Browser Window][electron-docs-browserwindow] instance,
-- `tray`: the [Electron Tray][electron-docs-tray] instance,
-- `positioner`: the `Positioner` instance used to compute the window's on-screen coordinates,
-- `setOption(option, value)`: change an option after menubar is created,
-- `getOption(option)`: get an menubar option,
-- `showWindow()`: show the menubar window,
-- `hideWindow()`: hide the menubar window,
-- `toggleWindow()`: show the window if hidden, hide it if visible,
-- `recenterOnTray()`: re-center the window over the tray icon,
-- `setContextMenu(menu)`: replace the tray context menu (auto-re-publishes on Linux),
-- `setGlobalShortcut(accelerator)`: register a global accelerator that toggles the window — returns `false` on registration failure,
-- `destroy()`: tear down the menubar instance,
-- `isDestroyed()`: whether the menubar is currently destroyed.
+#### Properties
+
+| Property | Description |
+| --- | --- |
+| `app` | The [Electron App][electron-docs-app] instance. |
+| `window` | The [Electron Browser Window][electron-docs-browserwindow] instance. |
+| `tray` | The [Electron Tray][electron-docs-tray] instance. |
+| `positioner` | The `Positioner` instance used to compute the window's on-screen coordinates. |
+
+#### Methods
+
+| Method | Description |
+| --- | --- |
+| `setOption(option, value)` | Change an option after menubar is created. |
+| `getOption(option)` | Get a menubar option. |
+| `showWindow()` | Show the menubar window. |
+| `hideWindow()` | Hide the menubar window. |
+| `toggleWindow()` | Show the window if hidden, hide it if visible. |
+| `recenterOnTray()` | Re-center the window over the tray icon. |
+| `setContextMenu(menu)` | Replace the tray context menu (auto-re-publishes on Linux). |
+| `setGlobalShortcut(accelerator)` | Register a global accelerator that toggles the window. Returns `false` on registration failure. |
+| `destroy()` | Tear down the menubar instance. |
+| `isDestroyed()` | Whether the menubar is currently destroyed. |
 
 ### `menubar()` Options
 
