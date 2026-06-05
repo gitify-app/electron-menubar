@@ -1,11 +1,12 @@
 [![CI Workflow][ci-workflow-badge]][github-actions] [![Release Workflow][release-workflow-badge]][github-actions] [![Renovate enabled][renovate-badge]][renovate] [![Contributors][contributors-badge]][github] [![Downloads - Year][downloads-badge]][npmjs] [![OSS License][license-badge]][license] [![NPM Latest Version][npmjs-version-badge]][npmjs] [![Latest Release][github-release-badge]][github-releases] ![Libraries.io dependency status for GitHub repo][librariesio-badge] ![npm minzipped bundle size][size-minzip-badge] ![npm minified bundle size][size-minified-badge]
 
-<br /><br />
+<br />
 
 <h1 align="center">➖ electron-menubar</h1>
-<h3 align="center"><i>formerly known as menubar</i></h3>
+<h5 align="center"><i>formerly known as menubar</i></h5>
 <h4 align="center">High level way to create menubar desktop applications with Electron.</h4>
 
+<br />
 
 ## Features
 
