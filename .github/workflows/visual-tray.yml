@@ -416,9 +416,13 @@ jobs:
                   output HEADLESS-1 resolution 1920x1080 position 0,0
                   # Sway tiles every window by default, so our 200x100 fixture
                   # gets expanded to fill the whole workspace. Match by HTML
-                  # <title> and force floating + explicit size so the visual
-                  # diff is consistent with other platforms.
-                  for_window [title="menubar visual fixture"] floating enable, resize set 200 100, move position 400 200
+                  # <title> and force floating + explicit size so it renders at
+                  # its real dimensions. We deliberately do NOT pin a position:
+                  # native Wayland gives the app no control over placement, so
+                  # the compositor decides where the popover lands. Forcing a
+                  # position here would paper over the very limitation this job
+                  # exists to exercise.
+                  for_window [title="menubar visual fixture"] floating enable, resize set 200 100
                   exec waybar
                   EOF
             - name: Run visual test under ${{ matrix.de }}
