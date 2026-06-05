@@ -13,19 +13,19 @@ importers:
   .:
     devDependencies:
       '@playwright/test':
-        specifier: ^1.60.0
+        specifier: 1.60.0
         version: 1.60.0
       '@types/pngjs':
-        specifier: ^6.0.5
+        specifier: 6.0.5
         version: 6.0.5
       electron:
-        specifier: ^42.3.3
+        specifier: 42.3.3
         version: 42.3.3
       pngjs:
-        specifier: ^7.0.0
+        specifier: 7.0.0
         version: 7.0.0
       typescript:
-        specifier: ^6.0.3
+        specifier: 6.0.3
         version: 6.0.3
       vite-plus:
         specifier: 0.1.24
@@ -1230,7 +1230,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 24.12.4
+      '@types/node': 25.9.1
     optional: true
 
   '@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.1)(typescript@6.0.3)':
