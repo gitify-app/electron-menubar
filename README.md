@@ -145,10 +145,10 @@ Originally created by [Max][github-upstream-creator] — hard-forked from [max-m
 
 <!-- LINK LABELS -->
 
-[github]: https://github.com/gitify-app/menubar
-[github-actions]: https://github.com/gitify-app/menubar/actions
-[github-issues]: https://github.com/gitify-app/menubar/issues
-[github-releases]: https://github.com/gitify-app/gitify/menubar/latest
+[github]: https://github.com/gitify-app/electron-menubar
+[github-actions]: https://github.com/gitify-app/electron-menubar/actions
+[github-issues]: https://github.com/gitify-app/electron-menubar/issues
+[github-releases]: https://github.com/gitify-app/gitify/electron-menubar/latest
 [github-upstream-creator]: https://github.com/max-mapper
 [github-upstream-repo]: https://github.com/max-mapper/menubar
 
@@ -164,14 +164,14 @@ Originally created by [Max][github-upstream-creator] — hard-forked from [max-m
 [electron-docs-browserwindow-loadurl]: https://electronjs.org/docs/api/browser-window#winloadurlurl-options
 [electron-docs-tray]: https://electronjs.org/docs/api/tray
 
-[ci-workflow-badge]: https://img.shields.io/github/actions/workflow/status/gitify-app/menubar/test.yml?logo=github&label=CI
-[release-workflow-badge]: https://img.shields.io/github/actions/workflow/status/gitify-app/menubar/release.yml?logo=github&label=Release
+[ci-workflow-badge]: https://img.shields.io/github/actions/workflow/status/gitify-app/electron-menubar/test.yml?logo=github&label=CI
+[release-workflow-badge]: https://img.shields.io/github/actions/workflow/status/gitify-app/electron-menubar/release.yml?logo=github&label=Release
 [downloads-badge]: https://img.shields.io/npm/dy/electron-menubar?logo=npm
-[contributors-badge]: https://img.shields.io/github/contributors/gitify-app/menubar?logo=github
-[librariesio-badge]: https://img.shields.io/librariesio/github/gitify-app/menubar?logo=libraries.io&logoColor=white
+[contributors-badge]: https://img.shields.io/github/contributors/gitify-app/electron-menubar?logo=github
+[librariesio-badge]: https://img.shields.io/librariesio/github/gitify-app/electron-menubar?logo=libraries.io&logoColor=white
 [license]: LICENSE
-[license-badge]: https://img.shields.io/github/license/gitify-app/menubar?logo=github
-[github-release-badge]: https://img.shields.io/github/v/release/gitify-app/menubar?logo=github
+[license-badge]: https://img.shields.io/github/license/gitify-app/electron-menubar?logo=github
+[github-release-badge]: https://img.shields.io/github/v/release/gitify-app/electron-menubar?logo=github
 [npmjs]: https://www.npmjs.com/package/electron-menubar
 [npmjs-version-badge]: https://img.shields.io/npm/v/electron-menubar?logo=npm
 [renovate]: https://github.com/gitify-app/gitify/issues/576
