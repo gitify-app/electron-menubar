@@ -604,7 +604,7 @@ jobs:
             - name: Regenerate visual block
               run: node tests/visual/update-platforms.mts
             - name: Open PR if changed
-              uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v7.0.8
+              uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
               with:
                   commit-message: "docs: refresh visual tray rendering table"
                   title: "docs: refresh visual tray rendering table"
