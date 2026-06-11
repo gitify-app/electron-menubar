@@ -41,7 +41,7 @@ const rows = results
 const block = [
   START,
   '',
-  '_Continuously verified by [visual tray rendering tests](.github/workflows/visual-tray.yml). Each run boots the menubar fixture, screenshots the OS panel, and asserts both the tray icon and the popover window are painted._',
+  '_Continuously verified by [visual tray rendering tests](.github/workflows/visual-tray.yml). Each run boots the menubar fixture, screenshots the OS panel, and asserts both the tray icon and the popover window are painted. These checks confirm rendering, not tray-anchored placement. See [Window positioning on Linux](#window-positioning-on-linux)._',
   '',
   '| Platform | Tray + Window | Screenshot |',
   '| -------- | ------------- | ---------- |',

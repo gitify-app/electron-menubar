@@ -17,13 +17,17 @@ export const app: {
 };
 
 export class BrowserWindow {
+  private _position: [number, number] = [0, 0];
   destroy: Mock = vi.fn();
+  getPosition: Mock = vi.fn(() => this._position);
   getSize: Mock = vi.fn(() => [400, 400]);
   hide: Mock = vi.fn();
   isAlwaysOnTop: Mock = vi.fn(() => false);
   loadURL: Mock = vi.fn();
   on: Mock = vi.fn();
-  setPosition: Mock = vi.fn();
+  setPosition: Mock = vi.fn((x: number, y: number) => {
+    this._position = [x, y];
+  });
   setVisibleOnAllWorkspaces: Mock = vi.fn();
   show: Mock = vi.fn();
   webContents: { on: Mock } = { on: vi.fn() };

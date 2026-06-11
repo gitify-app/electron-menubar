@@ -18,6 +18,9 @@
 | :-----------------------------------------------------------: | :--------------------------------------------------------: | :------------------------------------------------------: |
 |                      macOS                      |                         Windows 10                         |                       Ubuntu                      |
 
+> [!NOTE]
+> On native Wayland, the desktop compositor controls window placement, so the popover cannot be anchored to the tray icon and is positioned by the desktop (usually centered). This is a Wayland limitation, not something the library can override. Tray-relative positioning works under X11/XWayland. See [window positioning on Linux][platforms] for the detail and a workaround.
+
 ## Installation
 
 ```bash
