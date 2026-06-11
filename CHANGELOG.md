@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.0](https://github.com/gitify-app/electron-menubar/compare/v10.0.2...v10.1.0) (2026-06-11)
+
+
+### Features
+
+* Add CODEOWNERS file ([2fcd1a6](https://github.com/gitify-app/electron-menubar/commit/2fcd1a63751c6e9a601723dbd23398a502957efb))
+* Add CODEOWNERS file ([#55](https://github.com/gitify-app/electron-menubar/issues/55)) ([ad00cfd](https://github.com/gitify-app/electron-menubar/commit/ad00cfd40afa3a08f682c91556c71e3c5965d69f))
+* handle and document Wayland window positioning limitation ([#72](https://github.com/gitify-app/electron-menubar/issues/72)) ([25adf80](https://github.com/gitify-app/electron-menubar/commit/25adf8090c520f85dc755b7351f04250dc306cbb))
+* onboard fork to renovate ([#54](https://github.com/gitify-app/electron-menubar/issues/54)) ([209c31f](https://github.com/gitify-app/electron-menubar/commit/209c31f19787953eb092fd234b02fbdf7d2d4c87))
+
+
+### Build
+
+* upgrade @playwright/test to 1.60 and typescript to 6.0 ([#51](https://github.com/gitify-app/electron-menubar/issues/51)) ([da64d7e](https://github.com/gitify-app/electron-menubar/commit/da64d7e319596400402021076ffbd55eb3936321))
+
+
+### Documentation
+
+* reformat API documentation as tables ([#70](https://github.com/gitify-app/electron-menubar/issues/70)) ([d1ad936](https://github.com/gitify-app/electron-menubar/commit/d1ad9367ef77240f1436b8ef069478e3b5ae01bc))
+* refresh readme ([#66](https://github.com/gitify-app/electron-menubar/issues/66)) ([45723b5](https://github.com/gitify-app/electron-menubar/commit/45723b527b1ec58d0fb56b3f73babb367514da99))
+* Update installation command from bun to pnpm ([#56](https://github.com/gitify-app/electron-menubar/issues/56)) ([2afa208](https://github.com/gitify-app/electron-menubar/commit/2afa2082e70accc6a47cbff25d977f96f7354369))
+* update repo urls ([#71](https://github.com/gitify-app/electron-menubar/issues/71)) ([45b6bdf](https://github.com/gitify-app/electron-menubar/commit/45b6bdf9f967932785b2ff7a174e9f4496fc9033))
+
 ## [10.0.2](https://github.com/gitify-app/menubar/compare/v10.0.1...v10.0.2) (2026-06-04)
 
 
