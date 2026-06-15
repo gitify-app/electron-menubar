@@ -19,8 +19,8 @@ importers:
         specifier: 6.0.5
         version: 6.0.5
       electron:
-        specifier: 42.3.3
-        version: 42.3.3
+        specifier: 42.4.0
+        version: 42.4.0
       pngjs:
         specifier: 7.0.0
         version: 7.0.0
@@ -35,6 +35,10 @@ importers:
         version: '@voidzero-dev/vite-plus-test@0.1.24(@types/node@25.9.2)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.2))'
 
 packages:
+
+  '@electron-internal/extract-zip@1.0.3':
+    resolution: {integrity: sha512-OjKpjB7gohtEjZiq6nDx1egqjZJhGPN1iFOIED+NFhB/MMkXw/XRcHjh1DGXKT5z2W9eW7Jy2UKU3gpjvusFTQ==}
+    engines: {node: '>=22.12.0'}
 
   '@electron/get@5.0.0':
     resolution: {integrity: sha512-pjoBpru1KdEtcExBnuHAP1cAc/5faoedw0hzJkL3o4/IJp7HNF1+fbrdxT3gMYRX2oJfvnA/WXeCTVQpYYxyJA==}
@@ -467,9 +471,6 @@ packages:
   '@types/pngjs@6.0.5':
     resolution: {integrity: sha512-0k5eKfrA83JOZPppLtS2C7OUtyNAl2wKNxfyYl9Q5g9lPkgBl/9hNyAu6HuEH2J4XmIv2znEpkDd0SaZVxW6iQ==}
 
-  '@types/yauzl@2.10.3':
-    resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
-
   '@voidzero-dev/vite-plus-core@0.1.24':
     resolution: {integrity: sha512-iXPGBABnQnrDMx89H6MOCGcTZp+QW+3rY4YMVKdE6ydchSvPk2O3MI2vgaRVfOtWJ2IjnxSnf1n2yjP67ZBRFQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -633,13 +634,10 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  electron@42.3.3:
-    resolution: {integrity: sha512-0MwYp9wTb7TrtTalOYqeW+suqd9T/Znstr/nDLKqFGIjHdBZX339guo3mQqTPURRZ/UQmYM4uMpzKpI5wLptfQ==}
+  electron@42.4.0:
+    resolution: {integrity: sha512-OXXqh9LD9KxXPv2Fe25EfU9N9AvWTuV6V81sfhQaNvTAXCd9ONA+Q4OWvMe+CmYD6xIwjFxGGtG/ZphDYYC5OQ==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
-
-  end-of-stream@1.4.5:
-    resolution: {integrity: sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg==}
 
   env-paths@3.0.0:
     resolution: {integrity: sha512-dtJUTepzMW3Lm/NPxRf3wP4642UWhjL2sQxc+ym2YMj1m/H2zDNQOlezafzkHwn6sMstjHTwG6iQQsctDW/b1A==}
@@ -647,11 +645,6 @@ packages:
 
   es-module-lexer@1.7.0:
     resolution: {integrity: sha512-jEQoCwk8hyb2AZziIOLhDqpm5+2ww5uIE6lkO/6jcOCusfk6LhMHpXXfBLXTZ7Ydyt0j4VoUQv6uGNYbdW+kBA==}
-
-  extract-zip@2.0.1:
-    resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
-    engines: {node: '>= 10.17.0'}
-    hasBin: true
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -671,10 +664,6 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
-
-  get-stream@5.2.0:
-    resolution: {integrity: sha512-nBF+F1rAZVCu/p7rjzgA+Yb4lfYXrpl7a6VmJrU8wF9I1CKvP/QwPNZHnOlwbTkY6dvtFIzFMSyQXbLoTQPRpA==}
-    engines: {node: '>=8'}
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
@@ -769,9 +758,6 @@ packages:
     resolution: {integrity: sha512-AWGB9WFcRXOQs48Z/udjI5ZcZMHXwX8XPByNpOydgcGsDLIzjGizhoMWJyKAWze7AVW/2W1i+/gPX4YtKe5cyg==}
     engines: {node: '>=12.20.0'}
 
-  once@1.4.0:
-    resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
-
   oxfmt@0.52.0:
     resolution: {integrity: sha512-nJlYM35F64zTDMecCNhoHNkf+D/eHv7xcjj9XDSj+bFAVtN93m7v8DQMdHd6nDG6Akf/kEYYHmDUBs2Dz27Sug==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -801,9 +787,6 @@ packages:
         optional: true
       vite-plus:
         optional: true
-
-  pend@1.2.0:
-    resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -837,9 +820,6 @@ packages:
   progress@2.0.3:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
     engines: {node: '>=0.4.0'}
-
-  pump@3.0.4:
-    resolution: {integrity: sha512-VS7sjc6KR7e1ukRFhQSY5LM2uBWAUPiOPa/A3mkKmiMwSmRFUITt0xuj+/lesgnCv+dPIEYlkzrcyXgquIHMcA==}
 
   rolldown@1.0.3:
     resolution: {integrity: sha512-i00lAJ2ks1BYr7rjNjKC7BcqAS7nVfiT3QX1SI5aY+AFHblCmaUf9OE9dbdzDvW6dJxbi2ZCZiy9v3CcwOiX3g==}
@@ -951,9 +931,6 @@ packages:
       yaml:
         optional: true
 
-  wrappy@1.0.2:
-    resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
-
   ws@8.21.0:
     resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
     engines: {node: '>=10.0.0'}
@@ -966,11 +943,9 @@ packages:
       utf-8-validate:
         optional: true
 
-  yauzl@3.3.2:
-    resolution: {integrity: sha512-Md9ankxxN23wncAN8s7+Tn3Co52zLUPMtnrLAbVCnfG5d2tKBFfmygYSgXlqFgXObtzIgqkx7aNgDBpso9+4qA==}
-    engines: {node: '>=12'}
-
 snapshots:
+
+  '@electron-internal/extract-zip@1.0.3': {}
 
   '@electron/get@5.0.0':
     dependencies:
@@ -1229,11 +1204,6 @@ snapshots:
     dependencies:
       '@types/node': 25.9.2
 
-  '@types/yauzl@2.10.3':
-    dependencies:
-      '@types/node': 24.13.1
-    optional: true
-
   '@voidzero-dev/vite-plus-core@0.1.24(@types/node@25.9.2)(typescript@6.0.3)':
     dependencies:
       '@oxc-project/runtime': 0.133.0
@@ -1317,31 +1287,17 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  electron@42.3.3:
+  electron@42.4.0:
     dependencies:
+      '@electron-internal/extract-zip': 1.0.3
       '@electron/get': 5.0.0
       '@types/node': 24.13.1
-      extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
-
-  end-of-stream@1.4.5:
-    dependencies:
-      once: 1.4.0
 
   env-paths@3.0.0: {}
 
   es-module-lexer@1.7.0: {}
-
-  extract-zip@2.0.1:
-    dependencies:
-      debug: 4.4.3
-      get-stream: 5.2.0
-      yauzl: 3.3.2
-    optionalDependencies:
-      '@types/yauzl': 2.10.3
-    transitivePeerDependencies:
-      - supports-color
 
   fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
@@ -1352,10 +1308,6 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
-
-  get-stream@5.2.0:
-    dependencies:
-      pump: 3.0.4
 
   graceful-fs@4.2.11: {}
 
@@ -1416,10 +1368,6 @@ snapshots:
 
   obug@2.1.2: {}
 
-  once@1.4.0:
-    dependencies:
-      wrappy: 1.0.2
-
   oxfmt@0.52.0(vite-plus@0.1.24(@types/node@25.9.2)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.2))):
     dependencies:
       tinypool: 2.1.0
@@ -1478,8 +1426,6 @@ snapshots:
       oxlint-tsgolint: 0.23.0
       vite-plus: 0.1.24(@types/node@25.9.2)(typescript@6.0.3)(vite@8.0.16(@types/node@25.9.2))
 
-  pend@1.2.0: {}
-
   picocolors@1.1.1: {}
 
   picomatch@4.0.4: {}
@@ -1505,11 +1451,6 @@ snapshots:
       source-map-js: 1.2.1
 
   progress@2.0.3: {}
-
-  pump@3.0.4:
-    dependencies:
-      end-of-stream: 1.4.5
-      once: 1.4.0
 
   rolldown@1.0.3:
     dependencies:
@@ -1636,10 +1577,4 @@ snapshots:
       '@types/node': 25.9.2
       fsevents: 2.3.3
 
-  wrappy@1.0.2: {}
-
   ws@8.21.0: {}
-
-  yauzl@3.3.2:
-    dependencies:
-      pend: 1.2.0
