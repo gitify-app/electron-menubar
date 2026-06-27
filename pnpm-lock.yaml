@@ -6,7 +6,7 @@ settings:
 
 overrides:
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  yauzl: 3.3.2
+  yauzl: 3.4.0
 
 importers:
 

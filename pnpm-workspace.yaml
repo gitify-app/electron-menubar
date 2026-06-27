@@ -3,7 +3,7 @@ overrides:
   # Electron's installer hangs while extracting its binary (never writes
   # path.txt) on Node 24.16+ because of a yauzl bug. Pin yauzl until the
   # upstream fix ships. https://github.com/electron/electron/issues/51619
-  yauzl: 3.3.2
+  yauzl: 3.4.0
 
 # Dependencies allowed to run install scripts. electron downloads its prebuilt
 # binary here; esbuild (pulled in by vite-plus) fetches its platform binary.
