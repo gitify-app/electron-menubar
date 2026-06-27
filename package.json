@@ -67,7 +67,7 @@
     "electron": "42.5.0",
     "pngjs": "7.0.0",
     "typescript": "6.0.3",
-    "vite-plus": "0.1.24",
+    "vite-plus": "0.2.1",
     "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.24"
   },
   "peerDependencies": {
