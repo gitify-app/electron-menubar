@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.1](https://github.com/gitify-app/electron-menubar/compare/v10.1.0...v10.1.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* correct repository url to electron-menubar for npm provenance ([#93](https://github.com/gitify-app/electron-menubar/issues/93)) ([eaa131c](https://github.com/gitify-app/electron-menubar/commit/eaa131c6ee78c737d35eaa24c25149faa0e2204f))
+
 ## [10.1.0](https://github.com/gitify-app/electron-menubar/compare/v10.0.2...v10.1.0) (2026-07-02)
 
 
