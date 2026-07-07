@@ -3,7 +3,7 @@
   "extends": [
     "config:best-practices",
     ":enableVulnerabilityAlerts",
-    ":semanticCommitTypeAll(chore)",
+    ":semanticCommitTypeAll(deps)",
     ":separateMultipleMajorReleases",
     "schedule:weekly"
   ],
