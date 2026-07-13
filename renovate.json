@@ -3,6 +3,7 @@
   "extends": [
     "config:best-practices",
     ":enableVulnerabilityAlerts",
+    ":semanticCommitScopeDisabled",
     ":semanticCommitTypeAll(deps)",
     ":separateMultipleMajorReleases",
     "schedule:weekly"
