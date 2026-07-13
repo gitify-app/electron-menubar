@@ -15,6 +15,7 @@
         { "type": "docs", "section": "Documentation" },
         { "type": "test", "section": "Tests", "hidden": true },
         { "type": "style", "section": "Styles", "hidden": true },
+        { "type": "chore(deps)", "section": "Dependencies" },
         { "type": "chore", "section": "Chores", "hidden": true }
       ]
     }
