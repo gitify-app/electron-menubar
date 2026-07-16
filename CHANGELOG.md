@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.2](https://github.com/gitify-app/electron-menubar/compare/v10.1.1...v10.1.2) (2026-07-16)
+
+
+### Build
+
+* replace vite-plus with rolldown, oxlint, and oxfmt ([#104](https://github.com/gitify-app/electron-menubar/issues/104)) ([c98a741](https://github.com/gitify-app/electron-menubar/commit/c98a7414c1843d0137bc9d189ab82965cbbca9fd))
+
+
+### Documentation
+
+* refresh visual tray rendering table ([#92](https://github.com/gitify-app/electron-menubar/issues/92)) ([94b8b90](https://github.com/gitify-app/electron-menubar/commit/94b8b9077bd0496c1aef92bfd93dd038a1c55865))
+
 ## [10.1.1](https://github.com/gitify-app/electron-menubar/compare/v10.1.0...v10.1.1) (2026-07-02)
 
 
