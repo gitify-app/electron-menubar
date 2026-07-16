@@ -64,7 +64,7 @@
   "devDependencies": {
     "@playwright/test": "1.61.1",
     "@types/pngjs": "6.0.5",
-    "electron": "43.1.0",
+    "electron": "43.1.1",
     "oxfmt": "0.59.0",
     "oxlint": "1.74.0",
     "pngjs": "7.0.0",
@@ -74,7 +74,7 @@
     "vitest": "4.1.10"
   },
   "peerDependencies": {
-    "electron": "43.1.0"
+    "electron": "43.1.1"
   },
   "packageManager": "pnpm@11.11.0"
 }
