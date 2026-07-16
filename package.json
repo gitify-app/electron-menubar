@@ -53,10 +53,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
-    "lint:check": "vp check",
-    "lint": "vp check --fix",
-    "test": "vp test",
+    "build": "rolldown --config rolldown.config.ts",
+    "lint:check": "oxlint && oxfmt --check",
+    "lint": "oxlint --fix && oxfmt",
+    "test": "vitest run",
     "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
     "test:visual": "node tests/visual/run.mts",
     "typecheck": "tsc --noEmit"
@@ -65,10 +65,13 @@
     "@playwright/test": "1.61.1",
     "@types/pngjs": "6.0.5",
     "electron": "43.1.0",
+    "oxfmt": "0.59.0",
+    "oxlint": "1.74.0",
     "pngjs": "7.0.0",
+    "rolldown": "1.1.5",
+    "rolldown-plugin-dts": "0.27.9",
     "typescript": "6.0.3",
-    "vite-plus": "0.2.4",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.24"
+    "vitest": "4.1.10"
   },
   "peerDependencies": {
     "electron": "43.1.0"
