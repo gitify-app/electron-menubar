@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.3](https://github.com/gitify-app/electron-menubar/compare/v10.1.2...v10.1.3) (2026-07-27)
+
+
+### Bug Fixes
+
+* ignore transient post-show blur on Windows tray click ([#115](https://github.com/gitify-app/electron-menubar/issues/115)) ([70241a8](https://github.com/gitify-app/electron-menubar/commit/70241a819e99b35b787f68fc96df70d58c8b52fc))
+
+
+### Documentation
+
+* refresh visual tray rendering table ([#114](https://github.com/gitify-app/electron-menubar/issues/114)) ([5b1ff46](https://github.com/gitify-app/electron-menubar/commit/5b1ff4606a8271be4b187d2304efc84f5d7917bb))
+
 ## [10.1.2](https://github.com/gitify-app/electron-menubar/compare/v10.1.1...v10.1.2) (2026-07-16)
 
 
