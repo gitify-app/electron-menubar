@@ -10,6 +10,13 @@ import { cleanOptions } from './util/cleanOptions';
 import { getWindowPosition } from './util/getWindowPosition';
 
 /**
+ * Grace period after `showWindow()` during which a `blur` on the popup is
+ * treated as the spurious Windows post-show blur and ignored instead of
+ * triggering the auto-hide. See the `blur` handler in {@link Menubar.createWindow}.
+ */
+const BLUR_HIDE_GRACE_MS = 400;
+
+/**
  * The main Menubar class.
  */
 export class Menubar extends EventEmitter {
@@ -26,6 +33,7 @@ export class Menubar extends EventEmitter {
   private _shortcut?: Electron.Accelerator;
   private _rightClickContextMenuBound = false;
   private _warnedNoPositioning = false; // guards the one-time Wayland warning
+  private _lastShowTime = 0; // timestamp of last show(), debounces the post-show blur on Windows
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -286,6 +294,9 @@ export class Menubar extends EventEmitter {
     }
 
     this.positionWindow();
+    // Record the show time before `show()` so the blur handler can recognise
+    // and ignore the transient blur Windows fires right after (see below).
+    this._lastShowTime = Date.now();
     this._browserWindow.show();
     this._isVisible = true;
     this.emit('after-show');
@@ -539,12 +550,30 @@ export class Menubar extends EventEmitter {
         return;
       }
 
-      // hack to close if icon clicked when open
-      this._browserWindow.isAlwaysOnTop()
-        ? this.emit('focus-lost')
-        : (this._blurTimeout = setTimeout(() => {
-            this.hideWindow();
-          }, 100));
+      // The window was pinned (e.g. a host "keep open on blur" preference);
+      // don't auto-hide, just surface the event for the host app to react to.
+      if (this._browserWindow.isAlwaysOnTop()) {
+        this.emit('focus-lost');
+        return;
+      }
+
+      // Windows foreground-activation race: clicking the tray icon keeps the
+      // shell (explorer.exe) as the foreground process, so `show()` cannot pull
+      // focus to the popup and Windows immediately fires `blur`. Left unguarded,
+      // the hide timer below fires before the first paint and the window never
+      // visibly appears (gitify-app/gitify#3064). Ignore blur events that land
+      // within the grace window right after a show; a genuine click-away
+      // arrives well after it.
+      if (
+        process.platform === 'win32' &&
+        Date.now() - this._lastShowTime < BLUR_HIDE_GRACE_MS
+      ) {
+        return;
+      }
+
+      this._blurTimeout = setTimeout(() => {
+        this.hideWindow();
+      }, 100);
     });
 
     if (this._options.showOnAllWorkspaces !== false) {

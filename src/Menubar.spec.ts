@@ -728,3 +728,90 @@ describe('Menubar Wayland positioning warning', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 });
+
+describe('Menubar blur-to-hide behavior', () => {
+  const originalPlatform = process.platform;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  const ready = (mb: Menubar): Promise<void> =>
+    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+  const findHandler = (
+    win: BrowserWindow,
+    event: string,
+  ): ((...args: unknown[]) => void) | undefined => {
+    const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
+    return call?.[1] as ((...args: unknown[]) => void) | undefined;
+  };
+
+  it('hides the window ~100ms after a blur on non-Windows platforms', async () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    await mb.showWindow();
+
+    vi.useFakeTimers();
+    const blur = findHandler(mb.window!, 'blur');
+    expect(blur, 'a blur handler should be registered').toBeDefined();
+
+    blur!();
+    expect(mb.window!.hide).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(100);
+    expect(mb.window!.hide).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores the transient post-show blur on Windows (gitify-app/gitify#3064)', async () => {
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    vi.useFakeTimers();
+    await mb.showWindow(); // stamps `_lastShowTime` with the current fake clock
+
+    // The blur Windows fires right after `show()`, inside the grace window.
+    findHandler(mb.window!, 'blur')!();
+    vi.advanceTimersByTime(100);
+
+    expect(mb.window!.hide).not.toHaveBeenCalled();
+  });
+
+  it('still hides on Windows for a blur after the grace window (real click-away)', async () => {
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    vi.useFakeTimers();
+    await mb.showWindow();
+
+    // A genuine click-away lands well after the popup has settled.
+    vi.advanceTimersByTime(1000);
+    findHandler(mb.window!, 'blur')!();
+    vi.advanceTimersByTime(100);
+
+    expect(mb.window!.hide).toHaveBeenCalledTimes(1);
+  });
+
+  it('emits `focus-lost` instead of hiding when the window is pinned alwaysOnTop', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    await mb.showWindow();
+
+    (mb.window!.isAlwaysOnTop as Mock).mockReturnValue(true);
+    const focusLost = vi.fn();
+    mb.on('focus-lost', focusLost);
+
+    findHandler(mb.window!, 'blur')!();
+
+    expect(focusLost).toHaveBeenCalledTimes(1);
+    expect(mb.window!.hide).not.toHaveBeenCalled();
+  });
+});
