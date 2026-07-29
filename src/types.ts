@@ -115,6 +115,13 @@ export interface Options {
   /**
    * Configure the visibility of the application dock icon, macOS only. Calls
    * [`app.dock.hide`](https://electronjs.org/docs/api/app#appdockhide-macos).
+   *
+   * Hiding at runtime is a process transform that macOS can silently drop, so
+   * packaged apps that never want a dock tile should also declare
+   * `LSUIElement` in their `Info.plist` (with electron-builder:
+   * `mac.extendInfo.LSUIElement: true`). This option then still covers
+   * development runs, where the stock Electron binary's plist is not under
+   * your control.
    */
   showDockIcon?: boolean;
   /**
