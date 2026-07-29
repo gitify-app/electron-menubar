@@ -7,6 +7,13 @@ on:
 
 permissions: {}
 
+# Serialise releases: two overlapping runs can interleave so that the run which
+# reports `release_created` is checked out at an older commit, publishing the
+# previous version number (or nothing at all).
+concurrency:
+    group: release
+    cancel-in-progress: false
+
 jobs:
     release-please:
         name: Release Please
