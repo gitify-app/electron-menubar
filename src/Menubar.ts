@@ -17,6 +17,14 @@ import { getWindowPosition } from './util/getWindowPosition';
 const BLUR_HIDE_GRACE_MS = 400;
 
 /**
+ * Delay before re-asserting the hidden dock after startup. macOS can silently
+ * drop an `app.dock.hide()` that races the app's launch activation
+ * transition, leaving the dock icon stuck for the whole session. See the
+ * re-check in {@link Menubar.appReady}.
+ */
+const DOCK_REHIDE_DELAY_MS = 2_000;
+
+/**
  * The main Menubar class.
  */
 export class Menubar extends EventEmitter {
@@ -34,6 +42,7 @@ export class Menubar extends EventEmitter {
   private _rightClickContextMenuBound = false;
   private _warnedNoPositioning = false; // guards the one-time Wayland warning
   private _lastShowTime = 0; // timestamp of last show(), debounces the post-show blur on Windows
+  private _dockRehideTimeout?: NodeJS.Timeout; // pending post-startup dock re-hide check
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -113,6 +122,11 @@ export class Menubar extends EventEmitter {
     if (this._shortcut) {
       globalShortcut.unregister(this._shortcut);
       this._shortcut = undefined;
+    }
+
+    if (this._dockRehideTimeout) {
+      clearTimeout(this._dockRehideTimeout);
+      this._dockRehideTimeout = undefined;
     }
 
     if (this._browserWindow) {
@@ -385,6 +399,16 @@ export class Menubar extends EventEmitter {
   private async appReady(): Promise<void> {
     if (this.app.dock && !this._options.showDockIcon) {
       this.app.dock.hide();
+
+      // The hide above can be silently dropped when it races the launch
+      // activation transition. Re-check once startup has settled; guarded on
+      // visibility because `dock.hide()` also deactivates the app, so it must
+      // not run when the dock is already hidden.
+      this._dockRehideTimeout = setTimeout(() => {
+        if (!this._isDestroyed && this.app.dock?.isVisible()) {
+          this.app.dock.hide();
+        }
+      }, DOCK_REHIDE_DELAY_MS);
     }
 
     if (this._options.activateWithApp) {
