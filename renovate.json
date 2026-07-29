@@ -27,9 +27,7 @@
     },
     {
       "description": "Give updates to core runtime dependencies (Electron shell, tray integration, UI primitives, GitHub API client) a distinct commit scope so release-please can surface them in the changelog instead of hiding them with routine dependency bumps",
-      "matchPackageNames": [
-        "electron"
-      ],
+      "matchPackageNames": ["electron"],
       "semanticCommitScope": "deps-core"
     }
   ]
