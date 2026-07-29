@@ -74,7 +74,7 @@
     "vitest": "4.1.10"
   },
   "peerDependencies": {
-    "electron": "43.2.0"
+    "electron": ">=35.0.0"
   },
   "packageManager": "pnpm@11.17.0"
 }
