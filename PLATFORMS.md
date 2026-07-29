@@ -24,7 +24,7 @@ _Continuously verified by [visual tray rendering tests](.github/workflows/visual
 | -------- | ------------- | ---------- |
 | Linux (Budgie) | ✅ Pass | <details><summary>view</summary><img src=".github/visual-screenshots/linux-budgie.png" width="600" alt="linux-budgie screenshot"></details> |
 | Linux (Cinnamon) | ✅ Pass | <details><summary>view</summary><img src=".github/visual-screenshots/linux-cinnamon.png" width="600" alt="linux-cinnamon screenshot"></details> |
-| Linux (GNOME) | ✅ Pass | <details><summary>view</summary><img src=".github/visual-screenshots/linux-gnome.png" width="600" alt="linux-gnome screenshot"></details> |
+| Linux (GNOME) | ❌ Fail | <details><summary>view</summary><img src=".github/visual-screenshots/linux-gnome.png" width="600" alt="linux-gnome screenshot"></details> |
 | Linux (KDE Plasma) | ✅ Pass | <details><summary>view</summary><img src=".github/visual-screenshots/linux-kde.png" width="600" alt="linux-kde screenshot"></details> |
 | Linux (LXQt) | ✅ Pass | <details><summary>view</summary><img src=".github/visual-screenshots/linux-lxqt.png" width="600" alt="linux-lxqt screenshot"></details> |
 | Linux (MATE) | ✅ Pass | <details><summary>view</summary><img src=".github/visual-screenshots/linux-mate.png" width="600" alt="linux-mate screenshot"></details> |
