@@ -815,3 +815,63 @@ describe('Menubar blur-to-hide behavior', () => {
     expect(mb.window!.hide).not.toHaveBeenCalled();
   });
 });
+
+describe('Menubar dock hide startup race', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    (app.dock!.isVisible as Mock).mockReturnValue(false);
+    vi.useRealTimers();
+  });
+
+  const ready = (mb: Menubar): Promise<void> =>
+    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+  it('re-hides the dock when the startup hide was dropped (gitify-app/gitify#3069)', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(1);
+
+    // Simulate macOS having dropped the initial hide.
+    (app.dock!.isVisible as Mock).mockReturnValue(true);
+    vi.advanceTimersByTime(2_000);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not touch the dock again when the initial hide stuck', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(2_000);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not hide at all when `showDockIcon: true`', async () => {
+    const mb = new Menubar(app, { preloadWindow: true, showDockIcon: true });
+    await ready(mb);
+
+    (app.dock!.isVisible as Mock).mockReturnValue(true);
+    vi.advanceTimersByTime(2_000);
+
+    expect(app.dock!.hide).not.toHaveBeenCalled();
+  });
+
+  it('cancels the pending re-check on destroy', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    mb.destroy();
+    (app.dock!.isVisible as Mock).mockReturnValue(true);
+    vi.advanceTimersByTime(2_000);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(1);
+  });
+});

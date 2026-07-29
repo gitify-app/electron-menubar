@@ -9,11 +9,17 @@ export const app: {
   isReady: () => Promise<void>;
   on: Mock;
   removeListener: Mock;
+  dock: { hide: Mock; show: Mock; isVisible: Mock };
 } = {
   getAppPath: vi.fn(() => MOCK_APP_GETAPPPATH),
   isReady: (): Promise<void> => Promise.resolve(),
   on: vi.fn(),
   removeListener: vi.fn(),
+  dock: {
+    hide: vi.fn(),
+    show: vi.fn(),
+    isVisible: vi.fn(() => false),
+  },
 };
 
 export class BrowserWindow {
