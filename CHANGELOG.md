@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.5](https://github.com/gitify-app/electron-menubar/compare/v10.1.4...v10.1.5) (2026-07-29)
+
+
+### Bug Fixes
+
+* guard positionWindow against re-entrant resize recursion ([#124](https://github.com/gitify-app/electron-menubar/issues/124)) ([16a8e02](https://github.com/gitify-app/electron-menubar/commit/16a8e02d827de96b186064d55faa6a040f3f1e45))
+
 ## [10.1.4](https://github.com/gitify-app/electron-menubar/compare/v10.1.3...v10.1.4) (2026-07-29)
 
 
