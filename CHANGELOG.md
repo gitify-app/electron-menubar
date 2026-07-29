@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.8](https://github.com/gitify-app/electron-menubar/compare/v10.1.7...v10.1.8) (2026-07-29)
+
+
+### 📚 Documentation
+
+* recommend LSUIElement for packaged apps hiding the dock icon ([#135](https://github.com/gitify-app/electron-menubar/issues/135)) ([888d110](https://github.com/gitify-app/electron-menubar/commit/888d110ac04f91662fd87c3fcdc956ea46faa8ea))
+
+
+### 🤖 Continuous Integration
+
+* update release sections to use emojis and callout core deps ([#133](https://github.com/gitify-app/electron-menubar/issues/133)) ([c61d962](https://github.com/gitify-app/electron-menubar/commit/c61d96209fa9ce3338f9cc82a2786945956f2da6))
+
 ## [10.1.7](https://github.com/gitify-app/electron-menubar/compare/v10.1.6...v10.1.7) (2026-07-29)
 
 
