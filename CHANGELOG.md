@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.4](https://github.com/gitify-app/electron-menubar/compare/v10.1.3...v10.1.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* re-assert hidden dock after startup hide race ([#123](https://github.com/gitify-app/electron-menubar/issues/123)) ([37d2fe5](https://github.com/gitify-app/electron-menubar/commit/37d2fe502a31eedc04d25bbfccc559c266959ad2))
+
+
+### Documentation
+
+* refresh visual tray rendering table ([#117](https://github.com/gitify-app/electron-menubar/issues/117)) ([af2f867](https://github.com/gitify-app/electron-menubar/commit/af2f867dbe886f3fa5f7813f63595c45ab86009f))
+
 ## [10.1.3](https://github.com/gitify-app/electron-menubar/compare/v10.1.2...v10.1.3) (2026-07-27)
 
 
