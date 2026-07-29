@@ -875,3 +875,57 @@ describe('Menubar dock hide startup race', () => {
     expect(app.dock!.hide).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('Menubar positionWindow re-entrancy', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const ready = (mb: Menubar): Promise<void> =>
+    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+  const findHandler = (
+    win: BrowserWindow,
+    event: string,
+  ): ((...args: unknown[]) => void) | undefined => {
+    const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
+    return call?.[1] as ((...args: unknown[]) => void) | undefined;
+  };
+
+  it('does not recurse when `setPosition` synchronously emits `resize` (gitify-app/gitify#3064)', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    const win = mb.window!;
+    const onResize = findHandler(win, 'resize');
+    expect(onResize, 'a resize handler should be registered').toBeDefined();
+
+    // Windows dispatches WM_SIZE inline, so `setPosition` can re-enter
+    // `positionWindow` via the `resize` listener. Unguarded this recurses
+    // until the stack blows, wedging the main process.
+    let depth = 0;
+    let maxDepth = 0;
+    (win.setPosition as Mock).mockImplementation(() => {
+      depth += 1;
+      maxDepth = Math.max(maxDepth, depth);
+      onResize!();
+      depth -= 1;
+    });
+
+    expect(() => onResize!()).not.toThrow();
+    expect(maxDepth).toBe(1);
+  });
+
+  it('still repositions on a later, non-reentrant resize', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    await mb.showWindow();
+
+    const win = mb.window!;
+    const before = (win.setPosition as Mock).mock.calls.length;
+
+    findHandler(win, 'resize')!();
+
+    expect((win.setPosition as Mock).mock.calls.length).toBe(before + 1);
+  });
+});

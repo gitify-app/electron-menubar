@@ -43,6 +43,7 @@ export class Menubar extends EventEmitter {
   private _warnedNoPositioning = false; // guards the one-time Wayland warning
   private _lastShowTime = 0; // timestamp of last show(), debounces the post-show blur on Windows
   private _dockRehideTimeout?: NodeJS.Timeout; // pending post-startup dock re-hide check
+  private _repositioning = false; // guards against re-entrant positionWindow calls
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -328,6 +329,32 @@ export class Menubar extends EventEmitter {
       return;
     }
 
+    // `setPosition` below can make Windows emit `resize` synchronously, which
+    // re-enters this method through the window's `resize` listener. Each pass
+    // nudges the window again, so the recursion never unwinds: the main
+    // process wedges with the event loop blocked and the window grows past
+    // screen size (gitify-app/gitify#3064). Ignore re-entrant calls; the
+    // outermost one already applies the final position.
+    if (this._repositioning) {
+      return;
+    }
+    this._repositioning = true;
+    try {
+      this.applyWindowPosition();
+    } finally {
+      this._repositioning = false;
+    }
+  };
+
+  /**
+   * Compute and apply the tray-anchored position. Always call through
+   * {@link positionWindow}, which guards against re-entrancy.
+   */
+  private applyWindowPosition(): void {
+    if (!this._browserWindow || !this._tray) {
+      return;
+    }
+
     // 'Windows' taskbar: sync window position each time before positioning.
     // https://github.com/maxogden/menubar/issues/232
     if (['win32', 'linux'].includes(process.platform)) {
@@ -394,7 +421,7 @@ export class Menubar extends EventEmitter {
         );
       }
     }
-  };
+  }
 
   private async appReady(): Promise<void> {
     if (this.app.dock && !this._options.showDockIcon) {
