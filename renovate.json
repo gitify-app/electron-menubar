@@ -12,6 +12,11 @@
   "rangeStrategy": "pin",
   "packageRules": [
     {
+      "description": "Keep peer dependency ranges wide rather than pinning them to one version",
+      "matchDepTypes": ["peerDependencies"],
+      "rangeStrategy": "widen"
+    },
+    {
       "matchDepTypes": ["engines"],
       "rangeStrategy": "auto"
     },
