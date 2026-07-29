@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.7](https://github.com/gitify-app/electron-menubar/compare/v10.1.6...v10.1.7) (2026-07-29)
+
+
+### Bug Fixes
+
+* publish widened electron peer dependency range ([#132](https://github.com/gitify-app/electron-menubar/issues/132)) ([972c415](https://github.com/gitify-app/electron-menubar/commit/972c4156b43648bbd4102731cd37fe2c01bdf5f3))
+
+
+### CI
+
+* serialise release workflow runs ([#130](https://github.com/gitify-app/electron-menubar/issues/130)) ([a6ba5c2](https://github.com/gitify-app/electron-menubar/commit/a6ba5c2dd68e50d5ab30c4837a0eff44bf15cea7))
+
 ## [10.1.6](https://github.com/gitify-app/electron-menubar/compare/v10.1.5...v10.1.6) (2026-07-29)
 
 
