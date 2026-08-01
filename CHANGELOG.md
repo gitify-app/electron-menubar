@@ -2,6 +2,111 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.1.8](https://github.com/gitify-app/electron-menubar/compare/v10.1.7...v10.1.8) (2026-07-29)
+
+
+### 📚 Documentation
+
+* recommend LSUIElement for packaged apps hiding the dock icon ([#135](https://github.com/gitify-app/electron-menubar/issues/135)) ([888d110](https://github.com/gitify-app/electron-menubar/commit/888d110ac04f91662fd87c3fcdc956ea46faa8ea))
+
+
+### 🤖 Continuous Integration
+
+* update release sections to use emojis and callout core deps ([#133](https://github.com/gitify-app/electron-menubar/issues/133)) ([c61d962](https://github.com/gitify-app/electron-menubar/commit/c61d96209fa9ce3338f9cc82a2786945956f2da6))
+
+## [10.1.7](https://github.com/gitify-app/electron-menubar/compare/v10.1.6...v10.1.7) (2026-07-29)
+
+
+### Bug Fixes
+
+* publish widened electron peer dependency range ([#132](https://github.com/gitify-app/electron-menubar/issues/132)) ([972c415](https://github.com/gitify-app/electron-menubar/commit/972c4156b43648bbd4102731cd37fe2c01bdf5f3))
+
+
+### CI
+
+* serialise release workflow runs ([#130](https://github.com/gitify-app/electron-menubar/issues/130)) ([a6ba5c2](https://github.com/gitify-app/electron-menubar/commit/a6ba5c2dd68e50d5ab30c4837a0eff44bf15cea7))
+
+## [10.1.6](https://github.com/gitify-app/electron-menubar/compare/v10.1.5...v10.1.6) (2026-07-29)
+
+
+### Bug Fixes
+
+* widen electron peer dependency range ([#128](https://github.com/gitify-app/electron-menubar/issues/128)) ([5ac14f6](https://github.com/gitify-app/electron-menubar/commit/5ac14f64e2ff9ee9abfdbba8d9f1218630423eba))
+
+## [10.1.5](https://github.com/gitify-app/electron-menubar/compare/v10.1.4...v10.1.5) (2026-07-29)
+
+
+### Bug Fixes
+
+* guard positionWindow against re-entrant resize recursion ([#124](https://github.com/gitify-app/electron-menubar/issues/124)) ([16a8e02](https://github.com/gitify-app/electron-menubar/commit/16a8e02d827de96b186064d55faa6a040f3f1e45))
+
+## [10.1.4](https://github.com/gitify-app/electron-menubar/compare/v10.1.3...v10.1.4) (2026-07-29)
+
+
+### Bug Fixes
+
+* re-assert hidden dock after startup hide race ([#123](https://github.com/gitify-app/electron-menubar/issues/123)) ([37d2fe5](https://github.com/gitify-app/electron-menubar/commit/37d2fe502a31eedc04d25bbfccc559c266959ad2))
+
+
+### Documentation
+
+* refresh visual tray rendering table ([#117](https://github.com/gitify-app/electron-menubar/issues/117)) ([af2f867](https://github.com/gitify-app/electron-menubar/commit/af2f867dbe886f3fa5f7813f63595c45ab86009f))
+
+## [10.1.3](https://github.com/gitify-app/electron-menubar/compare/v10.1.2...v10.1.3) (2026-07-27)
+
+
+### Bug Fixes
+
+* ignore transient post-show blur on Windows tray click ([#115](https://github.com/gitify-app/electron-menubar/issues/115)) ([70241a8](https://github.com/gitify-app/electron-menubar/commit/70241a819e99b35b787f68fc96df70d58c8b52fc))
+
+
+### Documentation
+
+* refresh visual tray rendering table ([#114](https://github.com/gitify-app/electron-menubar/issues/114)) ([5b1ff46](https://github.com/gitify-app/electron-menubar/commit/5b1ff4606a8271be4b187d2304efc84f5d7917bb))
+
+## [10.1.2](https://github.com/gitify-app/electron-menubar/compare/v10.1.1...v10.1.2) (2026-07-16)
+
+
+### Build
+
+* replace vite-plus with rolldown, oxlint, and oxfmt ([#104](https://github.com/gitify-app/electron-menubar/issues/104)) ([c98a741](https://github.com/gitify-app/electron-menubar/commit/c98a7414c1843d0137bc9d189ab82965cbbca9fd))
+
+
+### Documentation
+
+* refresh visual tray rendering table ([#92](https://github.com/gitify-app/electron-menubar/issues/92)) ([94b8b90](https://github.com/gitify-app/electron-menubar/commit/94b8b9077bd0496c1aef92bfd93dd038a1c55865))
+
+## [10.1.1](https://github.com/gitify-app/electron-menubar/compare/v10.1.0...v10.1.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* correct repository url to electron-menubar for npm provenance ([#93](https://github.com/gitify-app/electron-menubar/issues/93)) ([eaa131c](https://github.com/gitify-app/electron-menubar/commit/eaa131c6ee78c737d35eaa24c25149faa0e2204f))
+
+## [10.1.0](https://github.com/gitify-app/electron-menubar/compare/v10.0.2...v10.1.0) (2026-07-02)
+
+
+### Features
+
+* Add CODEOWNERS file ([2fcd1a6](https://github.com/gitify-app/electron-menubar/commit/2fcd1a63751c6e9a601723dbd23398a502957efb))
+* Add CODEOWNERS file ([#55](https://github.com/gitify-app/electron-menubar/issues/55)) ([ad00cfd](https://github.com/gitify-app/electron-menubar/commit/ad00cfd40afa3a08f682c91556c71e3c5965d69f))
+* handle and document Wayland window positioning limitation ([#72](https://github.com/gitify-app/electron-menubar/issues/72)) ([25adf80](https://github.com/gitify-app/electron-menubar/commit/25adf8090c520f85dc755b7351f04250dc306cbb))
+* onboard fork to renovate ([#54](https://github.com/gitify-app/electron-menubar/issues/54)) ([209c31f](https://github.com/gitify-app/electron-menubar/commit/209c31f19787953eb092fd234b02fbdf7d2d4c87))
+
+
+### Build
+
+* upgrade @playwright/test to 1.60 and typescript to 6.0 ([#51](https://github.com/gitify-app/electron-menubar/issues/51)) ([da64d7e](https://github.com/gitify-app/electron-menubar/commit/da64d7e319596400402021076ffbd55eb3936321))
+
+
+### Documentation
+
+* reformat API documentation as tables ([#70](https://github.com/gitify-app/electron-menubar/issues/70)) ([d1ad936](https://github.com/gitify-app/electron-menubar/commit/d1ad9367ef77240f1436b8ef069478e3b5ae01bc))
+* refresh readme ([#66](https://github.com/gitify-app/electron-menubar/issues/66)) ([45723b5](https://github.com/gitify-app/electron-menubar/commit/45723b527b1ec58d0fb56b3f73babb367514da99))
+* refresh visual tray rendering table ([#91](https://github.com/gitify-app/electron-menubar/issues/91)) ([311145b](https://github.com/gitify-app/electron-menubar/commit/311145ba28627fdd476e087cbf5eb167fa5bec7c))
+* Update installation command from bun to pnpm ([#56](https://github.com/gitify-app/electron-menubar/issues/56)) ([2afa208](https://github.com/gitify-app/electron-menubar/commit/2afa2082e70accc6a47cbff25d977f96f7354369))
+* update repo urls ([#71](https://github.com/gitify-app/electron-menubar/issues/71)) ([45b6bdf](https://github.com/gitify-app/electron-menubar/commit/45b6bdf9f967932785b2ff7a174e9f4496fc9033))
+
 ## [10.0.2](https://github.com/gitify-app/menubar/compare/v10.0.1...v10.0.2) (2026-06-04)
 
 

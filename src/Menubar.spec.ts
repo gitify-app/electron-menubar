@@ -728,3 +728,204 @@ describe('Menubar Wayland positioning warning', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 });
+
+describe('Menubar blur-to-hide behavior', () => {
+  const originalPlatform = process.platform;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  const ready = (mb: Menubar): Promise<void> =>
+    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+  const findHandler = (
+    win: BrowserWindow,
+    event: string,
+  ): ((...args: unknown[]) => void) | undefined => {
+    const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
+    return call?.[1] as ((...args: unknown[]) => void) | undefined;
+  };
+
+  it('hides the window ~100ms after a blur on non-Windows platforms', async () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    await mb.showWindow();
+
+    vi.useFakeTimers();
+    const blur = findHandler(mb.window!, 'blur');
+    expect(blur, 'a blur handler should be registered').toBeDefined();
+
+    blur!();
+    expect(mb.window!.hide).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(100);
+    expect(mb.window!.hide).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores the transient post-show blur on Windows (gitify-app/gitify#3064)', async () => {
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    vi.useFakeTimers();
+    await mb.showWindow(); // stamps `_lastShowTime` with the current fake clock
+
+    // The blur Windows fires right after `show()`, inside the grace window.
+    findHandler(mb.window!, 'blur')!();
+    vi.advanceTimersByTime(100);
+
+    expect(mb.window!.hide).not.toHaveBeenCalled();
+  });
+
+  it('still hides on Windows for a blur after the grace window (real click-away)', async () => {
+    Object.defineProperty(process, 'platform', { value: 'win32' });
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    vi.useFakeTimers();
+    await mb.showWindow();
+
+    // A genuine click-away lands well after the popup has settled.
+    vi.advanceTimersByTime(1000);
+    findHandler(mb.window!, 'blur')!();
+    vi.advanceTimersByTime(100);
+
+    expect(mb.window!.hide).toHaveBeenCalledTimes(1);
+  });
+
+  it('emits `focus-lost` instead of hiding when the window is pinned alwaysOnTop', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    await mb.showWindow();
+
+    (mb.window!.isAlwaysOnTop as Mock).mockReturnValue(true);
+    const focusLost = vi.fn();
+    mb.on('focus-lost', focusLost);
+
+    findHandler(mb.window!, 'blur')!();
+
+    expect(focusLost).toHaveBeenCalledTimes(1);
+    expect(mb.window!.hide).not.toHaveBeenCalled();
+  });
+});
+
+describe('Menubar dock hide startup race', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    (app.dock!.isVisible as Mock).mockReturnValue(false);
+    vi.useRealTimers();
+  });
+
+  const ready = (mb: Menubar): Promise<void> =>
+    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+  it('re-hides the dock when the startup hide was dropped (gitify-app/gitify#3069)', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(1);
+
+    // Simulate macOS having dropped the initial hide.
+    (app.dock!.isVisible as Mock).mockReturnValue(true);
+    vi.advanceTimersByTime(2_000);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not touch the dock again when the initial hide stuck', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(2_000);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not hide at all when `showDockIcon: true`', async () => {
+    const mb = new Menubar(app, { preloadWindow: true, showDockIcon: true });
+    await ready(mb);
+
+    (app.dock!.isVisible as Mock).mockReturnValue(true);
+    vi.advanceTimersByTime(2_000);
+
+    expect(app.dock!.hide).not.toHaveBeenCalled();
+  });
+
+  it('cancels the pending re-check on destroy', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    mb.destroy();
+    (app.dock!.isVisible as Mock).mockReturnValue(true);
+    vi.advanceTimersByTime(2_000);
+
+    expect(app.dock!.hide).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Menubar positionWindow re-entrancy', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const ready = (mb: Menubar): Promise<void> =>
+    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+  const findHandler = (
+    win: BrowserWindow,
+    event: string,
+  ): ((...args: unknown[]) => void) | undefined => {
+    const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
+    return call?.[1] as ((...args: unknown[]) => void) | undefined;
+  };
+
+  it('does not recurse when `setPosition` synchronously emits `resize` (gitify-app/gitify#3064)', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+
+    const win = mb.window!;
+    const onResize = findHandler(win, 'resize');
+    expect(onResize, 'a resize handler should be registered').toBeDefined();
+
+    // Windows dispatches WM_SIZE inline, so `setPosition` can re-enter
+    // `positionWindow` via the `resize` listener. Unguarded this recurses
+    // until the stack blows, wedging the main process.
+    let depth = 0;
+    let maxDepth = 0;
+    (win.setPosition as Mock).mockImplementation(() => {
+      depth += 1;
+      maxDepth = Math.max(maxDepth, depth);
+      onResize!();
+      depth -= 1;
+    });
+
+    expect(() => onResize!()).not.toThrow();
+    expect(maxDepth).toBe(1);
+  });
+
+  it('still repositions on a later, non-reentrant resize', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    await mb.showWindow();
+
+    const win = mb.window!;
+    const before = (win.setPosition as Mock).mock.calls.length;
+
+    findHandler(win, 'resize')!();
+
+    expect((win.setPosition as Mock).mock.calls.length).toBe(before + 1);
+  });
+});

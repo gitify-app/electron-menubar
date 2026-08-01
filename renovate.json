@@ -12,6 +12,11 @@
   "rangeStrategy": "pin",
   "packageRules": [
     {
+      "description": "Keep peer dependency ranges wide rather than pinning them to one version",
+      "matchDepTypes": ["peerDependencies"],
+      "rangeStrategy": "widen"
+    },
+    {
       "matchDepTypes": ["engines"],
       "rangeStrategy": "auto"
     },
@@ -19,6 +24,11 @@
       "description": "Remove word `dependency` from commit messages and PR titles",
       "matchDatasources": ["npm"],
       "commitMessageTopic": "{{depName}}"
+    },
+    {
+      "description": "Give updates to core runtime dependencies (Electron shell, tray integration, UI primitives, GitHub API client) a distinct commit scope so release-please can surface them in the changelog instead of hiding them with routine dependency bumps",
+      "matchPackageNames": ["electron"],
+      "semanticCommitScope": "deps-core"
     }
   ]
 }

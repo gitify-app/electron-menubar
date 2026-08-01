@@ -10,6 +10,21 @@ import { cleanOptions } from './util/cleanOptions';
 import { getWindowPosition } from './util/getWindowPosition';
 
 /**
+ * Grace period after `showWindow()` during which a `blur` on the popup is
+ * treated as the spurious Windows post-show blur and ignored instead of
+ * triggering the auto-hide. See the `blur` handler in {@link Menubar.createWindow}.
+ */
+const BLUR_HIDE_GRACE_MS = 400;
+
+/**
+ * Delay before re-asserting the hidden dock after startup. macOS can silently
+ * drop an `app.dock.hide()` that races the app's launch activation
+ * transition, leaving the dock icon stuck for the whole session. See the
+ * re-check in {@link Menubar.appReady}.
+ */
+const DOCK_REHIDE_DELAY_MS = 2_000;
+
+/**
  * The main Menubar class.
  */
 export class Menubar extends EventEmitter {
@@ -26,6 +41,9 @@ export class Menubar extends EventEmitter {
   private _shortcut?: Electron.Accelerator;
   private _rightClickContextMenuBound = false;
   private _warnedNoPositioning = false; // guards the one-time Wayland warning
+  private _lastShowTime = 0; // timestamp of last show(), debounces the post-show blur on Windows
+  private _dockRehideTimeout?: NodeJS.Timeout; // pending post-startup dock re-hide check
+  private _repositioning = false; // guards against re-entrant positionWindow calls
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -105,6 +123,11 @@ export class Menubar extends EventEmitter {
     if (this._shortcut) {
       globalShortcut.unregister(this._shortcut);
       this._shortcut = undefined;
+    }
+
+    if (this._dockRehideTimeout) {
+      clearTimeout(this._dockRehideTimeout);
+      this._dockRehideTimeout = undefined;
     }
 
     if (this._browserWindow) {
@@ -286,6 +309,9 @@ export class Menubar extends EventEmitter {
     }
 
     this.positionWindow();
+    // Record the show time before `show()` so the blur handler can recognise
+    // and ignore the transient blur Windows fires right after (see below).
+    this._lastShowTime = Date.now();
     this._browserWindow.show();
     this._isVisible = true;
     this.emit('after-show');
@@ -299,6 +325,32 @@ export class Menubar extends EventEmitter {
    * `setSize` calls reposition the window correctly.
    */
   private positionWindow = (): void => {
+    if (!this._browserWindow || !this._tray) {
+      return;
+    }
+
+    // `setPosition` below can make Windows emit `resize` synchronously, which
+    // re-enters this method through the window's `resize` listener. Each pass
+    // nudges the window again, so the recursion never unwinds: the main
+    // process wedges with the event loop blocked and the window grows past
+    // screen size (gitify-app/gitify#3064). Ignore re-entrant calls; the
+    // outermost one already applies the final position.
+    if (this._repositioning) {
+      return;
+    }
+    this._repositioning = true;
+    try {
+      this.applyWindowPosition();
+    } finally {
+      this._repositioning = false;
+    }
+  };
+
+  /**
+   * Compute and apply the tray-anchored position. Always call through
+   * {@link positionWindow}, which guards against re-entrancy.
+   */
+  private applyWindowPosition(): void {
     if (!this._browserWindow || !this._tray) {
       return;
     }
@@ -369,11 +421,21 @@ export class Menubar extends EventEmitter {
         );
       }
     }
-  };
+  }
 
   private async appReady(): Promise<void> {
     if (this.app.dock && !this._options.showDockIcon) {
       this.app.dock.hide();
+
+      // The hide above can be silently dropped when it races the launch
+      // activation transition. Re-check once startup has settled; guarded on
+      // visibility because `dock.hide()` also deactivates the app, so it must
+      // not run when the dock is already hidden.
+      this._dockRehideTimeout = setTimeout(() => {
+        if (!this._isDestroyed && this.app.dock?.isVisible()) {
+          this.app.dock.hide();
+        }
+      }, DOCK_REHIDE_DELAY_MS);
     }
 
     if (this._options.activateWithApp) {
@@ -539,12 +601,30 @@ export class Menubar extends EventEmitter {
         return;
       }
 
-      // hack to close if icon clicked when open
-      this._browserWindow.isAlwaysOnTop()
-        ? this.emit('focus-lost')
-        : (this._blurTimeout = setTimeout(() => {
-            this.hideWindow();
-          }, 100));
+      // The window was pinned (e.g. a host "keep open on blur" preference);
+      // don't auto-hide, just surface the event for the host app to react to.
+      if (this._browserWindow.isAlwaysOnTop()) {
+        this.emit('focus-lost');
+        return;
+      }
+
+      // Windows foreground-activation race: clicking the tray icon keeps the
+      // shell (explorer.exe) as the foreground process, so `show()` cannot pull
+      // focus to the popup and Windows immediately fires `blur`. Left unguarded,
+      // the hide timer below fires before the first paint and the window never
+      // visibly appears (gitify-app/gitify#3064). Ignore blur events that land
+      // within the grace window right after a show; a genuine click-away
+      // arrives well after it.
+      if (
+        process.platform === 'win32' &&
+        Date.now() - this._lastShowTime < BLUR_HIDE_GRACE_MS
+      ) {
+        return;
+      }
+
+      this._blurTimeout = setTimeout(() => {
+        this.hideWindow();
+      }, 100);
     });
 
     if (this._options.showOnAllWorkspaces !== false) {
