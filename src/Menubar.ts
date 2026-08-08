@@ -191,7 +191,7 @@ export class Menubar extends EventEmitter {
       clearTimeout(this._blurTimeout);
       this._blurTimeout = null;
     }
-    this.refreshLinuxContextMenu();
+    this.refreshContextMenu();
   }
 
   /**
@@ -277,6 +277,27 @@ export class Menubar extends EventEmitter {
   }
 
   /**
+   * Re-publish the current context menu so in-place mutations of its items
+   * (`visible`, `enabled`, `checked`, `label`) become visible to the user.
+   *
+   * Only Linux needs this: libappindicator / StatusNotifierItem serializes the
+   * menu once and serves that copy until it is set again, so a mutated item
+   * would otherwise keep rendering its old state until the next show or hide.
+   * A no-op on macOS and Windows, where the menu is read at popup time — call
+   * it unconditionally after mutating items.
+   */
+  refreshContextMenu(): void {
+    if (
+      process.platform === 'linux' &&
+      this._contextMenu &&
+      this._tray &&
+      !this._tray.isDestroyed?.()
+    ) {
+      this._tray.setContextMenu(this._contextMenu);
+    }
+  }
+
+  /**
    * Change an option after menubar is created.
    *
    * @param key - The option key to modify, see {@link Options}.
@@ -323,7 +344,7 @@ export class Menubar extends EventEmitter {
     this._browserWindow.show();
     this._isVisible = true;
     this.emit('after-show');
-    this.refreshLinuxContextMenu();
+    this.refreshContextMenu();
   }
 
   /**
@@ -571,20 +592,6 @@ export class Menubar extends EventEmitter {
       this.tray.popUpContextMenu(current, { x: bounds.x, y: bounds.y });
     });
     this._rightClickContextMenuBound = true;
-  }
-
-  private refreshLinuxContextMenu(): void {
-    // libappindicator caches the menu's serialized state, so consumers that
-    // mutate items in-place need the menu re-published. Cheap to do; safe to
-    // call unconditionally on every show/hide.
-    if (
-      process.platform === 'linux' &&
-      this._contextMenu &&
-      this._tray &&
-      !this._tray.isDestroyed?.()
-    ) {
-      this._tray.setContextMenu(this._contextMenu);
-    }
   }
 
   private onAppReady = (): void => {

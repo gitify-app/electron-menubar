@@ -87,6 +87,7 @@ The return value of `menubar()` is a `Menubar` class instance, which exposes the
 | `toggleWindow()` | Show the window if hidden, hide it if visible. |
 | `recenterOnTray()` | Re-center the window over the tray icon. |
 | `setContextMenu(menu)` | Replace the tray context menu (auto-re-publishes on Linux). |
+| `refreshContextMenu()` | Re-publish the current context menu after mutating its items in place. Required on Linux, a no-op elsewhere. |
 | `setGlobalShortcut(accelerator)` | Register a global accelerator that toggles the window. Returns `false` on registration failure. |
 | `destroy()` | Tear down the menubar instance. |
 | `isDestroyed()` | Whether the menubar is currently destroyed. |

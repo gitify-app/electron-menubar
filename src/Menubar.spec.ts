@@ -416,6 +416,32 @@ describe('Menubar contextMenu option', () => {
     });
   });
 
+  it('re-publishes the menu on refreshContextMenu() on Linux', () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        (mb.tray.setContextMenu as Mock).mockClear();
+        mb.refreshContextMenu();
+        expect(mb.tray.setContextMenu).toHaveBeenCalledWith(fakeMenu);
+        resolve();
+      });
+    });
+  });
+
+  it('refreshContextMenu() is a no-op on macOS', () => {
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
+    return new Promise<void>((resolve) => {
+      mb.on('ready', () => {
+        (mb.tray.setContextMenu as Mock).mockClear();
+        mb.refreshContextMenu();
+        expect(mb.tray.setContextMenu).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
   it('replaces the menu via setContextMenu()', () => {
     Object.defineProperty(process, 'platform', { value: 'linux' });
     const mb = new Menubar(app, { preloadWindow: true, contextMenu: fakeMenu });
