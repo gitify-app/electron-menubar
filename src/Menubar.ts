@@ -2,7 +2,13 @@ import { EventEmitter } from 'node:events';
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { BrowserWindow, globalShortcut, type Menu, Tray } from 'electron';
+import {
+  autoUpdater,
+  BrowserWindow,
+  globalShortcut,
+  type Menu,
+  Tray,
+} from 'electron';
 
 import { Positioner } from './Positioner';
 import type { Options } from './types';
@@ -33,7 +39,7 @@ export class Menubar extends EventEmitter {
   private _contextMenu?: Menu;
   private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
   private _isDestroyed: boolean;
-  private _isQuitting: boolean; // set on app `before-quit`, used by hideOnClose
+  private _isQuitting: boolean; // set when the app is shutting down, used by hideOnClose
   private _isVisible: boolean; // track visibility
   private _cachedBounds?: Electron.Rectangle; // _cachedBounds are needed for double-clicked event
   private _options: Options;
@@ -55,6 +61,7 @@ export class Menubar extends EventEmitter {
     this._isVisible = false;
 
     app.on('before-quit', this.onBeforeQuit);
+    autoUpdater.on('before-quit-for-update', this.onBeforeQuit);
 
     if (app.isReady()) {
       // See https://github.com/maxogden/menubar/pull/151
@@ -150,6 +157,7 @@ export class Menubar extends EventEmitter {
     this._app.removeListener('ready', this.onAppReady);
     this._app.removeListener('activate', this.onAppActivate);
     this._app.removeListener('before-quit', this.onBeforeQuit);
+    autoUpdater.removeListener('before-quit-for-update', this.onBeforeQuit);
   }
 
   /**
@@ -526,6 +534,15 @@ export class Menubar extends EventEmitter {
     }
   };
 
+  /**
+   * Marks the app as shutting down so `hideOnClose` stops intercepting closes.
+   *
+   * Bound to both `app`'s `before-quit` and the auto updater's
+   * `before-quit-for-update`. Installing an update never emits `before-quit`:
+   * Electron closes every window first and only quits once the window list is
+   * empty, so a `hideOnClose` veto there would leave the window open and the
+   * install waiting forever.
+   */
   private onBeforeQuit = (): void => {
     this._isQuitting = true;
   };

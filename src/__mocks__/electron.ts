@@ -22,6 +22,14 @@ export const app: {
   },
 };
 
+export const autoUpdater: {
+  on: Mock;
+  removeListener: Mock;
+} = {
+  on: vi.fn(),
+  removeListener: vi.fn(),
+};
+
 export class BrowserWindow {
   private _position: [number, number] = [0, 0];
   destroy: Mock = vi.fn();

@@ -1,4 +1,10 @@
-import { app, BrowserWindow, globalShortcut, Tray } from 'electron';
+import {
+  app,
+  autoUpdater,
+  BrowserWindow,
+  globalShortcut,
+  Tray,
+} from 'electron';
 import {
   afterEach,
   beforeEach,
@@ -88,6 +94,11 @@ describe('Menubar', () => {
         );
         expect(appEvents).toEqual(
           expect.arrayContaining(['ready', 'activate']),
+        );
+
+        expect(autoUpdater.removeListener).toHaveBeenCalledWith(
+          'before-quit-for-update',
+          expect.any(Function),
         );
         resolve();
       });
@@ -180,6 +191,27 @@ describe('Menubar hideOnClose option', () => {
           ([event]) => event === 'before-quit',
         )?.[1];
         beforeQuitHandler?.();
+
+        const handler = closeHandler(mb);
+        const event = { preventDefault: vi.fn(), defaultPrevented: false };
+        handler?.(event);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+
+  it('lets close through during `before-quit-for-update`', () => {
+    const mb = new Menubar(app, { preloadWindow: true, hideOnClose: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        // Installing an update closes every window without emitting
+        // `before-quit`, so intercepting here would stall the install.
+        const beforeQuitForUpdateHandler = (
+          autoUpdater.on as Mock
+        ).mock.calls.find(([event]) => event === 'before-quit-for-update')?.[1];
+        expect(beforeQuitForUpdateHandler).toBeTypeOf('function');
+        beforeQuitForUpdateHandler?.();
 
         const handler = closeHandler(mb);
         const event = { preventDefault: vi.fn(), defaultPrevented: false };
