@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.2.0](https://github.com/gitify-app/electron-menubar/compare/v10.1.8...v10.2.0) (2026-08-08)
+
+
+### 🚀 Features
+
+* fix update restarts and expose refreshContextMenu() ([#139](https://github.com/gitify-app/electron-menubar/issues/139)) ([47f1f6e](https://github.com/gitify-app/electron-menubar/commit/47f1f6edffa4cee6c68c4bc021b6a63b8faf0ce4))
+
 ## [10.1.8](https://github.com/gitify-app/electron-menubar/compare/v10.1.7...v10.1.8) (2026-07-29)
 
 
