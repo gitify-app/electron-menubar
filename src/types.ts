@@ -63,9 +63,10 @@ export interface Options {
    * compositor bug that leaves frameless surfaces in a half-closed state
    * when hidden synchronously from the `close` handler.
    *
-   * Respects `app.isQuitting === true` (set this in your `before-quit`
-   * handler) so the close goes through during real quits. Has no effect
-   * when the close event was triggered by {@link Menubar.destroy}.
+   * Closes go through unimpeded once the app is shutting down, which the
+   * library tracks via `app`'s `before-quit` and the auto updater's
+   * `before-quit-for-update`. Has no effect when the close event was
+   * triggered by {@link Menubar.destroy}.
    * @default `false`
    */
   hideOnClose?: boolean;
