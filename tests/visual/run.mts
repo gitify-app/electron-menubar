@@ -247,11 +247,20 @@ function check(png: PNG, winRect: PixelRect | null): Analysis {
     winRect !== null &&
     windowWhite >= WINDOW_WHITE_THRESHOLD &&
     windowBlack >= WINDOW_BLACK_THRESHOLD;
+  // The reported rect holds a painted surface but no inner square: the window
+  // is up while the renderer has yet to draw index.html. globalWhite alone
+  // counts that blank surface as a rendered window, so the global fallback is
+  // withheld here and the caller retries on a fresh capture instead of
+  // accepting a contentless window.
+  const boundedAwaitingContent =
+    winRect !== null &&
+    windowWhite >= WINDOW_WHITE_THRESHOLD &&
+    windowBlack < WINDOW_BLACK_THRESHOLD;
   // globalBlack varies wildly with wallpaper (macOS black is huge, others are
   // tiny) so we don't use it. globalWhite at >= 14000 reliably signals the
   // rendered white window background even when GNOME's Mutter paints the
   // window at a position that diverges from getBounds().
-  const windowDetectedGlobal = globalWhite >= 14000;
+  const windowDetectedGlobal = !boundedAwaitingContent && globalWhite >= 14000;
   const windowDetected = windowDetectedBounded || windowDetectedGlobal;
   return {
     status: trayDetected && windowDetected ? 'pass' : 'fail',
