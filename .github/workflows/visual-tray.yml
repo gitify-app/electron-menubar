@@ -14,6 +14,7 @@ jobs:
     macos:
         name: Visual [${{ matrix.label }}]
         runs-on: ${{ matrix.runner }}
+        timeout-minutes: 30
         permissions:
             contents: read
         strategy:
@@ -76,6 +77,7 @@ jobs:
     linux:
         name: Visual [${{ matrix.label }}]
         runs-on: ubuntu-24.04
+        timeout-minutes: 30
         permissions:
             contents: read
         continue-on-error: ${{ matrix.experimental || false }}
@@ -219,7 +221,11 @@ jobs:
             - name: Build library
               run: pnpm run build
             - name: Install base dependencies
+              # The fetch timeouts + retries apply to every apt call in the job;
+              # without them a stalled Azure mirror hangs apt-get until the job
+              # timeout instead of retrying.
               run: |
+                  printf 'Acquire::Retries "3";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' | sudo tee /etc/apt/apt.conf.d/99-fetch-timeouts
                   sudo apt-get update -qq
                   sudo apt-get install -y --no-install-recommends \
                       xvfb imagemagick dbus-x11 faketime \
@@ -337,6 +343,7 @@ jobs:
     linux-wayland:
         name: Visual [${{ matrix.label }}]
         runs-on: ubuntu-24.04
+        timeout-minutes: 30
         permissions:
             contents: read
         continue-on-error: ${{ matrix.experimental || false }}
@@ -383,6 +390,7 @@ jobs:
               env:
                   APT_PACKAGES: ${{ matrix.apt }}
               run: |
+                  printf 'Acquire::Retries "3";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' | sudo tee /etc/apt/apt.conf.d/99-fetch-timeouts
                   sudo apt-get update -qq
                   sudo apt-get install -y --no-install-recommends \
                       dbus-x11 \
@@ -461,6 +469,7 @@ jobs:
     windows:
         name: Visual [${{ matrix.label }}]
         runs-on: ${{ matrix.runner }}
+        timeout-minutes: 30
         permissions:
             contents: read
         continue-on-error: ${{ matrix.experimental || false }}
