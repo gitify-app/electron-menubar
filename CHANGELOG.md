@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [10.2.1](https://github.com/gitify-app/electron-menubar/compare/v10.2.0...v10.2.1) (2026-08-20)
+
+
+### 🐛 Bug Fixes
+
+* **macos:** keep popup on the active fullscreen space ([#155](https://github.com/gitify-app/electron-menubar/issues/155)) ([0c31dd6](https://github.com/gitify-app/electron-menubar/commit/0c31dd6e060cf0c9e3289bc124d2e1d807c50ed0))
+
 ## [10.2.0](https://github.com/gitify-app/electron-menubar/compare/v10.1.8...v10.2.0) (2026-08-08)
 
 
