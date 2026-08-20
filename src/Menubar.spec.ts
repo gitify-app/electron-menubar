@@ -223,6 +223,44 @@ describe('Menubar hideOnClose option', () => {
   });
 });
 
+describe('Menubar showOnAllWorkspaces option', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const workspacesCall = (mb: Menubar): unknown[] | undefined =>
+    (mb.window!.setVisibleOnAllWorkspaces as Mock).mock.calls[0];
+
+  it('requests fullscreen-space visibility by default', () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        // Without `visibleOnFullScreen` Electron clears
+        // NSWindowCollectionBehaviorFullScreenAuxiliary, so macOS switches
+        // away from a fullscreen space to show the popup.
+        expect(workspacesCall(mb)).toEqual([
+          true,
+          { visibleOnFullScreen: true, skipTransformProcessType: true },
+        ]);
+        resolve();
+      });
+    });
+  });
+
+  it('does not touch workspace visibility when `showOnAllWorkspaces: false`', () => {
+    const mb = new Menubar(app, {
+      preloadWindow: true,
+      showOnAllWorkspaces: false,
+    });
+    return new Promise<void>((resolve) => {
+      mb.on('after-create-window', () => {
+        expect(mb.window!.setVisibleOnAllWorkspaces).not.toHaveBeenCalled();
+        resolve();
+      });
+    });
+  });
+});
+
 describe('Menubar global shortcut', () => {
   beforeEach(() => {
     vi.clearAllMocks();

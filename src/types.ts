@@ -127,7 +127,9 @@ export interface Options {
   showDockIcon?: boolean;
   /**
    * Makes the window available on all OS X workspaces. Calls
-   * [`setVisibleOnAllWorkspaces`](https://electronjs.org/docs/api/browser-window#winsetvisibleonallworkspacesvisible-options).
+   * [`setVisibleOnAllWorkspaces`](https://electronjs.org/docs/api/browser-window#winsetvisibleonallworkspacesvisible-options)
+   * with `visibleOnFullScreen`, so the popup also opens over a fullscreen
+   * space instead of macOS switching away to another space to show it.
    */
   showOnAllWorkspaces?: boolean;
   /**
