@@ -23,6 +23,12 @@ const READY_TIMEOUT_MS = 30_000;
 const POST_READY_DELAY_MS = Number(
   process.env.VISUAL_POST_READY_DELAY_MS ?? 3_000,
 );
+// After the first capture, a failed pixel-check retries on a fresh screenshot
+// every CHECK_RETRY_INTERVAL_MS until CHECK_RETRY_TIMEOUT_MS elapses, so a
+// panel that paints the tray icon late still passes. A passing run captures
+// exactly once.
+const CHECK_RETRY_TIMEOUT_MS = 60_000;
+const CHECK_RETRY_INTERVAL_MS = 2_000;
 const TRAY_EXACT_THRESHOLD = 50;
 const TRAY_SATURATED_FALLBACK = 100;
 // Fixture window: white background (~16800 px) with centered 80x40 black
@@ -121,103 +127,49 @@ if (prepareCmd) {
   }
 }
 
-try {
-  capture(screenshotPath);
-} catch (err) {
-  child.kill('SIGTERM');
-  writeResult({
-    status: 'fail',
-    reason: `screenshot failed: ${(err as Error).message}`,
-  });
-  throw err;
+const retryDeadline = Date.now() + CHECK_RETRY_TIMEOUT_MS;
+let attempts = 0;
+let png: PNG;
+let result: Analysis;
+for (;;) {
+  attempts++;
+  try {
+    capture(screenshotPath);
+  } catch (err) {
+    child.kill('SIGTERM');
+    writeResult({
+      status: 'fail',
+      reason: `screenshot failed: ${(err as Error).message}`,
+    });
+    throw err;
+  }
+  png = PNG.sync.read(readFileSync(screenshotPath));
+  // Bounds arrive asynchronously from the fixture; recompute per attempt so
+  // a late VISUAL:bounds line still tightens the window check on retries.
+  result = check(png, bounds ? scaleRect(bounds.window, bounds.scale) : null);
+  console.log(
+    [
+      `exactTray=${result.exactTray}`,
+      `saturatedNonWindow=${result.saturatedNonWindow}`,
+      `windowWhite=${result.windowWhite}`,
+      `windowBlack=${result.windowBlack}`,
+      `globalWhite=${result.globalWhite}`,
+      `globalBlack=${result.globalBlack}`,
+      `→ ${result.status}`,
+      `(tray=${result.trayDetected}, window=${result.windowDetected}`,
+      `bounded=${result.windowDetectedBounded}`,
+      `global=${result.windowDetectedGlobal})`,
+      `attempt=${attempts}`,
+    ].join(' '),
+  );
+  if (result.status === 'pass' || Date.now() >= retryDeadline) break;
+  await new Promise((r) => setTimeout(r, CHECK_RETRY_INTERVAL_MS));
 }
 
 child.kill('SIGTERM');
 
-const png = PNG.sync.read(readFileSync(screenshotPath));
-
-// Tray icon: magenta/green checker, detected globally (works on Linux SNI
-// where tray.getBounds() returns {0,0,0,0}). Saturated-pixel fallback for
-// platforms like KDE Plasma that recolor SNI icons.
-// Window content: white box + black inner square, detected only INSIDE the
-// reported window rect so OS chrome white/black text doesn't false-positive.
-const winRect = bounds ? scaleRect(bounds.window, bounds.scale) : null;
-let exactTray = 0;
-let saturatedNonWindow = 0;
-let windowWhite = 0;
-let windowBlack = 0;
-let globalWhite = 0;
-let globalBlack = 0;
-for (let y = 0; y < png.height; y++) {
-  const inWinY = winRect && y >= winRect.y && y < winRect.y2;
-  for (let x = 0; x < png.width; x++) {
-    const i = (y * png.width + x) * 4;
-    const r = png.data[i];
-    const g = png.data[i + 1];
-    const b = png.data[i + 2];
-    const isMagenta = r > 200 && g < 80 && b > 200;
-    const isGreen = r < 80 && g > 200 && b < 80;
-    if (isMagenta || isGreen) exactTray++;
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    if (max > 180 && max - min > 140) saturatedNonWindow++;
-    const isWhite = r > 240 && g > 240 && b > 240;
-    const isBlack = r < 15 && g < 15 && b < 15;
-    if (isWhite) globalWhite++;
-    if (isBlack) globalBlack++;
-    if (inWinY && x >= winRect!.x && x < winRect!.x2) {
-      if (isWhite) windowWhite++;
-      else if (isBlack) windowBlack++;
-    }
-  }
-}
-
-const trayDetected =
-  exactTray >= TRAY_EXACT_THRESHOLD ||
-  saturatedNonWindow >= TRAY_SATURATED_FALLBACK;
-// Window detected inside the reported bounds OR globally — covers GNOME
-// where Mutter renders the window at a different position than getBounds()
-// reports. Global thresholds set just below the fully-rendered expected
-// counts (16800 white + 3200 black) to reject OS chrome false positives.
-const windowDetectedBounded =
-  winRect !== null &&
-  windowWhite >= WINDOW_WHITE_THRESHOLD &&
-  windowBlack >= WINDOW_BLACK_THRESHOLD;
-// globalBlack varies wildly with wallpaper (macOS black is huge, others are
-// tiny) so we don't use it. globalWhite at >= 14000 reliably signals the
-// rendered white window background even when GNOME's Mutter paints the
-// window at a position that diverges from getBounds().
-const windowDetectedGlobal = globalWhite >= 14000;
-const windowDetected = windowDetectedBounded || windowDetectedGlobal;
-const status: 'pass' | 'fail' =
-  trayDetected && windowDetected ? 'pass' : 'fail';
-console.log(
-  [
-    `exactTray=${exactTray}`,
-    `saturatedNonWindow=${saturatedNonWindow}`,
-    `windowWhite=${windowWhite}`,
-    `windowBlack=${windowBlack}`,
-    `globalWhite=${globalWhite}`,
-    `globalBlack=${globalBlack}`,
-    `→ ${status}`,
-    `(tray=${trayDetected}, window=${windowDetected}`,
-    `bounded=${windowDetectedBounded}`,
-    `global=${windowDetectedGlobal})`,
-  ].join(' '),
-);
-writeResult({
-  status,
-  exactTray,
-  saturatedNonWindow,
-  windowWhite,
-  windowBlack,
-  globalWhite,
-  globalBlack,
-  trayDetected,
-  windowDetected,
-  windowDetectedBounded,
-  windowDetectedGlobal,
-});
+const status = result.status;
+writeResult({ ...result, attempts });
 
 // Overwrite the on-disk screenshot with a mask that keeps only the tray-icon
 // and popover-window rects. The pixel-check above ran on the original
@@ -233,6 +185,88 @@ if (bounds) {
 }
 
 if (status === 'fail') process.exit(1);
+
+interface Analysis {
+  status: 'pass' | 'fail';
+  exactTray: number;
+  saturatedNonWindow: number;
+  windowWhite: number;
+  windowBlack: number;
+  globalWhite: number;
+  globalBlack: number;
+  trayDetected: boolean;
+  windowDetected: boolean;
+  windowDetectedBounded: boolean;
+  windowDetectedGlobal: boolean;
+}
+
+// Tray icon: magenta/green checker, detected globally (works on Linux SNI
+// where tray.getBounds() returns {0,0,0,0}). Saturated-pixel fallback for
+// platforms like KDE Plasma that recolor SNI icons.
+// Window content: white box + black inner square, detected only INSIDE the
+// reported window rect so OS chrome white/black text doesn't false-positive.
+function check(png: PNG, winRect: PixelRect | null): Analysis {
+  let exactTray = 0;
+  let saturatedNonWindow = 0;
+  let windowWhite = 0;
+  let windowBlack = 0;
+  let globalWhite = 0;
+  let globalBlack = 0;
+  for (let y = 0; y < png.height; y++) {
+    const inWinY = winRect && y >= winRect.y && y < winRect.y2;
+    for (let x = 0; x < png.width; x++) {
+      const i = (y * png.width + x) * 4;
+      const r = png.data[i];
+      const g = png.data[i + 1];
+      const b = png.data[i + 2];
+      const isMagenta = r > 200 && g < 80 && b > 200;
+      const isGreen = r < 80 && g > 200 && b < 80;
+      if (isMagenta || isGreen) exactTray++;
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      if (max > 180 && max - min > 140) saturatedNonWindow++;
+      const isWhite = r > 240 && g > 240 && b > 240;
+      const isBlack = r < 15 && g < 15 && b < 15;
+      if (isWhite) globalWhite++;
+      if (isBlack) globalBlack++;
+      if (inWinY && x >= winRect!.x && x < winRect!.x2) {
+        if (isWhite) windowWhite++;
+        else if (isBlack) windowBlack++;
+      }
+    }
+  }
+
+  const trayDetected =
+    exactTray >= TRAY_EXACT_THRESHOLD ||
+    saturatedNonWindow >= TRAY_SATURATED_FALLBACK;
+  // Window detected inside the reported bounds OR globally — covers GNOME
+  // where Mutter renders the window at a different position than getBounds()
+  // reports. Global thresholds set just below the fully-rendered expected
+  // counts (16800 white + 3200 black) to reject OS chrome false positives.
+  const windowDetectedBounded =
+    winRect !== null &&
+    windowWhite >= WINDOW_WHITE_THRESHOLD &&
+    windowBlack >= WINDOW_BLACK_THRESHOLD;
+  // globalBlack varies wildly with wallpaper (macOS black is huge, others are
+  // tiny) so we don't use it. globalWhite at >= 14000 reliably signals the
+  // rendered white window background even when GNOME's Mutter paints the
+  // window at a position that diverges from getBounds().
+  const windowDetectedGlobal = globalWhite >= 14000;
+  const windowDetected = windowDetectedBounded || windowDetectedGlobal;
+  return {
+    status: trayDetected && windowDetected ? 'pass' : 'fail',
+    exactTray,
+    saturatedNonWindow,
+    windowWhite,
+    windowBlack,
+    globalWhite,
+    globalBlack,
+    trayDetected,
+    windowDetected,
+    windowDetectedBounded,
+    windowDetectedGlobal,
+  };
+}
 
 function capture(path: string): void {
   if (process.platform === 'darwin') {
