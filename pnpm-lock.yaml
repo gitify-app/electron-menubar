@@ -15,8 +15,8 @@ importers:
         specifier: 6.0.5
         version: 6.0.5
       electron:
-        specifier: 43.2.0
-        version: 43.2.0
+        specifier: 44.1.1
+        version: 44.1.1
       oxfmt:
         specifier: 0.65.0
         version: 0.65.0
@@ -858,8 +858,8 @@ packages:
       oxc-resolver:
         optional: true
 
-  electron@43.2.0:
-    resolution: {integrity: sha512-80zvrgG7ZRXD+tD0IyLvrnN9n+veSxadMRsMaC9wKKP3iUbtC7rGM8+dVuCmOb0Rrwwv8ESW4awnUZh9Hbp1fA==}
+  electron@44.1.1:
+    resolution: {integrity: sha512-N2WCq2sbOkqQgvXJYx2lS6UiO8bF+Yr67trDnS6JKa2WxTCRQsAjGl57SUtdW9h6r5PlduBFjIhxhgd3dzv1hg==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -1716,7 +1716,7 @@ snapshots:
 
   dts-resolver@3.0.0: {}
 
-  electron@43.2.0:
+  electron@44.1.1:
     dependencies:
       '@electron-internal/extract-zip': 1.0.4
       '@electron/get': 5.0.0
