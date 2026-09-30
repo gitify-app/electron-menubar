@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [11.1.0](https://github.com/gitify-app/electron-menubar/compare/v11.0.0...v11.1.0) (2026-09-30)
+
+
+### 🚀 Features
+
+* **macos:** rejoin every Space before showing the popup ([12a4ae5](https://github.com/gitify-app/electron-menubar/commit/12a4ae52ff717e6511d3bb810e6948153f63ebf1))
+
 ## [11.0.0](https://github.com/gitify-app/electron-menubar/compare/v10.3.0...v11.0.0) (2026-09-05)
 
 ### ⚠ BREAKING CHANGES
