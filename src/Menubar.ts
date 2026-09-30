@@ -50,6 +50,7 @@ export class Menubar extends EventEmitter {
   private _lastShowTime = 0; // timestamp of last show(), debounces the post-show blur on Windows
   private _dockRehideTimeout?: NodeJS.Timeout; // pending post-startup dock re-hide check
   private _repositioning = false; // guards against re-entrant positionWindow calls
+  private _showOnAllWorkspaces = false; // `showOnAllWorkspaces` as read when the window was created
   private _tray?: Tray;
 
   constructor(app: Electron.App, options?: Partial<Options>) {
@@ -185,6 +186,9 @@ export class Menubar extends EventEmitter {
     }
     this.emit('hide');
     this._browserWindow.hide();
+    if (process.platform === 'darwin') {
+      this.applyWorkspaceVisibility(false);
+    }
     this.emit('after-hide');
     this._isVisible = false;
     if (this._blurTimeout) {
@@ -371,6 +375,9 @@ export class Menubar extends EventEmitter {
       this._cachedBounds = this.tray.getBounds();
     }
 
+    if (process.platform === 'darwin') {
+      this.applyWorkspaceVisibility(true);
+    }
     this.positionWindow();
     // Record the show time before `show()` so the blur handler can recognise
     // and ignore the transient blur Windows fires right after (see below).
@@ -698,17 +705,8 @@ export class Menubar extends EventEmitter {
       }, 100);
     });
 
-    if (this._options.showOnAllWorkspaces !== false) {
-      // https://github.com/electron/electron/issues/37832#issuecomment-1497882944
-      this._browserWindow.setVisibleOnAllWorkspaces(true, {
-        // Maps to NSWindowCollectionBehaviorFullScreenAuxiliary, which
-        // Electron clears when the flag is omitted. Without it the popup
-        // cannot appear inside a fullscreen space, so macOS switches to
-        // another space to show it.
-        visibleOnFullScreen: true,
-        skipTransformProcessType: true, // Avoid damaging the original visible state of app.dock
-      });
-    }
+    this._showOnAllWorkspaces = this._options.showOnAllWorkspaces !== false;
+    this.applyWorkspaceVisibility(true);
 
     if (this._options.hideOnClose) {
       this._browserWindow.on('close', (event) => {
@@ -753,6 +751,37 @@ export class Menubar extends EventEmitter {
       );
     }
     this.emit('after-create-window');
+  }
+
+  /**
+   * Join or leave every workspace when `showOnAllWorkspaces` is enabled.
+   *
+   * On macOS the hidden popup leaves every Space in {@link hideWindow} and
+   * rejoins them right before `show()` in {@link showWindow}. macOS can drop
+   * a hidden window from all but one Space while `isVisibleOnAllWorkspaces()`
+   * still reports `true`, e.g. when the fullscreen Space the popup was last
+   * shown on closes. Showing it then switches to that one Space, and setting
+   * the flag again to the value it already has does not re-add the window.
+   * Clearing the flag while hidden makes the next show a real change, which
+   * re-adds the window to every Space before it appears.
+   */
+  private applyWorkspaceVisibility(visible: boolean): void {
+    if (
+      !this._browserWindow ||
+      this._browserWindow.isDestroyed() ||
+      !this._showOnAllWorkspaces
+    ) {
+      return;
+    }
+    // https://github.com/electron/electron/issues/37832#issuecomment-1497882944
+    this._browserWindow.setVisibleOnAllWorkspaces(visible, {
+      // Maps to NSWindowCollectionBehaviorFullScreenAuxiliary, which
+      // Electron clears when the flag is omitted. Without it the popup
+      // cannot appear inside a fullscreen space, so macOS switches to
+      // another space to show it.
+      visibleOnFullScreen: visible,
+      skipTransformProcessType: true, // Avoid damaging the original visible state of app.dock
+    });
   }
 
   private windowClear(): void {
