@@ -139,6 +139,11 @@ export interface Options {
    * [`setVisibleOnAllWorkspaces`](https://electronjs.org/docs/api/browser-window#winsetvisibleonallworkspacesvisible-options)
    * with `visibleOnFullScreen`, so the popup also opens over a fullscreen
    * space instead of macOS switching away to another space to show it.
+   *
+   * On macOS the window leaves every workspace when hidden with
+   * {@link Menubar.hideWindow} and rejoins them on {@link Menubar.showWindow},
+   * so show it through `showWindow()` rather than `window.show()` or
+   * `window.showInactive()`. Read when the window is created.
    */
   showOnAllWorkspaces?: boolean;
   /**

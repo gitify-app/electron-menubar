@@ -259,6 +259,94 @@ describe('Menubar showOnAllWorkspaces option', () => {
       });
     });
   });
+
+  describe('across show and hide', () => {
+    const originalPlatform = process.platform;
+
+    afterEach(() => {
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    const ready = (mb: Menubar): Promise<void> =>
+      new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+    it('leaves every Space on hide and rejoins them before show on macOS', async () => {
+      Object.defineProperty(process, 'platform', { value: 'darwin' });
+      const mb = new Menubar(app, { preloadWindow: true });
+      await ready(mb);
+      await mb.showWindow();
+      mb.hideWindow();
+      await mb.showWindow();
+
+      const win = mb.window!;
+      const setWorkspaces = win.setVisibleOnAllWorkspaces as Mock;
+      // Re-setting an unchanged flag does not re-add a window macOS dropped
+      // from other Spaces, so each show must follow a hide that cleared it.
+      expect(setWorkspaces.mock.calls).toEqual([
+        [true, { visibleOnFullScreen: true, skipTransformProcessType: true }],
+        [true, { visibleOnFullScreen: true, skipTransformProcessType: true }],
+        [false, { visibleOnFullScreen: false, skipTransformProcessType: true }],
+        [true, { visibleOnFullScreen: true, skipTransformProcessType: true }],
+      ]);
+
+      const [firstShow, secondShow] = (win.show as Mock).mock
+        .invocationCallOrder;
+      const [hide] = (win.hide as Mock).mock.invocationCallOrder;
+      const [, firstJoin, leave, rejoin] =
+        setWorkspaces.mock.invocationCallOrder;
+      const lastSetPosition = (win.setPosition as Mock).mock.invocationCallOrder
+        .filter((order) => order < secondShow)
+        .at(-1)!;
+      expect(firstJoin).toBeLessThan(firstShow);
+      expect(hide).toBeLessThan(leave);
+      expect(rejoin).toBeGreaterThan(leave);
+      expect(rejoin).toBeLessThan(lastSetPosition);
+      expect(lastSetPosition).toBeLessThan(secondShow);
+    });
+
+    it('reads `showOnAllWorkspaces` when the window is created', async () => {
+      Object.defineProperty(process, 'platform', { value: 'darwin' });
+      const mb = new Menubar(app, { preloadWindow: true });
+      await ready(mb);
+      mb.setOption('showOnAllWorkspaces', false);
+      await mb.showWindow();
+      mb.hideWindow();
+      await mb.showWindow();
+
+      expect(
+        (mb.window!.setVisibleOnAllWorkspaces as Mock).mock.calls.map(
+          ([visible]) => visible,
+        ),
+      ).toEqual([true, true, false, true]);
+    });
+
+    it('keeps the window on every workspace across show and hide on Linux', async () => {
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+      const mb = new Menubar(app, { preloadWindow: true });
+      await ready(mb);
+      await mb.showWindow();
+      mb.hideWindow();
+      await mb.showWindow();
+
+      expect((mb.window!.setVisibleOnAllWorkspaces as Mock).mock.calls).toEqual(
+        [[true, { visibleOnFullScreen: true, skipTransformProcessType: true }]],
+      );
+    });
+
+    it('never touches workspace visibility on macOS when `showOnAllWorkspaces: false`', async () => {
+      Object.defineProperty(process, 'platform', { value: 'darwin' });
+      const mb = new Menubar(app, {
+        preloadWindow: true,
+        showOnAllWorkspaces: false,
+      });
+      await ready(mb);
+      await mb.showWindow();
+      mb.hideWindow();
+      await mb.showWindow();
+
+      expect(mb.window!.setVisibleOnAllWorkspaces).not.toHaveBeenCalled();
+    });
+  });
 });
 
 describe('Menubar global shortcut', () => {

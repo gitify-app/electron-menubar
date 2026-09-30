@@ -84,6 +84,28 @@ test('toggleWindow alternates visibility', async () => {
   await app.close();
 });
 
+test('clears the all-workspaces flag while hidden on macOS and sets it again on show', async () => {
+  test.skip(process.platform !== 'darwin', 'macOS Spaces');
+  const app = await launchFixture();
+  await waitForReady(app);
+
+  const result = await app.evaluate(async () => {
+    const mb = (globalThis as MenubarGlobal).__menubar!;
+    await mb.showWindow();
+    const shown = mb.window!.isVisibleOnAllWorkspaces();
+    mb.hideWindow();
+    const hidden = mb.window!.isVisibleOnAllWorkspaces();
+    await mb.showWindow();
+    const reshown = mb.window!.isVisibleOnAllWorkspaces();
+    mb.hideWindow();
+    return { shown, hidden, reshown };
+  });
+
+  expect(result).toEqual({ shown: true, hidden: false, reshown: true });
+
+  await app.close();
+});
+
 test('an elevated Windows popup dismisses on click-away without losing its stacking level', async () => {
   test.skip(process.platform !== 'win32', 'Windows tray overflow regression');
   const app = await launchFixture();
