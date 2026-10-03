@@ -351,7 +351,7 @@ jobs:
       fail-fast: false
       # Hyprland is not in this matrix. Investigation summary (see PR #10):
       #   - v0.42+ uses Aquamarine, whose allocator hardcodes GBM and has no
-      #     software fallback (Backend.cpp:160-176, TODO open since 2024).
+      #     software fallback (Backend.cpp:160-176, unresolved upstream since 2024).
       #   - v0.41.2 (last wlroots release) asserts wlr_renderer_is_gles2(),
       #     rejecting wlroots' Pixman fallback when no DRM render node exists.
       #   - GHA ubuntu-24.04 ships /dev/dri/card1 (hyperv_drm) but that driver
