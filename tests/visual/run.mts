@@ -100,7 +100,9 @@ child.on('exit', (code) => {
 
 const deadline = Date.now() + READY_TIMEOUT_MS;
 while (!ready && Date.now() < deadline && child.exitCode === null) {
-  await new Promise((r) => setTimeout(r, 100));
+  // Polling is inherently sequential: each tick must observe the fixture's
+  // stdout state before deciding whether to wait again.
+  await new Promise((r) => setTimeout(r, 100)); // NOSONAR:typescript:S9382 — deliberate sequential wait in the READY poll loop
 }
 
 if (!ready) {
@@ -163,7 +165,9 @@ for (;;) {
     ].join(' '),
   );
   if (result.status === 'pass' || Date.now() >= retryDeadline) break;
-  await new Promise((r) => setTimeout(r, CHECK_RETRY_INTERVAL_MS));
+  // Each retry captures a fresh screenshot and re-runs the pixel check, so the
+  // waits must stay sequential to preserve the retry semantics.
+  await new Promise((r) => setTimeout(r, CHECK_RETRY_INTERVAL_MS)); // NOSONAR:typescript:S9382 — deliberate sequential wait in the capture-retry loop
 }
 
 child.kill('SIGTERM');
