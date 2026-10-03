@@ -6,10 +6,12 @@ mb.on('ready', () => {
   setOkIcon();
   const trayAnimation = setInterval(frame, 1000);
   // simulate data fetching
-  sleep(3000).then(() => {
-    clearInterval(trayAnimation);
-    setOkIcon();
-  });
+  sleep(3000)
+    .then(() => {
+      clearInterval(trayAnimation);
+      setOkIcon();
+    })
+    .catch(() => {});
 });
 
 function setOkIcon() {
