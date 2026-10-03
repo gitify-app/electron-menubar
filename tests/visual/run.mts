@@ -39,6 +39,10 @@ const WINDOW_WHITE_THRESHOLD = 5000;
 const WINDOW_BLACK_THRESHOLD = 500;
 const RECT_PADDING = 4;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
+// System executables are invoked by absolute path so resolution never depends
+// on a mutable PATH entry (typescript:S4036). The CI images and local dev
+// platforms this script targets keep these binaries at fixed locations.
+const WINDOWS_POWERSHELL = `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
 // even with WAYLAND_DISPLAY set. --disable-gpu + --no-sandbox keeps CI happy.
@@ -119,11 +123,11 @@ const prepareCmd = process.env.VISUAL_PREPARE_CMD;
 if (prepareCmd) {
   console.log(`running VISUAL_PREPARE_CMD: ${prepareCmd}`);
   if (process.platform === 'win32') {
-    execFileSync('powershell', ['-NoProfile', '-Command', prepareCmd], {
+    execFileSync(WINDOWS_POWERSHELL, ['-NoProfile', '-Command', prepareCmd], {
       stdio: 'inherit',
     });
   } else {
-    execFileSync('sh', ['-c', prepareCmd], { stdio: 'inherit' });
+    execFileSync('/bin/sh', ['-c', prepareCmd], { stdio: 'inherit' });
   }
 }
 
@@ -279,7 +283,7 @@ function check(png: PNG, winRect: PixelRect | null): Analysis {
 
 function capture(path: string): void {
   if (process.platform === 'darwin') {
-    execFileSync('screencapture', ['-x', path], { stdio: 'inherit' });
+    execFileSync('/usr/sbin/screencapture', ['-x', path], { stdio: 'inherit' });
   } else if (process.platform === 'win32') {
     const ps = [
       'Add-Type -AssemblyName System.Windows.Forms,System.Drawing;',
@@ -289,14 +293,16 @@ function capture(path: string): void {
       '$g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size);',
       `$bmp.Save($env:VISUAL_OUT_PATH, [System.Drawing.Imaging.ImageFormat]::Png);`,
     ].join(' ');
-    execFileSync('powershell', ['-NoProfile', '-Command', ps], {
+    execFileSync(WINDOWS_POWERSHELL, ['-NoProfile', '-Command', ps], {
       stdio: 'inherit',
       env: { ...process.env, VISUAL_OUT_PATH: path },
     });
   } else if (isWayland) {
-    execFileSync('grim', [path], { stdio: 'inherit' });
+    execFileSync('/usr/bin/grim', [path], { stdio: 'inherit' });
   } else {
-    execFileSync('import', ['-window', 'root', path], { stdio: 'inherit' });
+    execFileSync('/usr/bin/import', ['-window', 'root', path], {
+      stdio: 'inherit',
+    });
   }
 }
 
