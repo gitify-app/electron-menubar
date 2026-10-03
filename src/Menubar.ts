@@ -519,9 +519,11 @@ export class Menubar extends EventEmitter {
       trayImage = path.join(__dirname, '..', 'assets', 'IconTemplate.png'); // Default cat icon
     }
 
+    // The deprecated `showOnRightClick` option stays honoured until the next
+    // major release removes it (see {@link Options.showOnRightClick}).
     const trigger =
       this._options.trigger ??
-      (this._options.showOnRightClick ? 'right-click' : 'click');
+      (this._options.showOnRightClick ? 'right-click' : 'click'); // NOSONAR:typescript:S1874
 
     this._tray = this._options.tray || new Tray(trayImage);
     // Type guards for TS not to complain
