@@ -9,7 +9,7 @@ mb.on('ready', () => {
   sleep(3000).then(() => {
     clearInterval(trayAnimation);
     setOkIcon();
-  });
+  }).catch(() => {});
 });
 
 function setOkIcon() {
