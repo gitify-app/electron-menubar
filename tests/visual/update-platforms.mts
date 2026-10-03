@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative, resolve } from 'node:path';
 
 interface VisualResult {
   key: string;
@@ -12,8 +12,27 @@ interface VisualResult {
 const START = '<!-- visual:start -->';
 const END = '<!-- visual:end -->';
 
-const resultsDir = process.argv[2] ?? 'test-results/visual';
-const targetPath = process.argv[3] ?? 'PLATFORMS.md';
+const cwd = process.cwd();
+
+/**
+ * Resolve a CLI-provided path relative to the working directory and refuse
+ * anything that would escape it. Prevents path traversal via untrusted
+ * command-line arguments (tssecurity:S8707).
+ */
+const resolveFromCwd = (arg: string | undefined, fallback: string): string => {
+  const target = arg ?? fallback;
+  if (relative(cwd, resolve(cwd, target)).startsWith('..')) {
+    console.error(`refusing path outside the working directory: ${target}`);
+    process.exit(1);
+  }
+  return target;
+};
+
+const resultsDir = resolveFromCwd(
+  process.argv[2],
+  'test-results/visual',
+);
+const targetPath = resolveFromCwd(process.argv[3], 'PLATFORMS.md');
 
 const files = readdirSync(resultsDir).filter((f) => f.endsWith('.json'));
 const results: VisualResult[] = files
