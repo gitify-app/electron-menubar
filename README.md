@@ -1,8 +1,8 @@
 <h1 align="center">➖ electron-menubar</h1>
 
 <p align="center">
-  <a href="https://github.com/gitify-app/electron-menubar/actions"><img src="https://img.shields.io/github/actions/workflow/status/gitify-app/electron-menubar/test.yml?logo=github&amp;label=CI" alt="CI Workflow" /></a>
-  <a href="https://github.com/gitify-app/electron-menubar/actions"><img src="https://img.shields.io/github/actions/workflow/status/gitify-app/electron-menubar/release.yml?logo=github&amp;label=Release" alt="Release Workflow" /></a>
+  <a href="https://github.com/gitify-app/electron-menubar/actions"><img src="https://img.shields.io/github/actions/workflow/status/gitify-app/electron-menubar/test.yml?logo=github&amp;label=ci" alt="CI Workflow" /></a>
+  <a href="https://github.com/gitify-app/electron-menubar/actions"><img src="https://img.shields.io/github/actions/workflow/status/gitify-app/electron-menubar/release.yml?logo=github&amp;label=release" alt="Release Workflow" /></a>
   <a href="https://github.com/gitify-app/gitify/issues/576"><img src="https://img.shields.io/badge/renovate-enabled-brightgreen.svg?logo=renovate&amp;logoColor=white" alt="Renovate enabled" /></a>
   <a href="https://github.com/gitify-app/electron-menubar"><img src="https://img.shields.io/github/contributors/gitify-app/electron-menubar?logo=github" alt="Contributors" /></a>
   <a href="https://www.npmjs.com/package/electron-menubar"><img src="https://img.shields.io/npm/dy/electron-menubar?logo=npm" alt="Downloads - Year" /></a>
