@@ -34,7 +34,7 @@ const DOCK_REHIDE_DELAY_MS = 2_000;
  * The main Menubar class.
  */
 export class Menubar extends EventEmitter {
-  private _app: Electron.App;
+  private readonly _app: Electron.App;
   private _browserWindow?: BrowserWindow;
   private _contextMenu?: Menu;
   private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
@@ -42,7 +42,7 @@ export class Menubar extends EventEmitter {
   private _isQuitting: boolean; // set when the app is shutting down, used by hideOnClose
   private _isVisible: boolean; // track visibility
   private _cachedBounds?: Electron.Rectangle; // _cachedBounds are needed for double-clicked event
-  private _options: Options;
+  private readonly _options: Options;
   private _positioner: Positioner | undefined;
   private _shortcut?: Electron.Accelerator;
   private _rightClickContextMenuBound = false;
