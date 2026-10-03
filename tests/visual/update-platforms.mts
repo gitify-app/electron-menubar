@@ -28,10 +28,7 @@ const resolveFromCwd = (arg: string | undefined, fallback: string): string => {
   return target;
 };
 
-const resultsDir = resolveFromCwd(
-  process.argv[2],
-  'test-results/visual',
-);
+const resultsDir = resolveFromCwd(process.argv[2], 'test-results/visual');
 const targetPath = resolveFromCwd(process.argv[3], 'PLATFORMS.md');
 
 const files = readdirSync(resultsDir).filter((f) => f.endsWith('.json'));
