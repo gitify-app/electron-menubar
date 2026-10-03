@@ -4,5 +4,5 @@
   "tabWidth": 2,
   "printWidth": 80,
   "sortImports": true,
-  "ignorePatterns": ["lib/**", "coverage/**"]
+  "ignorePatterns": ["lib/**", "coverage/**", "CHANGELOG.md"]
 }
