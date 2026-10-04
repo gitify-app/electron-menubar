@@ -230,6 +230,25 @@ interface PixelCounts {
   globalBlack: number;
 }
 
+// Tally one classified pixel into the running counts. Tray colours count
+// globally; window colours only inside the reported window rect (when given).
+function accumulatePixel(
+  counts: PixelCounts,
+  px: PixelClassification,
+  winRect: PixelRect | null,
+  x: number,
+  inWinY: boolean,
+): void {
+  if (px.tray) counts.exactTray++;
+  if (px.saturated) counts.saturatedNonWindow++;
+  if (px.white) counts.globalWhite++;
+  if (px.black) counts.globalBlack++;
+  if (winRect !== null && inWinY && x >= winRect.x && x < winRect.x2) {
+    if (px.white) counts.windowWhite++;
+    else if (px.black) counts.windowBlack++;
+  }
+}
+
 // Count marker pixels across the capture. Tray colours are counted globally;
 // window colours only inside the reported window rect (when available).
 function countPixels(png: PNG, winRect: PixelRect | null): PixelCounts {
@@ -245,15 +264,13 @@ function countPixels(png: PNG, winRect: PixelRect | null): PixelCounts {
     const inWinY = winRect !== null && y >= winRect.y && y < winRect.y2;
     for (let x = 0; x < png.width; x++) {
       const i = (y * png.width + x) * 4;
-      const px = classifyPixel(png.data[i], png.data[i + 1], png.data[i + 2]);
-      if (px.tray) counts.exactTray++;
-      if (px.saturated) counts.saturatedNonWindow++;
-      if (px.white) counts.globalWhite++;
-      if (px.black) counts.globalBlack++;
-      if (winRect !== null && inWinY && x >= winRect.x && x < winRect.x2) {
-        if (px.white) counts.windowWhite++;
-        else if (px.black) counts.windowBlack++;
-      }
+      accumulatePixel(
+        counts,
+        classifyPixel(png.data[i], png.data[i + 1], png.data[i + 2]),
+        winRect,
+        x,
+        inWinY,
+      );
     }
   }
   return counts;
