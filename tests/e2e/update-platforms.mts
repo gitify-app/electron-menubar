@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { join } from 'node:path';
+
+import { resolveFromCwd } from '../util/resolve-from-cwd.mts';
 
 interface PlatformResult {
   key: string;
@@ -13,22 +15,6 @@ interface PlatformResult {
 
 const START = '<!-- platforms:start -->';
 const END = '<!-- platforms:end -->';
-
-const cwd = process.cwd();
-
-/**
- * Resolve a CLI-provided path relative to the working directory and refuse
- * anything that would escape it. Prevents path traversal via untrusted
- * command-line arguments (tssecurity:S8707).
- */
-const resolveFromCwd = (arg: string | undefined, fallback: string): string => {
-  const target = arg ?? fallback;
-  if (relative(cwd, resolve(cwd, target)).startsWith('..')) {
-    console.error(`refusing path outside the working directory: ${target}`);
-    process.exit(1);
-  }
-  return target;
-};
 
 const resultsDir = resolveFromCwd(process.argv[2], 'test-results/platforms');
 const targetPath = resolveFromCwd(process.argv[3], 'PLATFORMS.md');
