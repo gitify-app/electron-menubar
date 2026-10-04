@@ -135,7 +135,7 @@ describe('Menubar', () => {
         const callsAfterFirst = (app.removeListener as Mock).mock.calls.length;
         mb!.destroy();
         expect(mb!.isDestroyed()).toBe(true);
-        expect((app.removeListener as Mock).mock.calls.length).toBe(
+        expect((app.removeListener as Mock).mock.calls).toHaveLength(
           callsAfterFirst,
         );
         resolve();
@@ -1315,6 +1315,6 @@ describe('Menubar positionWindow re-entrancy', () => {
 
     findHandler(win, 'resize')!();
 
-    expect((win.setPosition as Mock).mock.calls.length).toBe(before + 1);
+    expect((win.setPosition as Mock).mock.calls).toHaveLength(before + 1);
   });
 });
