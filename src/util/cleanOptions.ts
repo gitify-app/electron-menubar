@@ -23,12 +23,8 @@ const DEFAULT_WINDOW_WIDTH = 400;
 export function cleanOptions(opts?: Partial<Options>): Options {
   const options: Partial<Options> = { ...opts };
 
-  if (options.activateWithApp === undefined) {
-    options.activateWithApp = true;
-  }
-  if (options.ignoreDoubleClickEvents === undefined) {
-    options.ignoreDoubleClickEvents = true;
-  }
+  options.activateWithApp ??= true;
+  options.ignoreDoubleClickEvents ??= true;
   if (!options.dir) {
     options.dir = app.getAppPath();
   }
@@ -36,13 +32,11 @@ export function cleanOptions(opts?: Partial<Options>): Options {
     options.dir = path.resolve(options.dir);
   }
   // Note: options.index can be `false`
-  if (options.index === undefined) {
-    options.index = url.format({
-      pathname: path.join(options.dir, 'index.html'),
-      protocol: 'file:',
-      slashes: true,
-    });
-  }
+  options.index ??= url.format({
+    pathname: path.join(options.dir, 'index.html'),
+    protocol: 'file:',
+    slashes: true,
+  });
   options.loadUrlOptions = options.loadUrlOptions || {};
 
   options.tooltip = options.tooltip || '';
