@@ -1,18 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:best-practices",
-    ":enableVulnerabilityAlerts",
-    ":semanticCommitTypeAll(chore)",
-    ":separateMultipleMajorReleases",
-    "schedule:weekly"
-  ],
-  "labels": ["dependency"],
+  "extends": ["github>gitify-app/.github"],
   "forkProcessing": "enabled",
-  "rangeStrategy": "pin",
   "packageRules": [
     {
-      "description": "Keep peer dependency ranges wide rather than pinning them to one version",
+      "description": "Keep peer dependency ranges wide rather than pinning them to one version.",
       "matchDepTypes": ["peerDependencies"],
       "rangeStrategy": "widen"
     },
@@ -21,12 +13,7 @@
       "rangeStrategy": "auto"
     },
     {
-      "description": "Remove word `dependency` from commit messages and PR titles",
-      "matchDatasources": ["npm"],
-      "commitMessageTopic": "{{depName}}"
-    },
-    {
-      "description": "Give updates to core runtime dependencies (Electron shell, tray integration, UI primitives, GitHub API client) a distinct commit scope so release-please can surface them in the changelog instead of hiding them with routine dependency bumps",
+      "description": "Give Electron updates a distinct scope so release-please can include them in the changelog.",
       "matchPackageNames": ["electron"],
       "semanticCommitScope": "deps-core"
     }
