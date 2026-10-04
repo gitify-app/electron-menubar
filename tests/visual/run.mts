@@ -39,6 +39,8 @@ const WINDOW_WHITE_THRESHOLD = 5000;
 const WINDOW_BLACK_THRESHOLD = 500;
 const RECT_PADDING = 4;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
+// Parsed from the fixture's `VISUAL:bounds={...}` stdout line.
+const BOUNDS_RE = /VISUAL:bounds=(\{.+\})/;
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
 // even with WAYLAND_DISPLAY set. --disable-gpu + --no-sandbox keeps CI happy.
@@ -82,7 +84,7 @@ child.stdout.on('data', (chunk: Buffer) => {
   for (const line of lines) {
     if (line.includes('VISUAL:ready')) ready = true;
     if (line.includes('VISUAL:window-shown')) windowShown = true;
-    const m = line.match(/VISUAL:bounds=(\{.+\})/);
+    const m = BOUNDS_RE.exec(line);
     if (m) {
       try {
         bounds = JSON.parse(m[1]) as Bounds;
