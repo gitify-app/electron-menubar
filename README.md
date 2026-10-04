@@ -11,8 +11,7 @@
   <a href="https://www.npmjs.com/package/electron-menubar"><img src="https://img.shields.io/npm/v/electron-menubar?logo=npm" alt="NPM Latest Version" /></a>
   <a href="https://github.com/gitify-app/electron-menubar/releases/latest"><img src="https://img.shields.io/github/v/release/gitify-app/electron-menubar?logo=github" alt="Latest Release" /></a>
   <img src="https://img.shields.io/librariesio/github/gitify-app/electron-menubar?logo=libraries.io&amp;logoColor=white" alt="Libraries.io dependency status for GitHub repo" />
-  <img src="https://img.shields.io/bundlephobia/minzip/electron-menubar.svg?logo=npm" alt="npm minzipped bundle size" />
-  <img src="https://img.shields.io/bundlephobia/min/electron-menubar.svg?logo=npm" alt="npm minified bundle size" />
+  <img src="https://img.shields.io/bundlejs/size/electron-menubar?logo=npm" alt="npm minzipped bundle size" />
 </p>
 
 <h5 align="center"><i>formerly known as menubar</i></h5>
@@ -222,5 +221,4 @@ Originally created by [Max][github-upstream-creator] — hard-forked from [max-m
 [npmjs-version-badge]: https://img.shields.io/npm/v/electron-menubar?logo=npm
 [renovate]: https://github.com/gitify-app/gitify/issues/576
 [renovate-badge]: https://img.shields.io/badge/renovate-enabled-brightgreen.svg?logo=renovate&logoColor=white
-[size-minzip-badge]: https://img.shields.io/bundlephobia/minzip/electron-menubar.svg?logo=npm
-[size-minified-badge]: https://img.shields.io/bundlephobia/min/electron-menubar.svg?logo=npm
+[size-minzip-badge]: https://img.shields.io/bundlejs/size/electron-menubar?logo=npm
