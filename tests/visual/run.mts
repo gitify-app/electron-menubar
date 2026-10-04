@@ -2,7 +2,7 @@
 import { execFileSync, spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { join, win32 } from 'node:path';
 
 import { PNG } from 'pngjs';
 
@@ -42,7 +42,18 @@ const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 // System executables are invoked by absolute path so resolution never depends
 // on a mutable PATH entry (typescript:S4036). The CI images and local dev
 // platforms this script targets keep these binaries at fixed locations.
-const WINDOWS_POWERSHELL = `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\WindowsPowerShell\\v1.0\\powershell.exe`;
+// `win32.join` builds the Windows path without backslash escaping, so the
+// string needs no String.raw escapes (typescript:S7780).
+const WINDOWS_POWERSHELL = win32.join(
+  process.env.SystemRoot ?? String.raw`C:\Windows`,
+  'System32',
+  'WindowsPowerShell',
+  'v1.0',
+  'powershell.exe',
+);
+
+// Parsed from the fixture's `VISUAL:bounds={...}` stdout line.
+const BOUNDS_RE = /VISUAL:bounds=(\{.+\})/;
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
 // even with WAYLAND_DISPLAY set. --disable-gpu + --no-sandbox keeps CI happy.
@@ -86,7 +97,7 @@ child.stdout.on('data', (chunk: Buffer) => {
   for (const line of lines) {
     if (line.includes('VISUAL:ready')) ready = true;
     if (line.includes('VISUAL:window-shown')) windowShown = true;
-    const m = line.match(/VISUAL:bounds=(\{.+\})/);
+    const m = BOUNDS_RE.exec(line);
     if (m) {
       try {
         bounds = JSON.parse(m[1]) as Bounds;
