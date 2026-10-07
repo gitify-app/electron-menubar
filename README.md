@@ -10,7 +10,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/gitify-app/electron-menubar?logo=github" alt="OSS License" /></a>
   <a href="https://www.npmjs.com/package/electron-menubar"><img src="https://img.shields.io/npm/v/electron-menubar?logo=npm" alt="NPM Latest Version" /></a>
   <a href="https://github.com/gitify-app/electron-menubar/releases/latest"><img src="https://img.shields.io/github/v/release/gitify-app/electron-menubar?logo=github" alt="Latest Release" /></a>
-  <img src="https://img.shields.io/librariesio/github/gitify-app/electron-menubar?logo=libraries.io&amp;logoColor=white" alt="Libraries.io dependency status for GitHub repo" />
   <img src="https://img.shields.io/bundlejs/size/electron-menubar?logo=npm" alt="npm minzipped bundle size" />
 </p>
 
@@ -213,7 +212,6 @@ Originally created by [Max][github-upstream-creator] — hard-forked from [max-m
 [release-workflow-badge]: https://img.shields.io/github/actions/workflow/status/gitify-app/electron-menubar/release.yml?logo=github&label=Release
 [downloads-badge]: https://img.shields.io/npm/dy/electron-menubar?logo=npm
 [contributors-badge]: https://img.shields.io/github/contributors/gitify-app/electron-menubar?logo=github
-[librariesio-badge]: https://img.shields.io/librariesio/github/gitify-app/electron-menubar?logo=libraries.io&logoColor=white
 [license]: LICENSE
 [license-badge]: https://img.shields.io/github/license/gitify-app/electron-menubar?logo=github
 [github-release-badge]: https://img.shields.io/github/v/release/gitify-app/electron-menubar?logo=github
