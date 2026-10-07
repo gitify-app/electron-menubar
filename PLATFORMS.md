@@ -11,6 +11,7 @@ _Continuously verified by [E2E smoke tests](.github/workflows/e2e.yml)._
 | macOS 26 (Tahoe)    | ✅ Pass |
 | Ubuntu 22.04        | ✅ Pass |
 | Ubuntu 24.04        | ✅ Pass |
+| Ubuntu 26.04        | ✅ Pass |
 | Windows Server 2022 | ✅ Pass |
 | Windows Server 2025 | ✅ Pass |
 
