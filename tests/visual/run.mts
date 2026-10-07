@@ -20,6 +20,7 @@ const resultPath = join(outDir, `${key}.json`);
 mkdirSync(outDir, { recursive: true });
 
 const READY_TIMEOUT_MS = 30_000;
+const READY_POLL_INTERVAL_MS = 100;
 const POST_READY_DELAY_MS = Number(
   process.env.VISUAL_POST_READY_DELAY_MS ?? 3_000,
 );
@@ -41,6 +42,25 @@ const RECT_PADDING = 4;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 // Parsed from the fixture's `VISUAL:bounds={...}` stdout line.
 const BOUNDS_RE = /VISUAL:bounds=(\{.+\})/;
+
+/**
+ * Poll by running `work` every `intervalMs` — first immediately — until it
+ * returns false or `deadline` passes. Deliberately sequential: each call must
+ * observe fresh state (fixture stdout, a new screenshot) before deciding
+ * whether to retry, so the awaits stay inside this helper rather than in the
+ * surrounding loop (typescript:S9382).
+ */
+function pollUntil(
+  deadline: number,
+  work: () => boolean,
+  intervalMs: number,
+): Promise<void> {
+  const tick = (): Promise<void> =>
+    work() && Date.now() < deadline
+      ? new Promise((r) => setTimeout(r, intervalMs)).then(tick)
+      : Promise.resolve();
+  return tick();
+}
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
 // even with WAYLAND_DISPLAY set. --disable-gpu + --no-sandbox keeps CI happy.
@@ -101,9 +121,11 @@ child.on('exit', (code) => {
 });
 
 const deadline = Date.now() + READY_TIMEOUT_MS;
-while (!ready && Date.now() < deadline && child.exitCode === null) {
-  await new Promise((r) => setTimeout(r, 100));
-}
+await pollUntil(
+  deadline,
+  () => !ready && child.exitCode === null,
+  READY_POLL_INTERVAL_MS,
+);
 
 if (!ready) {
   child.kill('SIGTERM');
@@ -133,40 +155,43 @@ const retryDeadline = Date.now() + CHECK_RETRY_TIMEOUT_MS;
 let attempts = 0;
 let png: PNG;
 let result: Analysis;
-for (;;) {
-  attempts++;
-  try {
-    capture(screenshotPath);
-  } catch (err) {
-    child.kill('SIGTERM');
-    writeResult({
-      status: 'fail',
-      reason: `screenshot failed: ${(err as Error).message}`,
-    });
-    throw err;
-  }
-  png = PNG.sync.read(readFileSync(screenshotPath));
-  // Bounds arrive asynchronously from the fixture; recompute per attempt so
-  // a late VISUAL:bounds line still tightens the window check on retries.
-  result = check(png, bounds ? scaleRect(bounds.window, bounds.scale) : null);
-  console.log(
-    [
-      `exactTray=${result.exactTray}`,
-      `saturatedNonWindow=${result.saturatedNonWindow}`,
-      `windowWhite=${result.windowWhite}`,
-      `windowBlack=${result.windowBlack}`,
-      `globalWhite=${result.globalWhite}`,
-      `globalBlack=${result.globalBlack}`,
-      `→ ${result.status}`,
-      `(tray=${result.trayDetected}, window=${result.windowDetected}`,
-      `bounded=${result.windowDetectedBounded}`,
-      `global=${result.windowDetectedGlobal})`,
-      `attempt=${attempts}`,
-    ].join(' '),
-  );
-  if (result.status === 'pass' || Date.now() >= retryDeadline) break;
-  await new Promise((r) => setTimeout(r, CHECK_RETRY_INTERVAL_MS));
-}
+await pollUntil(
+  retryDeadline,
+  () => {
+    attempts++;
+    try {
+      capture(screenshotPath);
+    } catch (err) {
+      child.kill('SIGTERM');
+      writeResult({
+        status: 'fail',
+        reason: `screenshot failed: ${(err as Error).message}`,
+      });
+      throw err;
+    }
+    png = PNG.sync.read(readFileSync(screenshotPath));
+    // Bounds arrive asynchronously from the fixture; recompute per attempt so
+    // a late VISUAL:bounds line still tightens the window check on retries.
+    result = check(png, bounds ? scaleRect(bounds.window, bounds.scale) : null);
+    console.log(
+      [
+        `exactTray=${result.exactTray}`,
+        `saturatedNonWindow=${result.saturatedNonWindow}`,
+        `windowWhite=${result.windowWhite}`,
+        `windowBlack=${result.windowBlack}`,
+        `globalWhite=${result.globalWhite}`,
+        `globalBlack=${result.globalBlack}`,
+        `→ ${result.status}`,
+        `(tray=${result.trayDetected}, window=${result.windowDetected}`,
+        `bounded=${result.windowDetectedBounded}`,
+        `global=${result.windowDetectedGlobal})`,
+        `attempt=${attempts}`,
+      ].join(' '),
+    );
+    return result.status !== 'pass';
+  },
+  CHECK_RETRY_INTERVAL_MS,
+);
 
 child.kill('SIGTERM');
 
