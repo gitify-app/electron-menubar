@@ -38,6 +38,16 @@ const TRAY_SATURATED_FALLBACK = 100;
 // reported window rect so OS chrome white/black doesn't bleed in.
 const WINDOW_WHITE_THRESHOLD = 5000;
 const WINDOW_BLACK_THRESHOLD = 500;
+// Per-pixel marker flags packed into a number so classifying a capture
+// allocates nothing: the hot loop walks ~786k pixels and reruns on every
+// retry attempt. Binary literals rather than `1 << n`, which Sonar reads as
+// the `<< 0` truncation idiom and flags (typescript:S7767). Declared up here
+// with the other thresholds: the top-level retry loop below calls `check()`
+// before later `const` declarations would be initialised (TDZ).
+const PIXEL_TRAY = 0b0001;
+const PIXEL_SATURATED = 0b0010;
+const PIXEL_WHITE = 0b0100;
+const PIXEL_BLACK = 0b1000;
 const RECT_PADDING = 4;
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 // System executables are invoked by absolute path so resolution never depends
@@ -239,15 +249,6 @@ interface Analysis {
   windowDetectedBounded: boolean;
   windowDetectedGlobal: boolean;
 }
-
-// Per-pixel marker flags packed into a number so classifying a capture
-// allocates nothing: the hot loop walks ~786k pixels and reruns on every
-// retry attempt. Binary literals rather than `1 << n`, which Sonar reads as
-// the `<< 0` truncation idiom and flags (typescript:S7767).
-const PIXEL_TRAY = 0b0001;
-const PIXEL_SATURATED = 0b0010;
-const PIXEL_WHITE = 0b0100;
-const PIXEL_BLACK = 0b1000;
 
 // Classify one captured pixel against the tray/window marker colours.
 function classifyPixel(r: number, g: number, b: number): number {
