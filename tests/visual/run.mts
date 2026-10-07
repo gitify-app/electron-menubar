@@ -24,6 +24,7 @@ const READY_POLL_INTERVAL_MS = 100;
 const POST_READY_DELAY_MS = Number(
   process.env.VISUAL_POST_READY_DELAY_MS ?? 3_000,
 );
+
 // After the first capture, a failed pixel-check retries on a fresh screenshot
 // every CHECK_RETRY_INTERVAL_MS until CHECK_RETRY_TIMEOUT_MS elapses, so a
 // panel that paints the tray icon late still passes. A passing run captures
@@ -32,14 +33,26 @@ const CHECK_RETRY_TIMEOUT_MS = 60_000;
 const CHECK_RETRY_INTERVAL_MS = 2_000;
 const TRAY_EXACT_THRESHOLD = 50;
 const TRAY_SATURATED_FALLBACK = 100;
+
 // Fixture window: white background (~16800 px) with centered 80x40 black
 // inner square (~3200 px), total 20000 px. Solid colors eliminate the
 // internal-AA drift the cyan/yellow split had. We bound the check to the
 // reported window rect so OS chrome white/black doesn't bleed in.
 const WINDOW_WHITE_THRESHOLD = 5000;
 const WINDOW_BLACK_THRESHOLD = 500;
+
+// Per-pixel marker flags packed into a number so classifying a capture
+// allocates nothing: the hot loop walks ~786k pixels and reruns on every
+// retry attempt. Binary literals rather than `1 << n`, which Sonar reads as
+// the `<< 0` truncation idiom and flags (typescript:S7767).
+const PIXEL_TRAY = 0b0001;
+const PIXEL_SATURATED = 0b0010;
+const PIXEL_WHITE = 0b0100;
+const PIXEL_BLACK = 0b1000;
 const RECT_PADDING = 4;
+
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
+
 // System executables are invoked by absolute path so resolution never depends
 // on a mutable PATH entry (typescript:S4036). The CI images and local dev
 // platforms this script targets keep these binaries at fixed locations.
@@ -240,53 +253,93 @@ interface Analysis {
   windowDetectedGlobal: boolean;
 }
 
+// Classify one captured pixel against the tray/window marker colours.
+function classifyPixel(r: number, g: number, b: number): number {
+  const isMagenta = r > 200 && g < 80 && b > 200;
+  const isGreen = r < 80 && g > 200 && b < 80;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let flags = 0;
+  if (isMagenta || isGreen) flags |= PIXEL_TRAY;
+  if (max > 180 && max - min > 140) flags |= PIXEL_SATURATED;
+  if (r > 240 && g > 240 && b > 240) flags |= PIXEL_WHITE;
+  else if (r < 15 && g < 15 && b < 15) flags |= PIXEL_BLACK;
+  return flags;
+}
+
+interface PixelCounts {
+  exactTray: number;
+  saturatedNonWindow: number;
+  windowWhite: number;
+  windowBlack: number;
+  globalWhite: number;
+  globalBlack: number;
+}
+
+// Tally one classified pixel into the running counts. Tray colours count
+// globally; window colours only inside the reported window rect (when given).
+function accumulatePixel(
+  counts: PixelCounts,
+  flags: number,
+  winRect: PixelRect | null,
+  x: number,
+  inWinY: boolean,
+): void {
+  if (flags & PIXEL_TRAY) counts.exactTray++;
+  if (flags & PIXEL_SATURATED) counts.saturatedNonWindow++;
+  if (flags & PIXEL_WHITE) counts.globalWhite++;
+  if (flags & PIXEL_BLACK) counts.globalBlack++;
+  if (winRect !== null && inWinY && x >= winRect.x && x < winRect.x2) {
+    if (flags & PIXEL_WHITE) counts.windowWhite++;
+    else if (flags & PIXEL_BLACK) counts.windowBlack++;
+  }
+}
+
+// Count marker pixels across the capture. Tray colours are counted globally;
+// window colours only inside the reported window rect (when available).
+function countPixels(png: PNG, winRect: PixelRect | null): PixelCounts {
+  const counts: PixelCounts = {
+    exactTray: 0,
+    saturatedNonWindow: 0,
+    windowWhite: 0,
+    windowBlack: 0,
+    globalWhite: 0,
+    globalBlack: 0,
+  };
+  for (let y = 0; y < png.height; y++) {
+    const inWinY = winRect !== null && y >= winRect.y && y < winRect.y2;
+    for (let x = 0; x < png.width; x++) {
+      const i = (y * png.width + x) * 4;
+      accumulatePixel(
+        counts,
+        classifyPixel(png.data[i], png.data[i + 1], png.data[i + 2]),
+        winRect,
+        x,
+        inWinY,
+      );
+    }
+  }
+  return counts;
+}
+
 // Tray icon: magenta/green checker, detected globally (works on Linux SNI
 // where tray.getBounds() returns {0,0,0,0}). Saturated-pixel fallback for
 // platforms like KDE Plasma that recolor SNI icons.
 // Window content: white box + black inner square, detected only INSIDE the
 // reported window rect so OS chrome white/black text doesn't false-positive.
 function check(png: PNG, winRect: PixelRect | null): Analysis {
-  let exactTray = 0;
-  let saturatedNonWindow = 0;
-  let windowWhite = 0;
-  let windowBlack = 0;
-  let globalWhite = 0;
-  let globalBlack = 0;
-  for (let y = 0; y < png.height; y++) {
-    const inWinY = winRect && y >= winRect.y && y < winRect.y2;
-    for (let x = 0; x < png.width; x++) {
-      const i = (y * png.width + x) * 4;
-      const r = png.data[i];
-      const g = png.data[i + 1];
-      const b = png.data[i + 2];
-      const isMagenta = r > 200 && g < 80 && b > 200;
-      const isGreen = r < 80 && g > 200 && b < 80;
-      if (isMagenta || isGreen) exactTray++;
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      if (max > 180 && max - min > 140) saturatedNonWindow++;
-      const isWhite = r > 240 && g > 240 && b > 240;
-      const isBlack = r < 15 && g < 15 && b < 15;
-      if (isWhite) globalWhite++;
-      if (isBlack) globalBlack++;
-      if (inWinY && x >= winRect!.x && x < winRect!.x2) {
-        if (isWhite) windowWhite++;
-        else if (isBlack) windowBlack++;
-      }
-    }
-  }
-
+  const counts = countPixels(png, winRect);
   const trayDetected =
-    exactTray >= TRAY_EXACT_THRESHOLD ||
-    saturatedNonWindow >= TRAY_SATURATED_FALLBACK;
+    counts.exactTray >= TRAY_EXACT_THRESHOLD ||
+    counts.saturatedNonWindow >= TRAY_SATURATED_FALLBACK;
   // Window detected inside the reported bounds OR globally — covers GNOME
   // where Mutter renders the window at a different position than getBounds()
   // reports. Global thresholds set just below the fully-rendered expected
   // counts (16800 white + 3200 black) to reject OS chrome false positives.
   const windowDetectedBounded =
     winRect !== null &&
-    windowWhite >= WINDOW_WHITE_THRESHOLD &&
-    windowBlack >= WINDOW_BLACK_THRESHOLD;
+    counts.windowWhite >= WINDOW_WHITE_THRESHOLD &&
+    counts.windowBlack >= WINDOW_BLACK_THRESHOLD;
   // The reported rect holds a painted surface but no inner square: the window
   // is up while the renderer has yet to draw index.html. globalWhite alone
   // counts that blank surface as a rendered window, so the global fallback is
@@ -294,22 +347,23 @@ function check(png: PNG, winRect: PixelRect | null): Analysis {
   // accepting a contentless window.
   const boundedAwaitingContent =
     winRect !== null &&
-    windowWhite >= WINDOW_WHITE_THRESHOLD &&
-    windowBlack < WINDOW_BLACK_THRESHOLD;
+    counts.windowWhite >= WINDOW_WHITE_THRESHOLD &&
+    counts.windowBlack < WINDOW_BLACK_THRESHOLD;
   // globalBlack varies wildly with wallpaper (macOS black is huge, others are
   // tiny) so we don't use it. globalWhite at >= 14000 reliably signals the
   // rendered white window background even when GNOME's Mutter paints the
   // window at a position that diverges from getBounds().
-  const windowDetectedGlobal = !boundedAwaitingContent && globalWhite >= 14000;
+  const windowDetectedGlobal =
+    !boundedAwaitingContent && counts.globalWhite >= 14_000;
   const windowDetected = windowDetectedBounded || windowDetectedGlobal;
   return {
     status: trayDetected && windowDetected ? 'pass' : 'fail',
-    exactTray,
-    saturatedNonWindow,
-    windowWhite,
-    windowBlack,
-    globalWhite,
-    globalBlack,
+    exactTray: counts.exactTray,
+    saturatedNonWindow: counts.saturatedNonWindow,
+    windowWhite: counts.windowWhite,
+    windowBlack: counts.windowBlack,
+    globalWhite: counts.globalWhite,
+    globalBlack: counts.globalBlack,
     trayDetected,
     windowDetected,
     windowDetectedBounded,
