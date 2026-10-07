@@ -2,6 +2,8 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { resolveFromCwd } from '../util/resolve-from-cwd.mts';
+
 interface VisualResult {
   key: string;
   label: string;
@@ -12,8 +14,8 @@ interface VisualResult {
 const START = '<!-- visual:start -->';
 const END = '<!-- visual:end -->';
 
-const resultsDir = process.argv[2] ?? 'test-results/visual';
-const targetPath = process.argv[3] ?? 'PLATFORMS.md';
+const resultsDir = resolveFromCwd(process.argv[2], 'test-results/visual');
+const targetPath = resolveFromCwd(process.argv[3], 'PLATFORMS.md');
 
 const files = readdirSync(resultsDir).filter((f) => f.endsWith('.json'));
 const results: VisualResult[] = files
