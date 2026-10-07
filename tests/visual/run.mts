@@ -24,6 +24,7 @@ const READY_POLL_INTERVAL_MS = 100;
 const POST_READY_DELAY_MS = Number(
   process.env.VISUAL_POST_READY_DELAY_MS ?? 3_000,
 );
+
 // After the first capture, a failed pixel-check retries on a fresh screenshot
 // every CHECK_RETRY_INTERVAL_MS until CHECK_RETRY_TIMEOUT_MS elapses, so a
 // panel that paints the tray icon late still passes. A passing run captures
@@ -32,24 +33,26 @@ const CHECK_RETRY_TIMEOUT_MS = 60_000;
 const CHECK_RETRY_INTERVAL_MS = 2_000;
 const TRAY_EXACT_THRESHOLD = 50;
 const TRAY_SATURATED_FALLBACK = 100;
+
 // Fixture window: white background (~16800 px) with centered 80x40 black
 // inner square (~3200 px), total 20000 px. Solid colors eliminate the
 // internal-AA drift the cyan/yellow split had. We bound the check to the
 // reported window rect so OS chrome white/black doesn't bleed in.
 const WINDOW_WHITE_THRESHOLD = 5000;
 const WINDOW_BLACK_THRESHOLD = 500;
+
 // Per-pixel marker flags packed into a number so classifying a capture
 // allocates nothing: the hot loop walks ~786k pixels and reruns on every
 // retry attempt. Binary literals rather than `1 << n`, which Sonar reads as
-// the `<< 0` truncation idiom and flags (typescript:S7767). Declared up here
-// with the other thresholds: the top-level retry loop below calls `check()`
-// before later `const` declarations would be initialised (TDZ).
+// the `<< 0` truncation idiom and flags (typescript:S7767).
 const PIXEL_TRAY = 0b0001;
 const PIXEL_SATURATED = 0b0010;
 const PIXEL_WHITE = 0b0100;
 const PIXEL_BLACK = 0b1000;
 const RECT_PADDING = 4;
+
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
+
 // System executables are invoked by absolute path so resolution never depends
 // on a mutable PATH entry (typescript:S4036). The CI images and local dev
 // platforms this script targets keep these binaries at fixed locations.
