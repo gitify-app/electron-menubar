@@ -47,19 +47,20 @@ const BOUNDS_RE = /VISUAL:bounds=(\{.+\})/;
  * Poll by running `work` every `intervalMs` — first immediately — until it
  * returns false or `deadline` passes. Deliberately sequential: each call must
  * observe fresh state (fixture stdout, a new screenshot) before deciding
- * whether to retry, so the awaits stay inside this helper rather than in the
- * surrounding loop (typescript:S9382).
+ * whether to retry. The `await` lives in this helper's body rather than in a
+ * loop, keeping the call sites free of sequential `await`s in loops
+ * (typescript:S9382).
  */
-function pollUntil(
+async function pollUntil(
   deadline: number,
   work: () => boolean,
   intervalMs: number,
 ): Promise<void> {
-  const tick = (): Promise<void> =>
-    work() && Date.now() < deadline
-      ? new Promise((r) => setTimeout(r, intervalMs)).then(tick)
-      : Promise.resolve();
-  return tick();
+  if (!work() || Date.now() >= deadline) {
+    return;
+  }
+  await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  await pollUntil(deadline, work, intervalMs);
 }
 
 // Force --ozone-platform=wayland: hint=auto fell back to X11 in headless CI
