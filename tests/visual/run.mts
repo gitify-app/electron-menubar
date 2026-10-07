@@ -202,25 +202,26 @@ interface Analysis {
   windowDetectedGlobal: boolean;
 }
 
-interface PixelClassification {
-  tray: boolean;
-  saturated: boolean;
-  white: boolean;
-  black: boolean;
-}
+// Per-pixel marker flags packed into a number so classifying a capture
+// allocates nothing: the hot loop walks ~786k pixels and reruns on every
+// retry attempt.
+const PIXEL_TRAY = 1 << 0;
+const PIXEL_SATURATED = 1 << 1;
+const PIXEL_WHITE = 1 << 2;
+const PIXEL_BLACK = 1 << 3;
 
 // Classify one captured pixel against the tray/window marker colours.
-function classifyPixel(r: number, g: number, b: number): PixelClassification {
+function classifyPixel(r: number, g: number, b: number): number {
   const isMagenta = r > 200 && g < 80 && b > 200;
   const isGreen = r < 80 && g > 200 && b < 80;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
-  return {
-    tray: isMagenta || isGreen,
-    saturated: max > 180 && max - min > 140,
-    white: r > 240 && g > 240 && b > 240,
-    black: r < 15 && g < 15 && b < 15,
-  };
+  let flags = 0;
+  if (isMagenta || isGreen) flags |= PIXEL_TRAY;
+  if (max > 180 && max - min > 140) flags |= PIXEL_SATURATED;
+  if (r > 240 && g > 240 && b > 240) flags |= PIXEL_WHITE;
+  else if (r < 15 && g < 15 && b < 15) flags |= PIXEL_BLACK;
+  return flags;
 }
 
 interface PixelCounts {
@@ -236,18 +237,18 @@ interface PixelCounts {
 // globally; window colours only inside the reported window rect (when given).
 function accumulatePixel(
   counts: PixelCounts,
-  px: PixelClassification,
+  flags: number,
   winRect: PixelRect | null,
   x: number,
   inWinY: boolean,
 ): void {
-  if (px.tray) counts.exactTray++;
-  if (px.saturated) counts.saturatedNonWindow++;
-  if (px.white) counts.globalWhite++;
-  if (px.black) counts.globalBlack++;
+  if (flags & PIXEL_TRAY) counts.exactTray++;
+  if (flags & PIXEL_SATURATED) counts.saturatedNonWindow++;
+  if (flags & PIXEL_WHITE) counts.globalWhite++;
+  if (flags & PIXEL_BLACK) counts.globalBlack++;
   if (winRect !== null && inWinY && x >= winRect.x && x < winRect.x2) {
-    if (px.white) counts.windowWhite++;
-    else if (px.black) counts.windowBlack++;
+    if (flags & PIXEL_WHITE) counts.windowWhite++;
+    else if (flags & PIXEL_BLACK) counts.windowBlack++;
   }
 }
 
