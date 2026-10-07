@@ -2,6 +2,57 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [11.1.1](https://github.com/gitify-app/electron-menubar/compare/v11.1.0...v11.1.1) (2026-10-07)
+
+
+### 🐛 Bug Fixes
+
+* **cd:** drop TODO marker from Hyprland investigation summary ([54a4add](https://github.com/gitify-app/electron-menubar/commit/54a4add1610b2d61bae95f754c276d947bf5674f))
+* **cleanOptions:** use nullish coalescing assignment for defaults ([b83a9bc](https://github.com/gitify-app/electron-menubar/commit/b83a9bca4868433c5064e904b53ef672861698f3))
+* de-flake e2e DevTools poll and remove new-code duplication ([#238](https://github.com/gitify-app/electron-menubar/issues/238)) ([c34ea83](https://github.com/gitify-app/electron-menubar/commit/c34ea8395b4bcab0c42d84539c5848c0cb1edcc8))
+* **e2e:** document intentional platform-conditional skips ([6360684](https://github.com/gitify-app/electron-menubar/commit/63606848d582836e342ebe5df60fe6c314674ee2))
+* **e2e:** simplify testMatch regex to avoid backtracking ([c2a09ee](https://github.com/gitify-app/electron-menubar/commit/c2a09ee8507577c9ec14989c8281a48bff57aed2))
+* **html:** add lang attribute to all HTML entry points ([6943a55](https://github.com/gitify-app/electron-menubar/commit/6943a554cc8613d44a3712a7754a5f5083b62b97))
+* **menubar:** document deprecated showOnRightClick usage ([7bd48b9](https://github.com/gitify-app/electron-menubar/commit/7bd48b9b34c0043738fb34995c63a8cc7fa3fd9e))
+* **menubar:** mark constructor-only fields as readonly ([4a5d6ab](https://github.com/gitify-app/electron-menubar/commit/4a5d6ab8b435882b1e6d267d00445ed728b26605))
+* **sonar:** constrain update-platforms CLI paths to the repo (tssecurity:S8707) ([#206](https://github.com/gitify-app/electron-menubar/issues/206)) ([4e1ce13](https://github.com/gitify-app/electron-menubar/commit/4e1ce1309163bf91a4ec4dd2614d3d540d4098ee))
+* **sonar:** declare document type in example apps (Web:DoctypePresenceCheck) ([#201](https://github.com/gitify-app/electron-menubar/issues/201)) ([5b190cb](https://github.com/gitify-app/electron-menubar/commit/5b190cb29f1df7e116caa2c64a4c0833dd520540))
+* **sonar:** drop argv-derived paths from update-platforms (tssecurity:S8707) ([#233](https://github.com/gitify-app/electron-menubar/issues/233)) ([f7c20d9](https://github.com/gitify-app/electron-menubar/commit/f7c20d9e0a77cec83ff59759402d05dd95f6303b))
+* **sonar:** invoke capture tools by absolute path (typescript:S4036) ([#225](https://github.com/gitify-app/electron-menubar/issues/225)) ([8d6a17a](https://github.com/gitify-app/electron-menubar/commit/8d6a17adc86dba19ff3b814d8fa577779ce9e8cc))
+* **sonar:** resolve floating promise in icon animation example (javascript:S9383) ([#204](https://github.com/gitify-app/electron-menubar/issues/204)) ([e353a2a](https://github.com/gitify-app/electron-menubar/commit/e353a2a3a06f9c8484345889e3940f01d9ef3294))
+* **sonar:** set html lang attribute on examples and fixtures (Web:S5254) ([#202](https://github.com/gitify-app/electron-menubar/issues/202)) ([6943a55](https://github.com/gitify-app/electron-menubar/commit/6943a554cc8613d44a3712a7754a5f5083b62b97))
+* **test:** assert mock call length with toHaveLength ([e13432c](https://github.com/gitify-app/electron-menubar/commit/e13432cc1f73ee3f6b29ccd9b0cca0dec584b248))
+* **visual:** invoke capture/prepare binaries by absolute path ([8d6a17a](https://github.com/gitify-app/electron-menubar/commit/8d6a17adc86dba19ff3b814d8fa577779ce9e8cc))
+* **visual:** use RegExp.exec instead of String.match ([7bb9eea](https://github.com/gitify-app/electron-menubar/commit/7bb9eeac86b1828f3daf19571adcac9fd4dcaf9c))
+
+
+### 🧼 Code Refactoring
+
+* **sonar:** anchor testMatch regex to the e2e suffix (typescript:S8786) ([#221](https://github.com/gitify-app/electron-menubar/issues/221)) ([c2a09ee](https://github.com/gitify-app/electron-menubar/commit/c2a09ee8507577c9ec14989c8281a48bff57aed2))
+* **sonar:** keep deprecated showOnRightClick support explicit (typescript:S1874) ([#211](https://github.com/gitify-app/electron-menubar/issues/211)) ([7bd48b9](https://github.com/gitify-app/electron-menubar/commit/7bd48b9b34c0043738fb34995c63a8cc7fa3fd9e))
+* **sonar:** mark callback members as readonly (typescript:S2933) ([#237](https://github.com/gitify-app/electron-menubar/issues/237)) ([294ef9b](https://github.com/gitify-app/electron-menubar/commit/294ef9b8a64030b89f7e5704a84c8a9d1f8dbe9a))
+* **sonar:** mark constructor-only fields readonly (typescript:S2933) ([#218](https://github.com/gitify-app/electron-menubar/issues/218)) ([4a5d6ab](https://github.com/gitify-app/electron-menubar/commit/4a5d6ab8b435882b1e6d267d00445ed728b26605))
+* **sonar:** parse VISUAL bounds with precompiled RegExp (typescript:S6594) ([#223](https://github.com/gitify-app/electron-menubar/issues/223)) ([7bb9eea](https://github.com/gitify-app/electron-menubar/commit/7bb9eeac86b1828f3daf19571adcac9fd4dcaf9c))
+* **sonar:** prefer nullish coalescing assignment for defaults (typescript:S6606) ([#220](https://github.com/gitify-app/electron-menubar/issues/220)) ([b83a9bc](https://github.com/gitify-app/electron-menubar/commit/b83a9bca4868433c5064e904b53ef672861698f3))
+* **sonar:** reduce visual pixel check cognitive complexity (typescript:S3776) ([#226](https://github.com/gitify-app/electron-menubar/issues/226)) ([e24599f](https://github.com/gitify-app/electron-menubar/commit/e24599fb6f21f1c521c150fe9a4b33cc28a17403))
+* **sonar:** replace sequential loop waits with pollUntil helper (typescript:S9382) ([#224](https://github.com/gitify-app/electron-menubar/issues/224)) ([2fb2b8a](https://github.com/gitify-app/electron-menubar/commit/2fb2b8a14db4e843511dde3c8252328bfb37e1f6))
+
+
+### 📚 Documentation
+
+* **readme:** add SonarQube quality gate badge ([2df6f0b](https://github.com/gitify-app/electron-menubar/commit/2df6f0b4982352ac5b9440c58f6216f537ac43c6))
+* **readme:** replace flaky bundlephobia badges with a bundlejs badge ([#219](https://github.com/gitify-app/electron-menubar/issues/219)) ([f5d7d76](https://github.com/gitify-app/electron-menubar/commit/f5d7d761a34c65304e7853bba69e264350df0d90))
+* refresh tested platforms table ([#236](https://github.com/gitify-app/electron-menubar/issues/236)) ([7f9a782](https://github.com/gitify-app/electron-menubar/commit/7f9a7824a589beef305a45538b1f6e75c09a000f))
+* remove broken librariesio badge ([ceff01c](https://github.com/gitify-app/electron-menubar/commit/ceff01cb3b178832a9ee2688ea74f0acffe766b3))
+* Update badge labels in README.md to lowercase ([0a7b957](https://github.com/gitify-app/electron-menubar/commit/0a7b95784d51f4048ebb4cdb7c7863bcaaa756c6))
+
+
+### 🤖 Continuous Integration
+
+* add `ubuntu-26.04` to e2e matrix ([#234](https://github.com/gitify-app/electron-menubar/issues/234)) ([cad45c6](https://github.com/gitify-app/electron-menubar/commit/cad45c6531759002346ca39d7b05197dbce0a416))
+* add ubuntu 26 ([cad45c6](https://github.com/gitify-app/electron-menubar/commit/cad45c6531759002346ca39d7b05197dbce0a416))
+* Update renovate.json configuration and descriptions ([#227](https://github.com/gitify-app/electron-menubar/issues/227)) ([81cd72e](https://github.com/gitify-app/electron-menubar/commit/81cd72e53956a2d190420bf0921dd03e60ca68fd))
+
 ## [11.1.0](https://github.com/gitify-app/electron-menubar/compare/v11.0.0...v11.1.0) (2026-09-30)
 
 
