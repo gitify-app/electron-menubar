@@ -395,7 +395,7 @@ export class Menubar extends EventEmitter {
    * {@link showWindow} on every show, and from the window's `resize` event so
    * `setSize` calls reposition the window correctly.
    */
-  private positionWindow = (): void => {
+  private readonly positionWindow = (): void => {
     if (!this._browserWindow || !this._tray) {
       return;
     }
@@ -569,7 +569,7 @@ export class Menubar extends EventEmitter {
    * @param e
    * @param bounds
    */
-  private clicked = async (
+  private readonly clicked = async (
     event?: Electron.KeyboardEvent,
     bounds?: Electron.Rectangle,
   ): Promise<void> => {
@@ -590,7 +590,7 @@ export class Menubar extends EventEmitter {
     await this.showWindow(this._cachedBounds);
   };
 
-  private onAppActivate = (
+  private readonly onAppActivate = (
     _event: Electron.Event,
     hasVisibleWindows: boolean,
   ): void => {
@@ -608,7 +608,7 @@ export class Menubar extends EventEmitter {
    * empty, so a `hideOnClose` veto there would leave the window open and the
    * install waiting forever.
    */
-  private onBeforeQuit = (): void => {
+  private readonly onBeforeQuit = (): void => {
     this._isQuitting = true;
   };
 
@@ -638,7 +638,7 @@ export class Menubar extends EventEmitter {
     this._rightClickContextMenuBound = true;
   }
 
-  private onAppReady = (): void => {
+  private readonly onAppReady = (): void => {
     // Guard against `destroy()` being called between construction and the
     // scheduled `process.nextTick`/`'ready'` firing.
     if (this._isDestroyed) {
