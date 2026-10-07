@@ -53,6 +53,19 @@ const RECT_PADDING = 4;
 
 const isWayland = process.platform === 'linux' && !!process.env.WAYLAND_DISPLAY;
 
+// GNOME (Mutter) has no wlr-screencopy, so `grim` cannot capture it, and the
+// `org.gnome.Shell.Screenshot` D-Bus interface is restricted to the portal and
+// settings-daemon callers. Instead a helper shell extension exposes a Capture
+// method that grabs the stage in-process via `Shell.Screenshot`. See
+// tests/visual/gnome-extension.
+const GNOME_SCREENSHOT_BUS_NAME = 'io.github.menubar.Screenshot';
+const GNOME_SCREENSHOT_OBJECT_PATH = '/io/github/menubar/Screenshot';
+
+// Capture backend. Defaults match the platform: macOS/Windows use their native
+// tools, Linux uses `import` on X11 and `grim` on wlr-based Wayland. GNOME
+// Wayland overrides this with `VISUAL_CAPTURE=gnome` from the workflow.
+const captureMode = process.env.VISUAL_CAPTURE ?? (isWayland ? 'grim' : 'x11');
+
 // System executables are invoked by absolute path so resolution never depends
 // on a mutable PATH entry (typescript:S4036). The CI images and local dev
 // platforms this script targets keep these binaries at fixed locations.
@@ -372,7 +385,23 @@ function check(png: PNG, winRect: PixelRect | null): Analysis {
 }
 
 function capture(path: string): void {
-  if (process.platform === 'darwin') {
+  if (captureMode === 'gnome') {
+    execFileSync(
+      '/usr/bin/gdbus',
+      [
+        'call',
+        '--session',
+        '--dest',
+        GNOME_SCREENSHOT_BUS_NAME,
+        '--object-path',
+        GNOME_SCREENSHOT_OBJECT_PATH,
+        '--method',
+        `${GNOME_SCREENSHOT_BUS_NAME}.Capture`,
+        path,
+      ],
+      { stdio: 'inherit' },
+    );
+  } else if (process.platform === 'darwin') {
     execFileSync('/usr/sbin/screencapture', ['-x', path], { stdio: 'inherit' });
   } else if (process.platform === 'win32') {
     const ps = [
