@@ -28,6 +28,13 @@ const mb = menubar({
   preloadWindow: false,
   showDockIcon: false,
   tooltip: 'menubar-visual-fixture',
+  // Keep the popup painted for the whole capture window. hideOnBlur defaults
+  // to true, so anything that steals focus after the window is shown — most
+  // reliably the Windows VISUAL_PREPARE_CMD restarting Explorer — hides the
+  // popup ~100ms later and no retry can bring it back. The check then sees
+  // only the desktop behind it and reports window=false. The fixture tests
+  // rendering, not focus, so blur must never tear the window down.
+  hideOnBlur: false,
   browserWindow: {
     width: 200,
     height: 100,
