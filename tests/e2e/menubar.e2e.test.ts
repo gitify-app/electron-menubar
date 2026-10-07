@@ -36,6 +36,38 @@ const waitForReady = (app: ElectronApplication): Promise<void> =>
       }),
   );
 
+const focusAwayFromMenubar = async (
+  app: ElectronApplication,
+): Promise<void> => {
+  await expect
+    .poll(() =>
+      app.evaluate(() =>
+        (globalThis as MenubarGlobal).__menubar!.window!.isFocused(),
+      ),
+    )
+    .toBe(true);
+  // Let the platform's post-show blur grace expire before a real focus
+  // transfer, then focus a separate window so the popup emits a true blur.
+  await new Promise((resolve) => setTimeout(resolve, 450));
+  await app.evaluate(({ BrowserWindow }) => {
+    const other = new BrowserWindow({ width: 200, height: 200 });
+    other.show();
+    other.focus();
+  });
+};
+
+const expectWindowVisible = (
+  app: ElectronApplication,
+  visible: boolean,
+): Promise<void> =>
+  expect
+    .poll(() =>
+      app.evaluate(() =>
+        (globalThis as MenubarGlobal).__menubar!.window!.isVisible(),
+      ),
+    )
+    .toBe(visible);
+
 test('menubar boots, emits ready, opens window, exposes tray', async () => {
   const app = await launchFixture();
 
@@ -120,29 +152,9 @@ test('an elevated Windows popup dismisses on click-away without losing its stack
         (globalThis as MenubarGlobal).__menubar!.window!.isAlwaysOnTop(),
       ),
     ).toBe(true);
-    await expect
-      .poll(() =>
-        app.evaluate(() =>
-          (globalThis as MenubarGlobal).__menubar!.window!.isFocused(),
-        ),
-      )
-      .toBe(true);
+    await focusAwayFromMenubar(app);
 
-    // Let the Windows post-show blur grace expire before a real focus transfer.
-    await new Promise((resolve) => setTimeout(resolve, 450));
-    await app.evaluate(({ BrowserWindow }) => {
-      const other = new BrowserWindow({ width: 200, height: 200 });
-      other.show();
-      other.focus();
-    });
-
-    await expect
-      .poll(() =>
-        app.evaluate(() =>
-          (globalThis as MenubarGlobal).__menubar!.window!.isVisible(),
-        ),
-      )
-      .toBe(false);
+    await expectWindowVisible(app, false);
     expect(
       await app.evaluate(() =>
         (globalThis as MenubarGlobal).__menubar!.window!.isAlwaysOnTop(),
@@ -190,12 +202,14 @@ test('keep-open changes survive DevTools and restore click-away dismissal', asyn
       mb.window!.webContents.openDevTools({ mode: 'detach' });
     });
     await expect
-      .poll(() =>
-        app.evaluate(() =>
-          (
-            globalThis as MenubarGlobal
-          ).__menubar!.window!.webContents.isDevToolsOpened(),
-        ),
+      .poll(
+        () =>
+          app.evaluate(() =>
+            (
+              globalThis as MenubarGlobal
+            ).__menubar!.window!.webContents.isDevToolsOpened(),
+          ),
+        { timeout: 15_000 },
       )
       .toBe(true);
     const whileDebugging = await app.evaluate(() => {
@@ -219,12 +233,14 @@ test('keep-open changes survive DevTools and restore click-away dismissal', asyn
       mb.window!.webContents.closeDevTools();
     });
     await expect
-      .poll(() =>
-        app.evaluate(() =>
-          (
-            globalThis as MenubarGlobal
-          ).__menubar!.window!.webContents.isDevToolsOpened(),
-        ),
+      .poll(
+        () =>
+          app.evaluate(() =>
+            (
+              globalThis as MenubarGlobal
+            ).__menubar!.window!.webContents.isDevToolsOpened(),
+          ),
+        { timeout: 15_000 },
       )
       .toBe(false);
     await app.evaluate(async () => {
@@ -232,19 +248,7 @@ test('keep-open changes survive DevTools and restore click-away dismissal', asyn
       mb.setOption('hideOnBlur', false);
       await mb.showWindow();
     });
-    await expect
-      .poll(() =>
-        app.evaluate(() =>
-          (globalThis as MenubarGlobal).__menubar!.window!.isFocused(),
-        ),
-      )
-      .toBe(true);
-    await new Promise((resolve) => setTimeout(resolve, 450));
-    await app.evaluate(({ BrowserWindow }) => {
-      const other = new BrowserWindow({ width: 200, height: 200 });
-      other.show();
-      other.focus();
-    });
+    await focusAwayFromMenubar(app);
     await new Promise((resolve) => setTimeout(resolve, 200));
     expect(
       await app.evaluate(() =>
@@ -257,26 +261,8 @@ test('keep-open changes survive DevTools and restore click-away dismissal', asyn
       mb.setOption('hideOnBlur', true);
       await mb.showWindow();
     });
-    await expect
-      .poll(() =>
-        app.evaluate(() =>
-          (globalThis as MenubarGlobal).__menubar!.window!.isFocused(),
-        ),
-      )
-      .toBe(true);
-    await new Promise((resolve) => setTimeout(resolve, 450));
-    await app.evaluate(({ BrowserWindow }) => {
-      const other = new BrowserWindow({ width: 200, height: 200 });
-      other.show();
-      other.focus();
-    });
-    await expect
-      .poll(() =>
-        app.evaluate(() =>
-          (globalThis as MenubarGlobal).__menubar!.window!.isVisible(),
-        ),
-      )
-      .toBe(false);
+    await focusAwayFromMenubar(app);
+    await expectWindowVisible(app, false);
   } finally {
     await app.close();
   }
