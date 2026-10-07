@@ -19,6 +19,17 @@ import { Menubar } from './Menubar';
 
 vi.mock('electron', () => import('./__mocks__/electron'));
 
+const ready = (mb: Menubar): Promise<void> =>
+  new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+
+const findHandler = (
+  win: BrowserWindow,
+  event: string,
+): ((...args: unknown[]) => void) | undefined => {
+  const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
+  return call?.[1] as ((...args: unknown[]) => void) | undefined;
+};
+
 describe('Menubar', () => {
   let mb: Menubar | undefined;
 
@@ -266,9 +277,6 @@ describe('Menubar showOnAllWorkspaces option', () => {
     afterEach(() => {
       Object.defineProperty(process, 'platform', { value: originalPlatform });
     });
-
-    const ready = (mb: Menubar): Promise<void> =>
-      new Promise<void>((resolve) => mb.on('ready', () => resolve()));
 
     it('leaves every Space on hide and rejoins them before show on macOS', async () => {
       Object.defineProperty(process, 'platform', { value: 'darwin' });
@@ -795,14 +803,6 @@ describe('Menubar repositioning on resize', () => {
     vi.clearAllMocks();
   });
 
-  const findHandler = (
-    win: BrowserWindow,
-    event: string,
-  ): ((...args: unknown[]) => void) | undefined => {
-    const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
-    return call?.[1] as ((...args: unknown[]) => void) | undefined;
-  };
-
   it('positions the window on `showWindow`', async () => {
     const mb = new Menubar(app, { preloadWindow: true });
     await new Promise<void>((resolve) => mb.on('ready', () => resolve()));
@@ -849,9 +849,6 @@ describe('Menubar Wayland positioning warning', () => {
     }
     vi.restoreAllMocks();
   });
-
-  const ready = (mb: Menubar): Promise<void> =>
-    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
 
   it('warns once in a Wayland session when the window position is ignored', async () => {
     Object.defineProperty(process, 'platform', { value: 'linux' });
@@ -925,17 +922,6 @@ describe('Menubar blur-to-hide behavior', () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
-
-  const ready = (mb: Menubar): Promise<void> =>
-    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
-
-  const findHandler = (
-    win: BrowserWindow,
-    event: string,
-  ): ((...args: unknown[]) => void) | undefined => {
-    const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
-    return call?.[1] as ((...args: unknown[]) => void) | undefined;
-  };
 
   it.each(['darwin', 'linux'])(
     'hides the window ~100ms after a blur on %s',
@@ -1216,9 +1202,6 @@ describe('Menubar dock hide startup race', () => {
     vi.useRealTimers();
   });
 
-  const ready = (mb: Menubar): Promise<void> =>
-    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
-
   it('re-hides the dock when the startup hide was dropped (gitify-app/gitify#3069)', async () => {
     const mb = new Menubar(app, { preloadWindow: true });
     await ready(mb);
@@ -1269,17 +1252,6 @@ describe('Menubar positionWindow re-entrancy', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  const ready = (mb: Menubar): Promise<void> =>
-    new Promise<void>((resolve) => mb.on('ready', () => resolve()));
-
-  const findHandler = (
-    win: BrowserWindow,
-    event: string,
-  ): ((...args: unknown[]) => void) | undefined => {
-    const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
-    return call?.[1] as ((...args: unknown[]) => void) | undefined;
-  };
 
   it('does not recurse when `setPosition` synchronously emits `resize` (gitify-app/gitify#3064)', async () => {
     const mb = new Menubar(app, { preloadWindow: true });
