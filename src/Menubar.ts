@@ -34,7 +34,7 @@ const DOCK_REHIDE_DELAY_MS = 2_000;
  * The main Menubar class.
  */
 export class Menubar extends EventEmitter {
-  private _app: Electron.App;
+  private readonly _app: Electron.App;
   private _browserWindow?: BrowserWindow;
   private _contextMenu?: Menu;
   private _blurTimeout: NodeJS.Timeout | null = null; // track blur events with timeout
@@ -42,7 +42,7 @@ export class Menubar extends EventEmitter {
   private _isQuitting: boolean; // set when the app is shutting down, used by hideOnClose
   private _isVisible: boolean; // track visibility
   private _cachedBounds?: Electron.Rectangle; // _cachedBounds are needed for double-clicked event
-  private _options: Options;
+  private readonly _options: Options;
   private _positioner: Positioner | undefined;
   private _shortcut?: Electron.Accelerator;
   private _rightClickContextMenuBound = false;
@@ -519,9 +519,11 @@ export class Menubar extends EventEmitter {
       trayImage = path.join(__dirname, '..', 'assets', 'IconTemplate.png'); // Default cat icon
     }
 
+    // The deprecated `showOnRightClick` option stays honoured until the next
+    // major release removes it (see {@link Options.showOnRightClick}).
     const trigger =
       this._options.trigger ??
-      (this._options.showOnRightClick ? 'right-click' : 'click');
+      (this._options.showOnRightClick ? 'right-click' : 'click'); // NOSONAR:typescript:S1874
 
     this._tray = this._options.tray || new Tray(trayImage);
     // Type guards for TS not to complain

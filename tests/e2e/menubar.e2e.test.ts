@@ -85,7 +85,7 @@ test('toggleWindow alternates visibility', async () => {
 });
 
 test('clears the all-workspaces flag while hidden on macOS and sets it again on show', async () => {
-  test.skip(process.platform !== 'darwin', 'macOS Spaces');
+  test.skip(process.platform !== 'darwin', 'macOS Spaces'); // NOSONAR:typescript:S1607 — intentionally skipped on non-macOS: the all-workspaces behaviour is macOS-only ("isVisibleOnAllWorkspaces").
   const app = await launchFixture();
   await waitForReady(app);
 
@@ -107,7 +107,7 @@ test('clears the all-workspaces flag while hidden on macOS and sets it again on 
 });
 
 test('an elevated Windows popup dismisses on click-away without losing its stacking level', async () => {
-  test.skip(process.platform !== 'win32', 'Windows tray overflow regression');
+  test.skip(process.platform !== 'win32', 'Windows tray overflow regression'); // NOSONAR:typescript:S1607 — intentionally skipped on non-Windows: the elevated show/click-away stacking regression is Windows-only.
   const app = await launchFixture();
   try {
     await waitForReady(app);
