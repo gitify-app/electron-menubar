@@ -35,6 +35,9 @@ jobs:
           - runner: windows-2022
             label: Windows Server 2022
             key: windows-2022
+          - runner: ubuntu-26.04
+            label: Ubuntu 26.04
+            key: ubuntu-26.04
           - runner: ubuntu-24.04
             label: Ubuntu 24.04
             key: ubuntu-24.04
