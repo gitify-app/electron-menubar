@@ -204,11 +204,12 @@ interface Analysis {
 
 // Per-pixel marker flags packed into a number so classifying a capture
 // allocates nothing: the hot loop walks ~786k pixels and reruns on every
-// retry attempt.
-const PIXEL_TRAY = 1 << 0;
-const PIXEL_SATURATED = 1 << 1;
-const PIXEL_WHITE = 1 << 2;
-const PIXEL_BLACK = 1 << 3;
+// retry attempt. Binary literals rather than `1 << n`, which Sonar reads as
+// the `<< 0` truncation idiom and flags (typescript:S7767).
+const PIXEL_TRAY = 0b0001;
+const PIXEL_SATURATED = 0b0010;
+const PIXEL_WHITE = 0b0100;
+const PIXEL_BLACK = 0b1000;
 
 // Classify one captured pixel against the tray/window marker colours.
 function classifyPixel(r: number, g: number, b: number): number {
