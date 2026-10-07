@@ -2,8 +2,6 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { resolveFromCwd } from '../util/resolve-from-cwd.mts';
-
 interface VisualResult {
   key: string;
   label: string;
@@ -14,8 +12,11 @@ interface VisualResult {
 const START = '<!-- visual:start -->';
 const END = '<!-- visual:end -->';
 
-const resultsDir = resolveFromCwd(process.argv[2], 'test-results/visual');
-const targetPath = resolveFromCwd(process.argv[3], 'PLATFORMS.md');
+// Fixed inputs only. The workflows invoke this script with no arguments, so
+// deriving filesystem paths from `argv` was an unused taint source Sonar
+// reported as path traversal (tssecurity:S8707).
+const resultsDir = 'test-results/visual';
+const targetPath = 'PLATFORMS.md';
 
 const files = readdirSync(resultsDir).filter((f) => f.endsWith('.json'));
 const results: VisualResult[] = files
