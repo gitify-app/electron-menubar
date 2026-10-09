@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [11.1.2](https://github.com/gitify-app/electron-menubar/compare/v11.1.1...v11.1.2) (2026-10-09)
+
+
+### 🤖 Continuous Integration
+
+* **renovate:** use the shared Renovate config validator ([#244](https://github.com/gitify-app/electron-menubar/issues/244)) ([2b5850d](https://github.com/gitify-app/electron-menubar/commit/2b5850ddb75ef3ea36dd2859b12e0ed85b902772))
+
 ## [11.1.1](https://github.com/gitify-app/electron-menubar/compare/v11.1.0...v11.1.1) (2026-10-07)
 
 
