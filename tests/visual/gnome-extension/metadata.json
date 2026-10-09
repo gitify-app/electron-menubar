@@ -1,0 +1,8 @@
+{
+  "uuid": "menubar-screenshot@menubar",
+  "name": "Menubar Screenshot",
+  "description": "Exposes a D-Bus Capture method for the menubar visual tests running on headless GNOME Wayland.",
+  "shell-version": ["50", "51"],
+  "url": "https://github.com/gitify-app/electron-menubar",
+  "version-name": "1"
+}
