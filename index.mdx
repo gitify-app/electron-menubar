@@ -1,0 +1,67 @@
+---
+title: "electron-menubar: build menubar desktop apps with Electron"
+sidebarTitle: "Introduction"
+description: "electron-menubar is a high level way to create menubar desktop applications with Electron, with zero runtime dependencies on macOS, Windows, and Linux."
+---
+
+`electron-menubar` (formerly known as `menubar`) is a high level way to create menubar desktop applications with Electron. It handles the tray icon, popup window, positioning, and platform-specific focus behavior so your app has less to implement itself.
+
+## Features
+
+- ⚡️ Quick start for creating menubar applications using Electron.
+- 🚀 Zero runtime dependencies.
+- 💻 Works on macOS, Windows and _most_ Linux distributions. See [tested platforms](/platforms/supported-platforms).
+
+<CardGroup cols={3}>
+  <Card title="macOS" img="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/assets/screenshot-macos-dark.png">
+  </Card>
+
+  <Card title="Windows 10" img="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/assets/screenshot-windows.png">
+  </Card>
+
+  <Card title="Ubuntu" img="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/assets/screenshot-linux.png">
+  </Card>
+</CardGroup>
+
+<Note>
+  On native Wayland, the desktop compositor controls window placement, so the popover cannot be anchored to the tray icon and is positioned by the desktop (usually centered). This is a Wayland limitation, not something the library can override. Tray-relative positioning works under X11/XWayland. See [window positioning on Linux](/platforms/linux-window-positioning) for the detail and a workaround.
+</Note>
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Install the package and run your first menubar app.
+  </Card>
+
+  <Card title="Options" icon="sliders" href="/api-reference/options">
+    Every option you can pass to `menubar()`.
+  </Card>
+
+  <Card title="Popup Behavior" icon="window-maximize" href="/guides/popup-behavior">
+    Control click-away dismissal and stacking.
+  </Card>
+
+  <Card title="Examples" icon="code" href="/guides/examples">
+    Working example apps to start from.
+  </Card>
+</CardGroup>
+
+## Why electron-menubar?
+
+`electron-menubar` builds on [max-mapper/menubar](https://github.com/max-mapper/menubar), with fixes and controls developed for [Gitify](https://github.com/gitify-app/gitify). The original provides the tray-app foundation. This fork brings more of the platform-specific behavior into the library so applications have less to implement themselves.
+
+| Area | What this fork adds |
+| --- | --- |
+| Windows focus and positioning | Ignores transient blur events immediately after opening, keeps resized windows clear of the taskbar, handles left-side taskbars, and prevents recursive resize events during repositioning. |
+| Windows tray overflow | Raises popups above the hidden-icons panel automatically and still dismisses on click-away. Apps use the same keep-open option on every platform. **Available since 11.0.0.** |
+| macOS | Opens on the active Space when another app is fullscreen, hides the Dock icon again after Electron's startup race, and ignores tray double-clicks by default to avoid flicker. |
+| Linux tray menus | Publishes native tray context menus and provides `refreshContextMenu()` to update them after menu items change. Documents native Wayland positioning limits and the XWayland workaround. |
+| Window controls | Built-in `hideOnClose`, `escapeToHide`, configurable tray triggers, global shortcuts, `toggleWindow()`, and `recenterOnTray()`. Closing can hide the window while real quits and updater restarts still work. |
+| Instance cleanup | `destroy()` removes the instance's listeners and unregisters its global shortcut. |
+| Packaging | Zero runtime dependencies, including a built-in positioner. Ships CommonJS and ESM entry points with TypeScript declarations. |
+| Verification | Unit tests, native Electron end-to-end tests on macOS, Windows, and Linux, and visual checks that the tray icon and window render. The [platform report](/platforms/supported-platforms) includes screenshots and positioning limitations. |
+
+See the [changelog](https://github.com/gitify-app/electron-menubar/blob/main/CHANGELOG.md) for released changes and the [API documentation](/api-reference/menubar) for all options.
+
+## Acknowledgements
+
+Originally created by [Max](https://github.com/max-mapper), hard-forked from [max-mapper/menubar](https://github.com/max-mapper/menubar).

@@ -1,0 +1,35 @@
+---
+title: "Control popup dismissal and stacking with hideOnBlur"
+sidebarTitle: "Popup Behavior"
+description: "Keep the electron-menubar popup open and on top or dismiss it on click-away with hideOnBlur, and migrate from 10.x alwaysOnTop workarounds."
+---
+
+`electron-menubar` manages popup stacking and focus on every platform, so you don't need platform checks. A plain `menubar()` dismisses on click-away and opens above the Windows hidden-icons panel.
+
+## Popup behavior without platform checks
+
+To keep the popup open, change one option:
+
+```javascript
+const mb = menubar();
+
+mb.setOption('hideOnBlur', false); // Keep open and on top.
+mb.setOption('hideOnBlur', true); // Resume click-away dismissal.
+```
+
+Opening DevTools temporarily keeps the popup open. Closing DevTools restores the latest `hideOnBlur` preference. Options set before window creation also apply when the window is recreated.
+
+When `hideOnBlur` is `false`, menubar emits [`focus-lost`](/api-reference/events) on click-away instead of hiding the window.
+
+## Migrating from 10.x
+
+These defaults apply starting with 11.0.0. Previously, menubar inferred dismissal from `window.isAlwaysOnTop()`. Use `hideOnBlur: false` for persistent popups instead of `browserWindow.alwaysOnTop: true` or runtime `window.setAlwaysOnTop(true)` calls. `browserWindow.alwaysOnTop` now controls stacking only; it does not disable dismissal. Setting `hideOnBlur: false` also keeps the popup on top on macOS and Linux.
+
+Remove Windows `pop-up-menu` workarounds and DevTools focus handlers from apps. Menubar owns stacking during window creation, showing, preference changes, and DevTools transitions. Apps can still customize DevTools dimensions and layout.
+
+```javascript Diff
+const mb = menubar({
+  browserWindow: { alwaysOnTop: true }, // [!code --]
+  hideOnBlur: false, // [!code ++]
+});
+```

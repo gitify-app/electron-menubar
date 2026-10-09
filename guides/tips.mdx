@@ -1,0 +1,29 @@
+---
+title: "Tips and recipes for electron-menubar applications"
+sidebarTitle: "Tips"
+description: "Practical electron-menubar recipes: open DevTools after load, react to focus-lost, restore previous window focus, attach menus, and avoid open flashes."
+---
+
+These recipes cover common tasks in `electron-menubar` apps, from debugging the popup window to smoothing out how it opens.
+
+- Use `mb.on('after-create-window', callback)` to run things after your app has loaded. For example you could run `mb.window.openDevTools()` to open the developer tools for debugging, or load a different URL with `mb.window.loadURL()`.
+- Use `mb.on('focus-lost')` if you would like to perform some operation when using the option `hideOnBlur: false`.
+- To restore focus of previous window after menubar hide, use `mb.on('after-hide', () => { mb.app.hide() } )` or similar.
+- To attach a native context menu, pass it as `contextMenu`: `menubar({ contextMenu })`. The library wires it via `setContextMenu` on Linux and `popUpContextMenu` on right-click on macOS/Windows so left-click still toggles the window. See [this example](/guides/context-menus) for more information.
+- To avoid a flash when opening your menubar app, you can disable backgrounding the app using the following: `mb.app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');`
+
+```javascript Example
+const { menubar } = require('electron-menubar');
+
+const mb = menubar();
+
+mb.app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');
+
+mb.on('after-create-window', () => {
+  mb.window.openDevTools();
+});
+
+mb.on('after-hide', () => {
+  mb.app.hide();
+});
+```

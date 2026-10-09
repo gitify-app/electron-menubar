@@ -1,0 +1,57 @@
+---
+title: "Attach a native tray context menu to your menubar app"
+sidebarTitle: "Context Menus"
+description: "Attach a native Electron Menu to the electron-menubar tray icon with contextMenu, and update it on Linux with setContextMenu and refreshContextMenu."
+---
+
+`electron-menubar` can attach a native Electron `Menu` to the tray icon through the `contextMenu` option. The library handles the platform differences, so left-click still toggles the window where possible.
+
+## Attach a context menu
+
+Pass the menu as `contextMenu`:
+
+```javascript main.js
+const { app, Menu } = require('electron');
+const { menubar } = require('electron-menubar');
+
+app.on('ready', () => {
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Item1', type: 'radio' },
+    { label: 'Item2', type: 'radio' },
+    { label: 'Item3', type: 'radio', checked: true },
+    { label: 'Item4', type: 'radio' },
+    { type: 'separator' },
+    { role: 'quit' },
+  ]);
+
+  // Pass `contextMenu` to menubar — it wires `setContextMenu` on Linux and
+  // `popUpContextMenu` on right-click on macOS/Windows so left-click still
+  // toggles the menubar window.
+  const mb = menubar({ contextMenu });
+
+  mb.on('ready', () => {
+    console.log('Menubar app is ready.');
+    // your app code here
+  });
+});
+```
+
+## Platform behavior
+
+<Tabs>
+  <Tab title="Linux">
+    The menu is bound via `tray.setContextMenu` (required by libappindicator / StatusNotifierItem) and re-published on every show/hide to defeat the indicator's menu cache.
+  </Tab>
+  <Tab title="macOS and Windows">
+    The menu pops up on right-click via `tray.popUpContextMenu`, so left-click continues to toggle the window. Combine with `trigger: 'none'` if you want right-click to be the only interaction.
+  </Tab>
+</Tabs>
+
+## Update the menu
+
+| Method | Description |
+| --- | --- |
+| `setContextMenu(menu)` | Replace the tray context menu (auto-re-publishes on Linux). |
+| `refreshContextMenu()` | Re-publish the current context menu after mutating its items in place. Required on Linux, a no-op elsewhere. |
+
+See the [native menu example](/guides/examples#native-menu) for a complete app.

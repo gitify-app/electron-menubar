@@ -1,0 +1,74 @@
+{
+  "theme": "luma",
+  "name": "electron-menubar",
+  "colors": {
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "navbar": {
+    "links": [
+      {
+        "href": "https://www.npmjs.com/package/electron-menubar",
+        "label": "npm"
+      }
+    ],
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/gitify-app/electron-menubar"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/gitify-app/electron-menubar"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ],
+    "display": "header"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "index",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Guides",
+        "pages": [
+          "guides/popup-behavior",
+          "guides/context-menus",
+          "guides/examples",
+          "guides/tips"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api-reference/menubar",
+          "api-reference/options",
+          "api-reference/events"
+        ]
+      },
+      {
+        "group": "Platforms",
+        "pages": [
+          "platforms/supported-platforms",
+          "platforms/linux-window-positioning"
+        ]
+      }
+    ]
+  }
+}

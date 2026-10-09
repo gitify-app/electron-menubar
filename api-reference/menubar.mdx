@@ -1,0 +1,69 @@
+---
+title: "Menubar class: properties and methods reference"
+sidebarTitle: "Menubar Class"
+description: "Reference for the Menubar class returned by menubar(): the app, window, tray, and positioner properties plus every method for showing, hiding, and cleanup."
+---
+
+The return value of `menubar()` is a `Menubar` class instance, which exposes the following properties and methods. `Menubar` is also an event emitter; see [Events](/api-reference/events).
+
+```typescript
+import { menubar } from 'electron-menubar';
+
+const mb = menubar({ /* options */ });
+```
+
+The `menubar(options?: Partial<Options>)` factory creates a `Menubar` using Electron's `app`. See [Options](/api-reference/options) for every option.
+
+## Properties
+
+<ResponseField name="app" type="Electron.App">
+  The [Electron App](https://electronjs.org/docs/api/app) instance.
+</ResponseField>
+
+<ResponseField name="window" type="BrowserWindow | undefined">
+  The [Electron Browser Window](https://electronjs.org/docs/api/browser-window) instance.
+</ResponseField>
+
+<ResponseField name="tray" type="Tray">
+  The [Electron Tray](https://electronjs.org/docs/api/tray) instance.
+</ResponseField>
+
+<ResponseField name="positioner" type="Positioner">
+  The `Positioner` instance used to compute the window's on-screen coordinates.
+</ResponseField>
+
+## Methods
+
+| Method | Description |
+| --- | --- |
+| `setOption(option, value)` | Change an option after menubar is created. |
+| `getOption(option)` | Get a menubar option. |
+| `showWindow()` | Show the menubar window. |
+| `hideWindow()` | Hide the menubar window. |
+| `toggleWindow()` | Show the window if hidden, hide it if visible. |
+| `recenterOnTray()` | Re-center the window over the tray icon. |
+| `setContextMenu(menu)` | Replace the tray context menu (auto-re-publishes on Linux). |
+| `refreshContextMenu()` | Re-publish the current context menu after mutating its items in place. Required on Linux, a no-op elsewhere. |
+| `setGlobalShortcut(accelerator)` | Register a global accelerator that toggles the window. Returns `false` on registration failure. |
+| `destroy()` | Tear down the menubar instance. |
+| `isDestroyed()` | Whether the menubar is currently destroyed. |
+
+<Tip>
+  On macOS, show the window with `showWindow()` rather than `window.show()` or `window.showInactive()`, so it rejoins all workspaces when `showOnAllWorkspaces` is enabled.
+</Tip>
+
+## Example
+
+```javascript
+const { menubar } = require('electron-menubar');
+
+const mb = menubar({ globalShortcut: 'CommandOrControl+Shift+M' });
+
+mb.on('ready', () => {
+  mb.setOption('hideOnBlur', false);
+  mb.showWindow();
+});
+
+// Later, clean up listeners and the global shortcut.
+mb.destroy();
+```

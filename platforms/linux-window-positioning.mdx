@@ -1,0 +1,23 @@
+---
+title: "Window positioning on Linux: Wayland, X11, and XWayland"
+sidebarTitle: "Linux Positioning"
+description: "Why electron-menubar cannot anchor the popover to the tray icon on native Wayland, how X11 and XWayland differ, and how to restore positioning with a flag."
+---
+
+On Linux, where the `electron-menubar` popover appears depends on the display server. The [visual tests](/platforms/supported-platforms) confirm that the tray icon and popover window render. They do **not** assert that the popover is positioned next to the tray icon.
+
+## Native Wayland
+
+On **native Wayland**, tray-anchored positioning is not possible, and there is nothing the library can do about it. Two protocol limitations stack up: an application cannot set the position of its own window (`setPosition` is a no-op, `getPosition` reads back `[0, 0]`), and the tray icon, hosted by the panel via StatusNotifierItem, reports no coordinates. The compositor decides where the popover appears, which is usually the center of the screen. `menubar` logs a one-time warning when it detects the window could not be positioned.
+
+## X11 and XWayland
+
+Under **X11 / XWayland**, an application can position its own window, so the popover is placed where `menubar` computes it. (Some Linux panels still report no tray-icon coordinates over StatusNotifierItem, in which case the window falls back to a screen corner rather than sitting exactly under the icon.)
+
+## Workaround
+
+If a Wayland session places the popover in the wrong spot, running under XWayland with `--ozone-platform=x11` restores positioning.
+
+```bash
+electron myApp.js --ozone-platform=x11
+```

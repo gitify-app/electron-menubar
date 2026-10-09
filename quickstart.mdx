@@ -1,0 +1,68 @@
+---
+title: "Quickstart: create your first Electron menubar app"
+sidebarTitle: "Quickstart"
+description: "Install electron-menubar, create an app entry file and an HTML page, and run your first tray-based Electron menubar application in three steps."
+---
+
+`electron-menubar` gives you a tray icon and a popup window with a single `menubar()` call. This guide installs the package and runs a minimal app with Electron.
+
+<Info>
+  `electron-menubar` requires `electron` version 35.0.0 or later as a peer dependency.
+</Info>
+
+## Installation
+
+```bash
+pnpm add electron-menubar
+```
+
+## Usage
+
+<Steps>
+  <Step title="Create the project files">
+    Starting with your own new project, run these commands:
+
+    ```bash
+    pnpm add electron-menubar
+    touch myApp.js
+    touch index.html
+    ```
+  </Step>
+  <Step title="Write your app">
+    Fill `index.html` with some HTML, and `myApp.js` like this:
+
+    ```javascript myApp.js
+    const { menubar } = require('electron-menubar');
+    
+    const mb = menubar();
+    
+    mb.on('ready', () => {
+      console.log('app is ready');
+      // your app code here
+    });
+    ```
+
+    The package ships both CommonJS and ESM entry points with TypeScript declarations, so you can also use `import { menubar } from 'electron-menubar'`.
+  </Step>
+  <Step title="Run the app">
+    Then use `electron` to run the app:
+
+    ```bash
+    electron myApp.js
+    ```
+  </Step>
+</Steps>
+
+By default, menubar loads `index.html` from the app source directory (`process.cwd()`) and uses `IconTemplate.png` from the same directory as the tray icon. See [Options](/api-reference/options) to change these.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Options" icon="sliders" href="/api-reference/options">
+    Configure the window, icon, position, and triggers.
+  </Card>
+
+  <Card title="Examples" icon="code" href="/guides/examples">
+    Explore working example apps.
+  </Card>
+</CardGroup>

@@ -1,0 +1,32 @@
+---
+title: "Menubar events: lifecycle hooks for window and tray"
+sidebarTitle: "Events"
+description: "The Menubar class is an event emitter. Reference for ready, create-window, before-load, show, hide, after-close, focus-lost, and other lifecycle events."
+---
+
+The `Menubar` class is an event emitter. Subscribe with `mb.on(event, callback)` to run code at specific points in the tray and window lifecycle.
+
+```javascript
+const mb = menubar();
+
+mb.on('ready', () => {
+  console.log('app is ready');
+});
+
+mb.on('after-create-window', () => {
+  mb.window.openDevTools();
+});
+```
+
+| Event | Description |
+| --- | --- |
+| `ready` | When `menubar`'s tray icon has been created and initialized, i.e. when `menubar` is ready to be used. Note: this is different from the Electron app's `ready` event, which happens much earlier in the process. |
+| `create-window` | The line before `new BrowserWindow()` is called. |
+| `before-load` | After create window, before `loadUrl` (can be used for `require("@electron/remote/main").enable(webContents)`). |
+| `after-create-window` | The line after all window init code is done and the url was loaded. |
+| `show` | The line before `window.show()` is called. |
+| `after-show` | The line after `window.show()` is called. |
+| `hide` | The line before `window.hide()` is called (on window blur). |
+| `after-hide` | The line after `window.hide()` is called. |
+| `after-close` | After the `.window` (BrowserWindow) property has been deleted. |
+| `focus-lost` | Emitted on click-away when `hideOnBlur` is `false` or DevTools is open. |

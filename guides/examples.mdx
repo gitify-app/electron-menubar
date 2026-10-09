@@ -1,0 +1,134 @@
+---
+title: "electron-menubar example apps: popover, icons, menus"
+sidebarTitle: "Examples"
+description: "Working electron-menubar example apps: Hello World, a popover with an arrow, an animated tray icon, and a native tray context menu, with run steps."
+---
+
+The `electron-menubar` repository includes a selection of working examples in the [`examples`](https://github.com/gitify-app/electron-menubar/tree/main/examples) folder. Each one is a small, runnable app you can use as a starting point.
+
+## Run an example
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/gitify-app/electron-menubar.git
+    cd electron-menubar
+    ```
+  </Step>
+  <Step title="Install and build from the root folder">
+    ```bash
+    pnpm install
+    pnpm build
+    ```
+  </Step>
+  <Step title="Install and start the example">
+    `cd` into the example directory, then install its dependencies and run it:
+
+    ```bash
+    cd examples/hello-world
+    pnpm install
+    pnpm start
+    ```
+  </Step>
+</Steps>
+
+## Hello World
+
+This is a simple Hello World menubar app that will just open a window that says "Hello World".
+
+```javascript main.js
+const { menubar } = require('electron-menubar');
+
+const mb = menubar();
+
+mb.on('ready', () => {
+  console.log('Menubar app is ready.');
+});
+```
+
+<Frame>
+  <img
+    src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/examples/hello-world/screenshot.png"
+    alt="Hello World example"
+  />
+</Frame>
+
+## Arrow
+
+A menubar app with an arrow on top, that gives the app a popover look. Thanks [@leilarrossi](https://github.com/maxogden/menubar/issues/78) for this example.
+
+```javascript main.js
+const { menubar } = require('electron-menubar');
+
+const mb = menubar({
+  browserWindow: {
+    transparent: true,
+    width: 350,
+    height: 550,
+  },
+});
+
+mb.on('ready', () => {
+  console.log('Menubar app is ready.');
+});
+```
+
+<Frame>
+  <img
+    src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/examples/arrow/screenshot.png"
+    alt="Arrow example"
+  />
+</Frame>
+
+## Icon animation
+
+A menubar app that animates the tray icon by swapping images on an interval, useful for showing a "syncing" state while data is being fetched.
+
+```javascript main.js expandable
+const { menubar } = require('electron-menubar');
+
+const mb = menubar();
+
+mb.on('ready', () => {
+  setOkIcon();
+  const trayAnimation = setInterval(frame, 1000);
+  // simulate data fetching
+  sleep(3000)
+    .then(() => {
+      clearInterval(trayAnimation);
+      setOkIcon();
+    })
+    .catch(() => {});
+});
+
+function setOkIcon() {
+  mb.tray.setImage('state-ok-20.png');
+}
+
+function frame() {
+  setTimeout(() => mb.tray.setImage('state-sync-20.png'), 300);
+  setTimeout(() => mb.tray.setImage('state-sync-20-60.png'), 600);
+  setTimeout(() => mb.tray.setImage('state-sync-20-120.png'), 900);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+```
+
+## Native menu
+
+This will create a menubar app with a native menu. Courtesy of [@tslater](https://github.com/maxogden/menubar/issues/178). See [Context Menus](/guides/context-menus) for the code and platform behavior.
+
+<Frame>
+  <img
+    src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/examples/native-menu/screenshot.png"
+    alt="Native menu example"
+  />
+</Frame>
+
+<Note>
+  The example sources import the library with `require('../..')` because they run from inside the repository. In your own app, use `require('electron-menubar')`.
+</Note>

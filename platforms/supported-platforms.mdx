@@ -1,0 +1,145 @@
+---
+title: "Supported platforms: macOS, Windows, and Linux desktops"
+sidebarTitle: "Supported Platforms"
+description: "Platforms where electron-menubar is known to work, verified by end-to-end smoke tests and visual tray rendering tests on macOS, Windows, and Linux desktops."
+---
+
+`electron-menubar` is continuously tested on macOS, Windows, and a range of Linux desktop environments. The tables below list the platforms where it is known to work.
+
+## End-to-end tests
+
+_Continuously verified by [E2E smoke tests](https://github.com/gitify-app/electron-menubar/blob/main/.github/workflows/e2e.yml)._
+
+| Platform | Status |
+| --- | --- |
+| macOS 14 (Sonoma) | ✅ Pass |
+| macOS 15 (Sequoia) | ✅ Pass |
+| macOS 26 (Tahoe) | ✅ Pass |
+| Ubuntu 22.04 | ✅ Pass |
+| Ubuntu 24.04 | ✅ Pass |
+| Ubuntu 26.04 | ✅ Pass |
+| Windows Server 2022 | ✅ Pass |
+| Windows Server 2025 | ✅ Pass |
+
+## Visual tray rendering
+
+_Continuously verified by [visual tray rendering tests](https://github.com/gitify-app/electron-menubar/blob/main/.github/workflows/visual-tray.yml). Each run boots the menubar fixture, screenshots the OS panel, and asserts both the tray icon and the popover window are painted. These checks confirm rendering, not tray-anchored placement. See [Window positioning on Linux](/platforms/linux-window-positioning)._
+
+| Platform | Tray + Window |
+| --- | --- |
+| Linux (Budgie) | ✅ Pass |
+| Linux (Cinnamon) | ✅ Pass |
+| Linux (GNOME) | ✅ Pass |
+| Linux (KDE Plasma) | ✅ Pass |
+| Linux (LXQt) | ✅ Pass |
+| Linux (MATE) | ✅ Pass |
+| Linux (Sway/Waybar) | ✅ Pass |
+| Linux (Tint2) | ✅ Pass |
+| Linux (Xfce) | ✅ Pass |
+| macOS 14 (Sonoma) | ✅ Pass |
+| macOS 15 (Sequoia) | ✅ Pass |
+| macOS 26 (Tahoe) | ✅ Pass |
+| Windows Server 2022 | ✅ Pass |
+| Windows Server 2025 | ✅ Pass |
+
+### Screenshots
+
+<AccordionGroup>
+  <Accordion title="Linux (Budgie)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-budgie.png"
+      alt="linux-budgie screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Linux (Cinnamon)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-cinnamon.png"
+      alt="linux-cinnamon screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Linux (GNOME)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-gnome.png"
+      alt="linux-gnome screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Linux (KDE Plasma)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-kde.png"
+      alt="linux-kde screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Linux (LXQt)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-lxqt.png"
+      alt="linux-lxqt screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Linux (MATE)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-mate.png"
+      alt="linux-mate screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Linux (Sway/Waybar)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-sway.png"
+      alt="linux-sway screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Linux (Tint2)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-tint2.png"
+      alt="linux-tint2 screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Linux (Xfce)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/linux-xfce.png"
+      alt="linux-xfce screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="macOS 14 (Sonoma)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/macos-14.png"
+      alt="macos-14 screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="macOS 15 (Sequoia)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/macos-15.png"
+      alt="macos-15 screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="macOS 26 (Tahoe)">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/macos-26.png"
+      alt="macos-26 screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Windows Server 2022">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/windows-2022.png"
+      alt="windows-2022 screenshot"
+    />
+  </Accordion>
+
+  <Accordion title="Windows Server 2025">
+    <img
+      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/windows-2025.png"
+      alt="windows-2025 screenshot"
+    />
+  </Accordion>
+</AccordionGroup>
