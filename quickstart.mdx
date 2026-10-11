@@ -1,13 +1,14 @@
 ---
-title: "Quickstart: create your first Electron menubar app"
-sidebarTitle: "Quickstart"
-description: "Install electron-menubar, create an app entry file and an HTML page, and run your first tray-based Electron menubar application in three steps."
+title: 'Quickstart: create your first Electron menubar app'
+sidebarTitle: 'Quickstart'
+description: 'Install electron-menubar, create an app entry file and an HTML page, and run your first tray-based Electron menubar application in three steps.'
 ---
 
 `electron-menubar` gives you a tray icon and a popup window with a single `menubar()` call. This guide installs the package and runs a minimal app with Electron.
 
 <Info>
-  `electron-menubar` requires `electron` version 35.0.0 or later as a peer dependency.
+  `electron-menubar` requires `electron` version 35.0.0 or later as a peer
+  dependency.
 </Info>
 
 ## Installation
@@ -27,15 +28,16 @@ pnpm add electron-menubar
     touch myApp.js
     touch index.html
     ```
+
   </Step>
   <Step title="Write your app">
     Fill `index.html` with some HTML, and `myApp.js` like this:
 
     ```javascript myApp.js
     const { menubar } = require('electron-menubar');
-    
+
     const mb = menubar();
-    
+
     mb.on('ready', () => {
       console.log('app is ready');
       // your app code here
@@ -43,6 +45,7 @@ pnpm add electron-menubar
     ```
 
     The package ships both CommonJS and ESM entry points with TypeScript declarations, so you can also use `import { menubar } from 'electron-menubar'`.
+
   </Step>
   <Step title="Run the app">
     Then use `electron` to run the app:
@@ -50,6 +53,7 @@ pnpm add electron-menubar
     ```bash
     electron myApp.js
     ```
+
   </Step>
 </Steps>
 
