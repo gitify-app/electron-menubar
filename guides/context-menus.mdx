@@ -1,7 +1,7 @@
 ---
-title: "Attach a native tray context menu to your menubar app"
-sidebarTitle: "Context Menus"
-description: "Attach a native Electron Menu to the electron-menubar tray icon with contextMenu, and update it on Linux with setContextMenu and refreshContextMenu."
+title: 'Attach a native tray context menu to your menubar app'
+sidebarTitle: 'Context Menus'
+description: 'Attach a native Electron Menu to the electron-menubar tray icon with contextMenu, and update it on Linux with setContextMenu and refreshContextMenu.'
 ---
 
 `electron-menubar` can attach a native Electron `Menu` to the tray icon through the `contextMenu` option. The library handles the platform differences, so left-click still toggles the window where possible.
@@ -40,18 +40,22 @@ app.on('ready', () => {
 
 <Tabs>
   <Tab title="Linux">
-    The menu is bound via `tray.setContextMenu` (required by libappindicator / StatusNotifierItem) and re-published on every show/hide to defeat the indicator's menu cache.
+    The menu is bound via `tray.setContextMenu` (required by libappindicator /
+    StatusNotifierItem) and re-published on every show/hide to defeat the
+    indicator's menu cache.
   </Tab>
   <Tab title="macOS and Windows">
-    The menu pops up on right-click via `tray.popUpContextMenu`, so left-click continues to toggle the window. Combine with `trigger: 'none'` if you want right-click to be the only interaction.
+    The menu pops up on right-click via `tray.popUpContextMenu`, so left-click
+    continues to toggle the window. Combine with `trigger: 'none'` if you want
+    right-click to be the only interaction.
   </Tab>
 </Tabs>
 
 ## Update the menu
 
-| Method | Description |
-| --- | --- |
-| `setContextMenu(menu)` | Replace the tray context menu (auto-re-publishes on Linux). |
+| Method                 | Description                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `setContextMenu(menu)` | Replace the tray context menu (auto-re-publishes on Linux).                                                  |
 | `refreshContextMenu()` | Re-publish the current context menu after mutating its items in place. Required on Linux, a no-op elsewhere. |
 
 See the [native menu example](/guides/examples#native-menu) for a complete app.

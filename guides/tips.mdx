@@ -1,7 +1,7 @@
 ---
-title: "Tips and recipes for electron-menubar applications"
-sidebarTitle: "Tips"
-description: "Practical electron-menubar recipes: open DevTools after load, react to focus-lost, restore previous window focus, attach menus, and avoid open flashes."
+title: 'Tips and recipes for electron-menubar applications'
+sidebarTitle: 'Tips'
+description: 'Practical electron-menubar recipes: open DevTools after load, react to focus-lost, restore previous window focus, attach menus, and avoid open flashes.'
 ---
 
 These recipes cover common tasks in `electron-menubar` apps, from debugging the popup window to smoothing out how it opens.
@@ -17,7 +17,10 @@ const { menubar } = require('electron-menubar');
 
 const mb = menubar();
 
-mb.app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');
+mb.app.commandLine.appendSwitch(
+  'disable-backgrounding-occluded-windows',
+  'true',
+);
 
 mb.on('after-create-window', () => {
   mb.window.openDevTools();

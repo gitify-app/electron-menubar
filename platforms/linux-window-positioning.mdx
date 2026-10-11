@@ -1,7 +1,7 @@
 ---
-title: "Window positioning on Linux: Wayland, X11, and XWayland"
-sidebarTitle: "Linux Positioning"
-description: "Why electron-menubar cannot anchor the popover to the tray icon on native Wayland, how X11 and XWayland differ, and how to restore positioning with a flag."
+title: 'Window positioning on Linux: Wayland, X11, and XWayland'
+sidebarTitle: 'Linux Positioning'
+description: 'Why electron-menubar cannot anchor the popover to the tray icon on native Wayland, how X11 and XWayland differ, and how to restore positioning with a flag.'
 ---
 
 On Linux, where the `electron-menubar` popover appears depends on the display server. The [visual tests](/platforms/supported-platforms) confirm that the tray icon and popover window render. They do **not** assert that the popover is positioned next to the tray icon.
