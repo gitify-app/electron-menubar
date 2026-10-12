@@ -62,7 +62,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@playwright/test": "1.63.0",
+    "@playwright/test": "1.64.0",
     "@types/pngjs": "6.0.5",
     "electron": "44.7.0",
     "oxfmt": "0.72.0",
