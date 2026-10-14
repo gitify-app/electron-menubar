@@ -15,7 +15,7 @@
 </p>
 
 <h5 align="center"><i>formerly known as menubar</i></h5>
-<h4 align="center">High level way to create menubar desktop applications with Electron.</h4>
+<h4 align="center">A high-level way to build menubar apps with Electron.</h4>
 
 <br />
 
