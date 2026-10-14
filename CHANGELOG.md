@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [11.1.2](https://github.com/gitify-app/electron-menubar/compare/v11.1.1...v11.1.2) (2026-10-14)
+
+
+### 🐛 Bug Fixes
+
+* lint docs ([#248](https://github.com/gitify-app/electron-menubar/issues/248)) ([b2a7869](https://github.com/gitify-app/electron-menubar/commit/b2a7869ac60dffab77f9ecd01aaa20dee98bd1d1))
+
+
+### 📚 Documentation
+
+* add Mintlify documentation badge to README ([#250](https://github.com/gitify-app/electron-menubar/issues/250)) ([cbfde7f](https://github.com/gitify-app/electron-menubar/commit/cbfde7f357f7caf669d8f19916fcd1c1556aa4e4))
+* keep the title plain and emoji every section heading ([#261](https://github.com/gitify-app/electron-menubar/issues/261)) ([92b7ef7](https://github.com/gitify-app/electron-menubar/commit/92b7ef7a17bca1fdf4a1405ad7230e0f54533ef6))
+* move Mintlify content into a docs/ directory ([#249](https://github.com/gitify-app/electron-menubar/issues/249)) ([3632766](https://github.com/gitify-app/electron-menubar/commit/36327663729eae2ad43997e7286a12ef82724465))
+* Revise description of menubar application ([6b62418](https://github.com/gitify-app/electron-menubar/commit/6b62418114f673a7782a243a028d5d094986c63a))
+
+
+### 🤖 Continuous Integration
+
+* **renovate:** use the shared Renovate config validator ([#244](https://github.com/gitify-app/electron-menubar/issues/244)) ([2b5850d](https://github.com/gitify-app/electron-menubar/commit/2b5850ddb75ef3ea36dd2859b12e0ed85b902772))
+
 ## [11.1.1](https://github.com/gitify-app/electron-menubar/compare/v11.1.0...v11.1.1) (2026-10-07)
 
 
