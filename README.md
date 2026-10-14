@@ -19,7 +19,7 @@
 
 <br />
 
-## Features
+## 📦 Features
 
 - ⚡️ Quick start for creating menubar applications using Electron.
 - 🚀 Zero runtime dependencies.
@@ -32,7 +32,7 @@
 > [!NOTE]
 > On native Wayland, the desktop compositor controls window placement, so the popover cannot be anchored to the tray icon and is positioned by the desktop (usually centered). This is a Wayland limitation, not something the library can override. Tray-relative positioning works under X11/XWayland. See [window positioning on Linux][platforms] for the detail and a workaround.
 
-## Why electron-menubar?
+## 💡 Why electron-menubar?
 
 `electron-menubar` builds on [max-mapper/menubar][github-upstream-repo], with fixes and controls developed for [Gitify](https://github.com/gitify-app/gitify). The original provides the tray-app foundation. This fork brings more of the platform-specific behavior into the library so applications have less to implement themselves.
 
@@ -47,7 +47,7 @@
 | Packaging                     | Zero runtime dependencies, including a built-in positioner. Ships CommonJS and ESM entry points with TypeScript declarations.                                                                                         |
 | Verification                  | Unit tests, native Electron end-to-end tests on macOS, Windows, and Linux, and visual checks that the tray icon and window render. The [platform report][platforms] includes screenshots and positioning limitations. |
 
-### Popup behavior without platform checks
+### 🪟 Popup behavior without platform checks
 
 Menubar manages popup stacking and focus on every platform. A plain `menubar()` dismisses on click-away and opens above the Windows hidden-icons panel. To keep it open, change one option:
 
@@ -60,20 +60,20 @@ mb.setOption('hideOnBlur', true); // Resume click-away dismissal.
 
 Opening DevTools temporarily keeps the popup open. Closing DevTools restores the latest `hideOnBlur` preference. Options set before window creation also apply when the window is recreated.
 
-#### Migrating from 10.x
+#### 🚚 Migrating from 10.x
 
 These defaults apply starting with 11.0.0. Previously, menubar inferred dismissal from `window.isAlwaysOnTop()`. Use `hideOnBlur: false` for persistent popups instead of `browserWindow.alwaysOnTop: true` or runtime `window.setAlwaysOnTop(true)` calls. `browserWindow.alwaysOnTop` now controls stacking only; it does not disable dismissal. Setting `hideOnBlur: false` also keeps the popup on top on macOS and Linux.
 
 Remove Windows `pop-up-menu` workarounds and DevTools focus handlers from apps. Menubar owns stacking during window creation, showing, preference changes, and DevTools transitions. Apps can still customize DevTools dimensions and layout.
 See the [changelog](CHANGELOG.md) for released changes and the [API documentation](#api-documentation) for all options.
 
-## Installation
+## 🚀 Installation
 
 ```bash
 pnpm add electron-menubar
 ```
 
-## Usage
+## 🔧 Usage
 
 Starting with your own new project, run these commands:
 
@@ -102,17 +102,17 @@ Then use `electron` to run the app:
 $ electron myApp.js
 ```
 
-## Examples
+## 📚 Examples
 
 See [`examples`][examples] folder for a selection of working examples.
 
-## API Documentation
+## 📖 API Documentation
 
-### `Menubar` Class
+### 🧱 `Menubar` Class
 
 The return value of `menubar()` is a `Menubar` class instance, which exposes the following properties and methods.
 
-#### Properties
+#### 🧾 Properties
 
 | Property     | Description                                                                   |
 | ------------ | ----------------------------------------------------------------------------- |
@@ -121,7 +121,7 @@ The return value of `menubar()` is a `Menubar` class instance, which exposes the
 | `tray`       | The [Electron Tray][electron-docs-tray] instance.                             |
 | `positioner` | The `Positioner` instance used to compute the window's on-screen coordinates. |
 
-#### Methods
+#### 🧰 Methods
 
 | Method                           | Description                                                                                                  |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -137,7 +137,7 @@ The return value of `menubar()` is a `Menubar` class instance, which exposes the
 | `destroy()`                      | Tear down the menubar instance.                                                                              |
 | `isDestroyed()`                  | Whether the menubar is currently destroyed.                                                                  |
 
-### `menubar()` Options
+### 🎛️ `menubar()` Options
 
 You can pass an optional options object into the `menubar({ ... })` function:
 
@@ -163,7 +163,7 @@ You can pass an optional options object into the `menubar({ ... })` function:
 | `ignoreDoubleClickEvents` | `true` (macOS only)                                      | Calls `tray.setIgnoreDoubleClickEvents(true)` so an accidental double-click doesn't race the close-on-blur handler and flicker the tray icon. Pass `false` to opt out. No-op on Linux/Windows.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `globalShortcut`          |                                                          | An [Accelerator][electron-docs-accelerator] string registered as a global keyboard shortcut that toggles the menubar window. Unregistered automatically on `destroy()`. Use `mb.setGlobalShortcut(accelerator)` to change or clear it at runtime.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
-### Events
+### 📡 Events
 
 The `Menubar` class is an event emitter:
 
@@ -180,7 +180,7 @@ The `Menubar` class is an event emitter:
 | `after-close`         | After the `.window` (BrowserWindow) property has been deleted.                                                                                                                                                  |
 | `focus-lost`          | Emitted on click-away when `hideOnBlur` is `false` or DevTools is open.                                                                                                                                         |
 
-## Tips
+## 🧠 Tips
 
 - Use `mb.on('after-create-window', callback)` to run things after your app has loaded. For example you could run `mb.window.openDevTools()` to open the developer tools for debugging, or load a different URL with `mb.window.loadURL()`
 - Use `mb.on('focus-lost')` if you would like to perform some operation when using the option `hideOnBlur: false`
@@ -188,7 +188,7 @@ The `Menubar` class is an event emitter:
 - To attach a native context menu, pass it as `contextMenu`: `menubar({ contextMenu })`. The library wires it via `setContextMenu` on Linux and `popUpContextMenu` on right-click on macOS/Windows so left-click still toggles the window. See [this example][examples-native] for more information.
 - To avoid a flash when opening your menubar app, you can disable backgrounding the app using the following: `mb.app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');`
 
-## Acknowledgements
+## 🤝 Acknowledgements
 
 Originally created by [Max][github-upstream-creator] — hard-forked from [max-mapper/menubar][github-upstream-repo].
 

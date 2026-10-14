@@ -1,4 +1,4 @@
-## Before opening issues
+## 🐛 Before opening issues
 
 **If you are asking a question**:
 
@@ -16,7 +16,7 @@ Please provide the following information when opening issues:
 
 Thanks!
 
-## Releases
+## 🚢 Releases
 
 Releases are automated with [release-please](https://github.com/googleapis/release-please) and driven entirely from [Conventional Commits](https://www.conventionalcommits.org/) on `main`:
 
