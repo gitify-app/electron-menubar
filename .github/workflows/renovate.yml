@@ -12,4 +12,4 @@ on:
 
 jobs:
   validate:
-    uses: gitify-app/renovate-config/.github/workflows/renovate-config-validator.yml@ff25d2e54d07344780729f45b6916a1a0d94fbd4 # main
+    uses: gitify-app/renovate-config/.github/workflows/renovate-config-validator.yml@ddeb67b849568c558a80439b300a3dcf9da29810 # main
