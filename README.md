@@ -1,4 +1,4 @@
-<h1 align="center">➖ electron-menubar</h1>
+<h1 align="center">electron-menubar</h1>
 
 <p align="center">
   <a href="https://electron-menubar.gitify.io"><img src="https://img.shields.io/badge/docs-mintlify-18E299?logo=mintlify&amp;logoColor=black" alt="Documentation" /></a>
