@@ -76,5 +76,12 @@
   "peerDependencies": {
     "electron": ">=44.9.1"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.22.1",
+      "onFail": "warn"
+    }
+  },
   "packageManager": "pnpm@12.15.0"
 }
