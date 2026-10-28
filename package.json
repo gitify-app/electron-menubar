@@ -77,11 +77,15 @@
     "electron": ">=44.9.1"
   },
   "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.15.0",
+      "onFail": "download"
+    },
     "runtime": {
       "name": "node",
       "version": "24.22.1",
       "onFail": "warn"
     }
-  },
-  "packageManager": "pnpm@12.15.0"
+  }
 }
