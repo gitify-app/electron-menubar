@@ -289,6 +289,28 @@ jobs:
           allowed_users=anybody
           needs_root_rights=yes
           EOF
+      # xfce4-panel builds its layout from xfconf on startup. On a fresh
+      # profile it shells out to its `migrate` helper to write that layout,
+      # and on a cold runner the helper intermittently fails while xfconfd is
+      # still starting: the panel then comes up with zero panels, so there is
+      # no systray host and no panel pixels at all, and the tray check fails
+      # even though the fixture window still renders (run 40682933359). Seed
+      # the packaged default layout as the panel's xfconf channel so startup
+      # no longer depends on the migration helper. This is the exact layout
+      # `migrate` would have written, so the panel looks the same as before.
+      - name: Configure Xfce panel
+        if: matrix.de == 'xfce'
+        run: |
+          default_xml=/etc/xdg/xfce4/panel/default.xml
+          # Fail loudly rather than silently reintroducing the first-start race
+          # if a future xfce4-panel release moves the packaged layout.
+          if [ ! -f "$default_xml" ]; then
+              echo "::error::packaged xfce4-panel layout not found at $default_xml"
+              exit 1
+          fi
+          panel_xml="${XDG_CONFIG_HOME:-$HOME/.config}/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
+          mkdir -p "$(dirname "$panel_xml")"
+          cp "$default_xml" "$panel_xml"
       - name: Run visual test under ${{ matrix.de }}
         env:
           VISUAL_KEY: ${{ matrix.key }}
