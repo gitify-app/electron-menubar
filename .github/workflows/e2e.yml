@@ -50,15 +50,12 @@ jobs:
         uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/setup@v1.0.0
-        with:
-          install: false
-      - name: Setup Node.js
-        uses: actions/setup-node@v7.1.0
+      - name: Setup pnpm and Node.js
+        uses: pnpm/setup@v3.1.2
         with:
           node-version-file: .nvmrc
-          cache: pnpm
+          cache: true
+          install: false
       - name: Install dependencies
         shell: bash
         run: |
@@ -112,10 +109,12 @@ jobs:
         uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - name: Setup Node.js
-        uses: actions/setup-node@v7.1.0
+      - name: Setup pnpm and Node.js
+        uses: pnpm/setup@v3.1.2
         with:
           node-version-file: .nvmrc
+          cache: true
+          install: false
       - name: Download all platform results
         uses: actions/download-artifact@v8.0.2
         with:
@@ -124,10 +123,6 @@ jobs:
           path: test-results/platforms
       - name: Regenerate PLATFORMS block
         run: node tests/e2e/update-platforms.mts
-      - name: Setup pnpm
-        uses: pnpm/setup@v1.0.0
-        with:
-          install: false
       - name: Format platform report
         run: |
           pnpm install --frozen-lockfile --ignore-scripts
