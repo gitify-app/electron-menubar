@@ -76,5 +76,5 @@
   "peerDependencies": {
     "electron": ">=44.9.1"
   },
-  "packageManager": "pnpm@12.14.0"
+  "packageManager": "pnpm@12.15.0"
 }
