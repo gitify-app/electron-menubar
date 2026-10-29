@@ -31,10 +31,10 @@ jobs:
             label: macOS 14 (Sonoma)
             key: macos-14
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      - uses: pnpm/setup@v3.1.2
         with:
           node-version-file: .nvmrc
           cache: true
@@ -67,7 +67,7 @@ jobs:
         run: pnpm run test:visual
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: visual-${{ matrix.key }}
           path: test-results/visual/
@@ -185,10 +185,10 @@ jobs:
             panel_warmup: 18
             post_ready_delay: 10000
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      - uses: pnpm/setup@v3.1.2
         with:
           node-version-file: .nvmrc
           cache: true
@@ -228,7 +228,7 @@ jobs:
       # 'com.solus-project.budgie-panel' is not installed".
       - name: Install desktop environment (cached)
         if: matrix.cache_apt
-        uses: awalsh128/cache-apt-pkgs-action@553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9 # v1.6.3
+        uses: awalsh128/cache-apt-pkgs-action@v1.6.3
         with:
           packages: ${{ matrix.apt }}
           version: '1.0'
@@ -340,7 +340,7 @@ jobs:
           exit $EXIT
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: visual-${{ matrix.key }}
           path: test-results/visual/
@@ -373,10 +373,10 @@ jobs:
             key: linux-sway
             apt: sway waybar grim
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      - uses: pnpm/setup@v3.1.2
         with:
           node-version-file: .nvmrc
           cache: true
@@ -466,7 +466,7 @@ jobs:
           "
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: visual-${{ matrix.key }}
           path: test-results/visual/
@@ -495,7 +495,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      - uses: pnpm/setup@v3.1.2
         with:
           node-version-file: .nvmrc
           cache: true
@@ -609,7 +609,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+      - uses: pnpm/setup@v3.1.2
         with:
           node-version-file: .nvmrc
           cache: true
@@ -672,17 +672,17 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Setup pnpm and Node.js
-        uses: pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e # v3.1.2
+        uses: pnpm/setup@v3.1.2
         with:
           node-version-file: .nvmrc
           cache: true
           install: false
       - name: Download all visual artifacts
-        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        uses: actions/download-artifact@v8.0.2
         with:
           pattern: visual-*
           merge-multiple: true
@@ -745,7 +745,7 @@ jobs:
           pnpm install --frozen-lockfile --ignore-scripts
           pnpm exec oxfmt PLATFORMS.md
       - name: Open PR if changed
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        uses: peter-evans/create-pull-request@v8.1.1
         with:
           commit-message: 'docs: refresh visual tray rendering table'
           title: 'docs: refresh visual tray rendering table'
