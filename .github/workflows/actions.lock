@@ -4,36 +4,55 @@
 version: 'v0.0.3'
 workflows:
     '.github/workflows/build.yml':
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/checkout@v7.0.1'
+        - 'pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e'
         - 'pnpm/setup@v3.1.2'
     '.github/workflows/e2e.yml':
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/checkout@v7.0.1'
+        - 'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333'
         - 'actions/download-artifact@v8.0.2'
+        - 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9'
         - 'actions/upload-artifact@v7.0.2'
+        - 'peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1'
         - 'peter-evans/create-pull-request@v8.1.1'
+        - 'pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e'
         - 'pnpm/setup@v3.1.2'
     '.github/workflows/lint.yml':
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/checkout@v7.0.1'
+        - 'pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e'
         - 'pnpm/setup@v3.1.2'
     '.github/workflows/publish.yml':
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/checkout@v7.0.1'
+        - 'pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e'
         - 'pnpm/setup@v3.1.2'
     '.github/workflows/release.yml':
+        - 'googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7'
         - 'googleapis/release-please-action@v5.0.0'
     '.github/workflows/renovate.yml': []
     '.github/workflows/test.yml':
+        - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/checkout@v7.0.1'
+        - 'pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e'
         - 'pnpm/setup@v3.1.2'
     '.github/workflows/triage.yml':
+        - 'amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50'
         - 'amannn/action-semantic-pull-request@v6.1.1'
     '.github/workflows/visual-tray.yml':
         - 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1'
         - 'actions/checkout@v7.0.1'
+        - 'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333'
         - 'actions/download-artifact@v8.0.2'
         - 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9'
         - 'actions/upload-artifact@v7.0.2'
+        - 'awalsh128/cache-apt-pkgs-action@553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9'
         - 'awalsh128/cache-apt-pkgs-action@v1.6.3'
+        - 'peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1'
         - 'peter-evans/create-pull-request@v8.1.1'
+        - 'pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e'
         - 'pnpm/setup@v3.1.2'
 dependencies:
     'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9':
@@ -51,6 +70,11 @@ dependencies:
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
+    'actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333':
+        ref: 'v8.0.2'
+        commit: 'sha1-9000827ccba6bdab643e8b6fd33ac0654aef8333'
+        owner_id: 44036562
+        repo_id: 192626254
     'actions/download-artifact@v8.0.2':
         ref: 'v8.0.2'
         commit: 'sha1-9000827ccba6bdab643e8b6fd33ac0654aef8333'
@@ -71,11 +95,24 @@ dependencies:
         commit: 'sha1-cf430e030ddbb5b0abf93d22962f4752f3646cd9'
         owner_id: 44036562
         repo_id: 192625955
+    'amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50':
+        ref: 'v6.1.1'
+        commit: 'sha1-48f256284bd46cdaab1048c3721360e808335d50'
+        owner_id: 4038316
+        repo_id: 220418983
     'amannn/action-semantic-pull-request@v6.1.1':
         ref: 'v6.1.1'
         commit: 'sha1-48f256284bd46cdaab1048c3721360e808335d50'
         owner_id: 4038316
         repo_id: 220418983
+    'awalsh128/cache-apt-pkgs-action@553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9':
+        ref: 'v1.6.3'
+        commit: 'sha1-553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9'
+        owner_id: 2087466
+        repo_id: 408212054
+        uses:
+            - 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9'
+            - 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f'
     'awalsh128/cache-apt-pkgs-action@v1.6.3':
         ref: 'v1.6.3'
         commit: 'sha1-553a35bb8ebd9fcabcb1c9451aa4c98e1b4ca8a9'
@@ -84,16 +121,31 @@ dependencies:
         uses:
             - 'actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9'
             - 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f'
+    'googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7':
+        ref: 'v5.0.0'
+        commit: 'sha1-45996ed1f6d02564a971a2fa1b5860e934307cf7'
+        owner_id: 16785467
+        repo_id: 262236530
     'googleapis/release-please-action@v5.0.0':
         ref: 'v5.0.0'
         commit: 'sha1-45996ed1f6d02564a971a2fa1b5860e934307cf7'
         owner_id: 16785467
         repo_id: 262236530
+    'peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1':
+        ref: 'v8.1.1'
+        commit: 'sha1-5f6978faf089d4d20b00c7766989d076bb2fc7f1'
+        owner_id: 18365890
+        repo_id: 197176365
     'peter-evans/create-pull-request@v8.1.1':
         ref: 'v8.1.1'
         commit: 'sha1-5f6978faf089d4d20b00c7766989d076bb2fc7f1'
         owner_id: 18365890
         repo_id: 197176365
+    'pnpm/setup@fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e':
+        ref: 'v3.1.2'
+        commit: 'sha1-fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e'
+        owner_id: 21320719
+        repo_id: 1235693694
     'pnpm/setup@v3.1.2':
         ref: 'v3.1.2'
         commit: 'sha1-fa36a5ef7dcdefc3a7cb25655c122e00cf6e636e'
