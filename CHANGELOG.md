@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [11.1.3](https://github.com/gitify-app/electron-menubar/compare/v11.1.2...v11.1.3) (2026-10-29)
+
+
+### 🐛 Bug Fixes
+
+* **visual:** seed xfce4-panel layout to avoid an empty panel ([#295](https://github.com/gitify-app/electron-menubar/issues/295)) ([c61613d](https://github.com/gitify-app/electron-menubar/commit/c61613d0675fede64260c673570fa728edbd990b))
+
+
+### 📚 Documentation
+
+* refresh visual tray rendering table ([#291](https://github.com/gitify-app/electron-menubar/issues/291)) ([163866e](https://github.com/gitify-app/electron-menubar/commit/163866eeffa4e8905f7071e71bd279178bb09b30))
+* refresh visual tray rendering table ([#296](https://github.com/gitify-app/electron-menubar/issues/296)) ([2444ee0](https://github.com/gitify-app/electron-menubar/commit/2444ee0291b71489fca21e60eee7f98417e3dca3))
+* refresh visual tray rendering table ([#299](https://github.com/gitify-app/electron-menubar/issues/299)) ([dac280d](https://github.com/gitify-app/electron-menubar/commit/dac280dc0f10c2c19a102f66450681b14db06d3d))
+
+
+### 🤖 Continuous Integration
+
+* enforce hash-pinned GitHub Actions ([#303](https://github.com/gitify-app/electron-menubar/issues/303)) ([f25b68f](https://github.com/gitify-app/electron-menubar/commit/f25b68f5a69eb12e56dedfba8f02d8c952a6b8de))
+
 ## [11.1.2](https://github.com/gitify-app/electron-menubar/compare/v11.1.1...v11.1.2) (2026-10-24)
 
 
