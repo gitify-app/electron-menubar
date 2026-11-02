@@ -62,6 +62,7 @@
     "check": "oxlint && oxfmt --check",
     "check:fix": "oxlint --fix && oxfmt",
     "test": "vitest run",
+    "test:ci": "vitest run --reporter=default --reporter=github-actions",
     "test:e2e": "playwright test --config tests/e2e/playwright.config.ts",
     "test:visual": "node tests/visual/run.mts",
     "typecheck": "tsc --noEmit"

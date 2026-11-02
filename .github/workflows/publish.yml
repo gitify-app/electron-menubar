@@ -28,7 +28,7 @@ jobs:
       - name: Type check
         run: pnpm run typecheck
       - name: Run tests
-        run: pnpm run test
+        run: pnpm run test:ci
       - name: Build library
         run: pnpm run build
       - name: Publish to npm
