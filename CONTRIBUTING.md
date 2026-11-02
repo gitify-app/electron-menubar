@@ -16,6 +16,20 @@ Please provide the following information when opening issues:
 
 Thanks!
 
+## 🧹 Linting & formatting
+
+| Command             | Description                     |
+| ------------------- | ------------------------------- |
+| `pnpm lint`         | Apply lint fixes                |
+| `pnpm lint:check`   | Check lint only                 |
+| `pnpm lint:ci`      | CI gate with GitHub annotations |
+| `pnpm format`       | Format files                    |
+| `pnpm format:check` | Check formatting only           |
+| `pnpm check`        | Check lint and formatting       |
+| `pnpm check:fix`    | Fix lint and formatting         |
+
+CI runs `pnpm lint:ci` (`oxlint --format=github` plus `oxfmt --check`) so lint findings appear as GitHub annotations.
+
 ## 🚢 Releases
 
 Releases are automated with [release-please](https://github.com/googleapis/release-please) and driven entirely from [Conventional Commits](https://www.conventionalcommits.org/) on `main`:
