@@ -23,6 +23,13 @@ import { getWindowPosition } from './util/getWindowPosition';
 const BLUR_HIDE_GRACE_MS = 400;
 
 /**
+ * Window after a blur-triggered hide during which a tray click on Linux is
+ * taken as the click that caused the blur, so it leaves the popup closed. See
+ * {@link Menubar.clicked}.
+ */
+const TRAY_CLICK_AFTER_BLUR_HIDE_MS = 500;
+
+/**
  * Delay before re-asserting the hidden dock after startup. macOS can silently
  * drop an `app.dock.hide()` that races the app's launch activation
  * transition, leaving the dock icon stuck for the whole session. See the
@@ -48,6 +55,7 @@ export class Menubar extends EventEmitter {
   private _rightClickContextMenuBound = false;
   private _warnedNoPositioning = false; // guards the one-time Wayland warning
   private _lastShowTime = 0; // timestamp of last show(), debounces the post-show blur on Windows
+  private _lastBlurHideTime = 0; // timestamp of the last blur-triggered hide, debounces tray clicks on Linux
   private _dockRehideTimeout?: NodeJS.Timeout; // pending post-startup dock re-hide check
   private _repositioning = false; // guards against re-entrant positionWindow calls
   private _showOnAllWorkspaces = false; // `showOnAllWorkspaces` as read when the window was created
@@ -383,6 +391,7 @@ export class Menubar extends EventEmitter {
     // and ignore the transient blur Windows fires right after (see below).
     this.applyWindowFocusBehavior();
     this._lastShowTime = Date.now();
+    this._lastBlurHideTime = 0;
     this._browserWindow.show();
     this._isVisible = true;
     this.emit('after-show');
@@ -586,6 +595,18 @@ export class Menubar extends EventEmitter {
       return this.hideWindow();
     }
 
+    // Linux tray hosts deliver the click on button release over D-Bus, while
+    // pressing the tray icon already moved focus away from the popup. A press
+    // held past the blur timer hides the popup first, and the click would then
+    // reopen it. Treat a click that soon after a blur hide as the toggle.
+    if (
+      process.platform === 'linux' &&
+      Date.now() - this._lastBlurHideTime < TRAY_CLICK_AFTER_BLUR_HIDE_MS
+    ) {
+      this._lastBlurHideTime = 0;
+      return;
+    }
+
     this._cachedBounds = bounds || this._cachedBounds;
     await this.showWindow(this._cachedBounds);
   };
@@ -703,6 +724,7 @@ export class Menubar extends EventEmitter {
         this._blurTimeout = null;
         if (this.shouldHideOnBlur()) {
           this.hideWindow();
+          this._lastBlurHideTime = Date.now();
         }
       }, 100);
     });
