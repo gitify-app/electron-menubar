@@ -942,6 +942,66 @@ describe('Menubar blur-to-hide behavior', () => {
     },
   );
 
+  const hideByBlurThenClick = async (platform: string, clickDelay: number) => {
+    Object.defineProperty(process, 'platform', { value: platform });
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    vi.useFakeTimers();
+    await mb.showWindow();
+    vi.advanceTimersByTime(1000);
+    (mb.window!.show as Mock).mockClear();
+
+    // Pressing the tray icon blurs the popup; the click arrives on release.
+    findHandler(mb.window!, 'blur')!();
+    vi.advanceTimersByTime(100);
+    expect(mb.window!.hide).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(clickDelay);
+    await findHandler(mb.tray as unknown as BrowserWindow, 'click')!();
+
+    return mb;
+  };
+
+  it('keeps the popup closed when a Linux tray click lands just after the blur hide', async () => {
+    const mb = await hideByBlurThenClick('linux', 250);
+
+    expect(mb.window!.show).not.toHaveBeenCalled();
+  });
+
+  it('reopens the popup on a later Linux tray click', async () => {
+    const mb = await hideByBlurThenClick('linux', 1000);
+
+    expect(mb.window!.show).toHaveBeenCalledTimes(1);
+  });
+
+  it('only absorbs one Linux tray click per blur hide', async () => {
+    const mb = await hideByBlurThenClick('linux', 50);
+    await findHandler(mb.tray as unknown as BrowserWindow, 'click')!();
+
+    expect(mb.window!.show).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops absorbing Linux tray clicks once the popup is shown another way', async () => {
+    const mb = await hideByBlurThenClick('linux', 1000);
+    (mb.window!.show as Mock).mockClear();
+
+    findHandler(mb.window!, 'blur')!();
+    vi.advanceTimersByTime(100);
+    await mb.showWindow();
+    await findHandler(mb.tray as unknown as BrowserWindow, 'click')!();
+    await findHandler(mb.tray as unknown as BrowserWindow, 'click')!();
+
+    expect(mb.window!.show).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['darwin', 'win32'])(
+    'reopens on a tray click just after a blur hide on %s',
+    async (platform) => {
+      const mb = await hideByBlurThenClick(platform, 250);
+
+      expect(mb.window!.show).toHaveBeenCalledTimes(1);
+    },
+  );
+
   it('ignores the transient post-show blur on Windows (gitify-app/gitify#3064)', async () => {
     Object.defineProperty(process, 'platform', { value: 'win32' });
     const mb = new Menubar(app, { preloadWindow: true });
