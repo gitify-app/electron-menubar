@@ -33,6 +33,7 @@ _Continuously verified by [visual tray rendering tests](.github/workflows/visual
 | Linux (Xfce)        | ✅ Pass       | <details><summary>view</summary><img src=".github/visual-screenshots/linux-xfce.png" width="600" alt="linux-xfce screenshot"></details>         |
 | macOS 15 (Sequoia)  | ✅ Pass       | <details><summary>view</summary><img src=".github/visual-screenshots/macos-15.png" width="600" alt="macos-15 screenshot"></details>             |
 | macOS 26 (Tahoe)    | ✅ Pass       | <details><summary>view</summary><img src=".github/visual-screenshots/macos-26.png" width="600" alt="macos-26 screenshot"></details>             |
+| macOS 27            | ✅ Pass       | <details><summary>view</summary><img src=".github/visual-screenshots/macos-27.png" width="600" alt="macos-27 screenshot"></details>             |
 | Windows Server 2022 | ✅ Pass       | <details><summary>view</summary><img src=".github/visual-screenshots/windows-2022.png" width="600" alt="windows-2022 screenshot"></details>     |
 | Windows Server 2025 | ✅ Pass       | <details><summary>view</summary><img src=".github/visual-screenshots/windows-2025.png" width="600" alt="windows-2025 screenshot"></details>     |
 
