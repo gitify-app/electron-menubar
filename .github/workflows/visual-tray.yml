@@ -27,9 +27,6 @@ jobs:
           - runner: macos-15
             label: macOS 15 (Sequoia)
             key: macos-15
-          - runner: macos-14
-            label: macOS 14 (Sonoma)
-            key: macos-14
     steps:
       - uses: actions/checkout@v7.0.1
         with:
