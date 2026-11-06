@@ -1,0 +1,30 @@
+.github/workflows/e2e.yml
+  h_ac004aadb63da9 23-25,39,42,45,129,136,142-144
+.github/workflows/visual-tray.yml
+  h_ac004aadb63da9 24-26,746,753,761
+PLATFORMS.md
+  h_ac004aadb63da9 7-16,24-39
+docs/platforms/supported-platforms.mdx
+  h_ac004aadb63da9 11-12,15-26,30-31,34-49,131-137,152-153
+tests/e2e/update-platforms.mts
+  h_ac004aadb63da9 21-35
+tests/shared/update-platforms.mts
+  h_ac004aadb63da9 16,20,44,47-55,57-61,63-67,69-72,74-80
+tests/shared/update-platforms.spec.ts
+  h_ac004aadb63da9 1-125
+tests/visual/update-platforms.mts
+  h_ac004aadb63da9 19-42
+vitest.config.ts
+  h_ac004aadb63da9 5-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d2806feca1e1a00ef101ba019483ef9d475f6588",
+  "prompts": {},
+  "humans": {
+    "h_ac004aadb63da9": {
+      "author": "Adam Setch <adam.setch@outlook.com>"
+    }
+  }
+}
