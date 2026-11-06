@@ -21,6 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - runner: xcode-27
+            label: macOS 27 (Golden Gate)
+            key: macos-27
           - runner: macos-26
             label: macOS 26 (Tahoe)
             key: macos-26
@@ -740,14 +743,14 @@ jobs:
       - name: Format platform report
         run: |
           pnpm install --frozen-lockfile --ignore-scripts
-          pnpm exec oxfmt PLATFORMS.md
+          pnpm exec oxfmt PLATFORMS.md docs/platforms/supported-platforms.mdx
       - name: Open PR if changed
         uses: peter-evans/create-pull-request@v8.1.1
         with:
           commit-message: 'docs: refresh visual tray rendering table'
           title: 'docs: refresh visual tray rendering table'
           body: |
-            Auto-generated update to `PLATFORMS.md` from the latest visual tray rendering run on `main`.
+            Auto-generated update to `PLATFORMS.md` and the docs site's supported platforms page from the latest visual tray rendering run on `main`.
 
             Source: [Visual Tray workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
           branch: chore/update-visual-platforms-table
@@ -755,5 +758,6 @@ jobs:
           delete-branch: true
           add-paths: |
             PLATFORMS.md
+            docs/platforms/supported-platforms.mdx
             .github/visual-screenshots/*.png
           sign-commits: true

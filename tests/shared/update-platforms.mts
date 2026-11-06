@@ -13,9 +13,11 @@ export interface UpdatePlatformsOptions<T extends PlatformResult> {
   start: string;
   end: string;
   buildBlock: (results: T[]) => string;
+  buildDocsBlock: (results: T[]) => string;
 }
 
 const TARGET_PATH = 'PLATFORMS.md';
+const DOCS_PATH = 'docs/platforms/supported-platforms.mdx';
 
 // Fixed inputs only. The workflows invoke these scripts with no arguments, so
 // deriving filesystem paths from `argv` was an unused taint source Sonar
@@ -39,27 +41,42 @@ export const updatePlatforms = <T extends PlatformResult>({
   start,
   end,
   buildBlock,
+  buildDocsBlock,
 }: UpdatePlatformsOptions<T>): void => {
   const results = readResults<T>(resultsDir);
-  const block = buildBlock(results);
+  const targets = [
+    { path: TARGET_PATH, start, end, block: buildBlock(results) },
+    {
+      path: DOCS_PATH,
+      start: start.replace('<!-- ', '{/* ').replace(' -->', ' */}'),
+      end: end.replace('<!-- ', '{/* ').replace(' -->', ' */}'),
+      block: buildDocsBlock(results),
+    },
+  ];
 
-  const original = readFileSync(TARGET_PATH, 'utf8');
-  const startIdx = original.indexOf(start);
-  const endIdx = original.indexOf(end);
+  // Validate both documents before writing either one.
+  const updates = targets.map(({ path, start, end, block }) => {
+    const original = readFileSync(path, 'utf8');
+    const startIdx = original.indexOf(start);
+    const endIdx = original.indexOf(end);
 
-  if (startIdx === -1 || endIdx === -1) {
-    console.error(`markers ${start} / ${end} not found in ${TARGET_PATH}`);
-    process.exit(1);
+    if (startIdx === -1 || endIdx < startIdx) {
+      throw new Error(
+        `markers ${start} / ${end} not found or out of order in ${path}`,
+      );
+    }
+
+    const updated =
+      original.slice(0, startIdx) + block + original.slice(endIdx + end.length);
+    return { path, original, updated };
+  });
+
+  for (const { path, original, updated } of updates) {
+    if (updated === original) {
+      console.log(`${path} unchanged`);
+      continue;
+    }
+    writeFileSync(path, updated);
+    console.log(`${path} updated with ${results.length} platform(s)`);
   }
-
-  const updated =
-    original.slice(0, startIdx) + block + original.slice(endIdx + end.length);
-
-  if (updated === original) {
-    console.log(`${TARGET_PATH} unchanged`);
-    process.exit(0);
-  }
-
-  writeFileSync(TARGET_PATH, updated);
-  console.log(`${TARGET_PATH} updated with ${results.length} platform(s)`);
 };
