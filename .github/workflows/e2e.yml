@@ -26,9 +26,6 @@ jobs:
           - runner: macos-15
             label: macOS 15 (Sequoia)
             key: macos-15
-          - runner: macos-14
-            label: macOS 14 (Sonoma)
-            key: macos-14
           - runner: windows-2025
             label: Windows Server 2025
             key: windows-2025
