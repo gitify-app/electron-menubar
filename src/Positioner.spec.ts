@@ -84,6 +84,18 @@ describe('Positioner.calculate', () => {
     expect(positioner.calculate('topRight')).toEqual({ x: -1080, y: 0 });
   });
 
+  it('places a given size instead of the current one', () => {
+    const win = createWindow([398, 600]);
+    const positioner = new Positioner(win);
+    expect(
+      positioner.calculate('bottomRight', TRAY_BOUNDS, {
+        width: 400,
+        height: 600,
+      }),
+    ).toEqual({ x: 1520, y: 480 });
+    expect(win.getSize).not.toHaveBeenCalled();
+  });
+
   it('throws a TypeError when called without a position', () => {
     const positioner = new Positioner(createWindow());
     expect(() =>

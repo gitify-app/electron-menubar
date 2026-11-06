@@ -3,6 +3,7 @@ import {
   autoUpdater,
   BrowserWindow,
   globalShortcut,
+  screen,
   Tray,
 } from 'electron';
 import {
@@ -29,6 +30,11 @@ const findHandler = (
   const call = (win.on as Mock).mock.calls.find(([name]) => name === event);
   return call?.[1] as ((...args: unknown[]) => void) | undefined;
 };
+
+const setBoundsSizes = (win: BrowserWindow): number[][] =>
+  (win.setBounds as Mock<(bounds: Electron.Rectangle) => void>).mock.calls.map(
+    ([bounds]) => [bounds.width, bounds.height],
+  );
 
 describe('Menubar', () => {
   let mb: Menubar | undefined;
@@ -302,7 +308,7 @@ describe('Menubar showOnAllWorkspaces option', () => {
       const [hide] = (win.hide as Mock).mock.invocationCallOrder;
       const [, firstJoin, leave, rejoin] =
         setWorkspaces.mock.invocationCallOrder;
-      const lastSetPosition = (win.setPosition as Mock).mock.invocationCallOrder
+      const lastSetPosition = (win.setBounds as Mock).mock.invocationCallOrder
         .filter((order) => order < secondShow)
         .at(-1)!;
       expect(firstJoin).toBeLessThan(firstShow);
@@ -470,9 +476,9 @@ describe('Menubar toggleWindow and recenterOnTray', () => {
     const mb = new Menubar(app, { preloadWindow: true });
     return new Promise<void>((resolve) => {
       mb.on('after-create-window', () => {
-        (mb.window!.setPosition as Mock).mockClear();
+        (mb.window!.setBounds as Mock).mockClear();
         mb.recenterOnTray();
-        expect(mb.window!.setPosition).toHaveBeenCalled();
+        expect(mb.window!.setBounds).toHaveBeenCalled();
         resolve();
       });
     });
@@ -809,26 +815,156 @@ describe('Menubar repositioning on resize', () => {
 
     await mb.showWindow();
 
-    expect(mb.window!.setPosition).toHaveBeenCalledTimes(1);
-    const [x, y] = (mb.window!.setPosition as Mock).mock.calls[0] as [
-      number,
-      number,
-    ];
+    expect(mb.window!.setBounds).toHaveBeenCalledTimes(1);
+    const { x, y, width, height } = (mb.window!.setBounds as Mock).mock
+      .calls[0][0] as Electron.Rectangle;
     expect(Number.isInteger(x)).toBe(true);
     expect(Number.isInteger(y)).toBe(true);
+    expect([width, height]).toEqual([400, 400]);
   });
 
-  it('repositions the window when it resizes (e.g. via `setSize`)', async () => {
+  it('repositions the window when the app resizes it (e.g. via `setSize`)', async () => {
     const mb = new Menubar(app, { preloadWindow: true });
-    await new Promise<void>((resolve) => mb.on('ready', () => resolve()));
+    await ready(mb);
     await mb.showWindow();
 
-    const onResize = findHandler(mb.window!, 'resize');
+    const win = mb.window!;
+    const onResize = findHandler(win, 'resize');
     expect(onResize, 'a resize handler should be registered').toBeDefined();
 
+    (win.getSize as Mock).mockReturnValue([800, 600]);
     onResize!();
 
-    expect(mb.window!.setPosition).toHaveBeenCalledTimes(2);
+    expect(win.setBounds).toHaveBeenCalledTimes(2);
+    expect((win.setBounds as Mock).mock.calls[1][0]).toMatchObject({
+      width: 800,
+      height: 600,
+    });
+  });
+
+  it('keeps a small resize at an integer scale factor', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    await mb.showWindow();
+
+    const win = mb.window!;
+    (win.getSize as Mock).mockReturnValue([403, 400]);
+    findHandler(win, 'resize')!();
+
+    expect(setBoundsSizes(win)).toEqual([
+      [400, 400],
+      [403, 400],
+    ]);
+  });
+
+  describe('at a fractional scale factor', () => {
+    beforeEach(() => {
+      const fractional = {
+        bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+        workArea: { x: 0, y: 0, width: 1920, height: 1080 },
+        scaleFactor: 1.453125,
+      };
+      (screen.getDisplayMatching as Mock).mockReturnValue(fractional);
+    });
+
+    afterEach(() => {
+      (screen.getDisplayMatching as Mock).mockReset();
+      (screen.getDisplayMatching as Mock).mockReturnValue({
+        bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+        workArea: { x: 0, y: 0, width: 1920, height: 1080 },
+        scaleFactor: 1,
+      });
+    });
+
+    it('ignores the resize its own move causes', async () => {
+      const mb = new Menubar(app, { preloadWindow: true });
+      await ready(mb);
+      await mb.showWindow();
+
+      const win = mb.window!;
+      // XWayland at a fractional scale rounds the size up on a move, then
+      // emits `resize`. Repositioning on it loops forever.
+      (win.getSize as Mock).mockReturnValue([402, 402]);
+      findHandler(win, 'resize')!();
+
+      expect(win.setBounds).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the held size across shows instead of adopting rounding drift', async () => {
+      const mb = new Menubar(app, { preloadWindow: true });
+      await ready(mb);
+      await mb.showWindow();
+
+      const win = mb.window!;
+      (win.getSize as Mock).mockReturnValue([402, 402]);
+      await mb.showWindow();
+      (win.getSize as Mock).mockReturnValue([404, 403]);
+      await mb.showWindow();
+
+      expect(setBoundsSizes(win)).toEqual([
+        [400, 400],
+        [400, 400],
+        [400, 400],
+      ]);
+    });
+
+    it('keeps the held width when only the height changes', async () => {
+      const mb = new Menubar(app, { preloadWindow: true });
+      await ready(mb);
+      await mb.showWindow();
+
+      const win = mb.window!;
+      // The width reads with 2 DIPs of drift; adopting it would widen the
+      // window on every height change.
+      (win.getSize as Mock).mockReturnValue([402, 600]);
+      findHandler(win, 'resize')!();
+
+      expect(setBoundsSizes(win).at(-1)).toEqual([400, 600]);
+    });
+
+    it('anchors the size it applies, not the size it read', async () => {
+      const mb = new Menubar(app, { preloadWindow: true });
+      await ready(mb);
+      await mb.showWindow();
+
+      const win = mb.window!;
+      // A 2 DIP narrower width counts as drift and is restored to the held
+      // 400; the position must be computed for 400 too, or the right edge
+      // lands 2 DIPs past the work area.
+      (win.getSize as Mock).mockReturnValue([398, 600]);
+      findHandler(win, 'resize')!();
+
+      const { x, width } = (win.setBounds as Mock).mock.calls.at(-1)![0];
+      expect(width).toBe(400);
+      expect(x + width).toBe(1920);
+    });
+
+    it('repositions on a resize larger than drift', async () => {
+      const mb = new Menubar(app, { preloadWindow: true });
+      await ready(mb);
+      await mb.showWindow();
+
+      const win = mb.window!;
+      (win.getSize as Mock).mockReturnValue([800, 600]);
+      findHandler(win, 'resize')!();
+
+      expect(setBoundsSizes(win).at(-1)).toEqual([800, 600]);
+    });
+  });
+
+  it('holds the size of a recreated window afresh', async () => {
+    const mb = new Menubar(app, { preloadWindow: true });
+    await ready(mb);
+    await mb.showWindow();
+
+    const first = mb.window!;
+    (first.getSize as Mock).mockReturnValue([800, 600]);
+    findHandler(first, 'resize')!();
+    findHandler(first, 'closed')!();
+
+    await mb.showWindow();
+
+    expect(setBoundsSizes(mb.window!)).toEqual([[400, 400]]);
   });
 });
 
@@ -857,7 +993,7 @@ describe('Menubar Wayland positioning warning', () => {
     const mb = new Menubar(app, { preloadWindow: true });
     await ready(mb);
 
-    // Simulate native Wayland: the compositor ignores `setPosition`, so the
+    // Simulate native Wayland: the compositor ignores the move, so the
     // window reports a position that diverges from what we requested.
     (mb.window!.getPosition as Mock).mockReturnValue([0, 0]);
 
@@ -875,7 +1011,7 @@ describe('Menubar Wayland positioning warning', () => {
     const mb = new Menubar(app, { preloadWindow: true });
     await ready(mb);
 
-    // Default mock: `getPosition` echoes the value passed to `setPosition`.
+    // Default mock: `getPosition` echoes the position passed to `setBounds`.
     await mb.showWindow();
 
     expect(warn).not.toHaveBeenCalled();
@@ -1313,7 +1449,7 @@ describe('Menubar positionWindow re-entrancy', () => {
     vi.clearAllMocks();
   });
 
-  it('does not recurse when `setPosition` synchronously emits `resize` (gitify-app/gitify#3064)', async () => {
+  it('does not recurse when moving the window synchronously emits `resize` (gitify-app/gitify#3064)', async () => {
     const mb = new Menubar(app, { preloadWindow: true });
     await ready(mb);
 
@@ -1321,18 +1457,23 @@ describe('Menubar positionWindow re-entrancy', () => {
     const onResize = findHandler(win, 'resize');
     expect(onResize, 'a resize handler should be registered').toBeDefined();
 
-    // Windows dispatches WM_SIZE inline, so `setPosition` can re-enter
+    // Windows dispatches WM_SIZE inline, so a move can re-enter
     // `positionWindow` via the `resize` listener. Unguarded this recurses
-    // until the stack blows, wedging the main process.
+    // until the stack blows, wedging the main process. Grow the window past
+    // the drift tolerance on each move so only the re-entrancy guard stops it.
     let depth = 0;
     let maxDepth = 0;
-    (win.setPosition as Mock).mockImplementation(() => {
+    let width = 400;
+    (win.setBounds as Mock).mockImplementation(() => {
       depth += 1;
       maxDepth = Math.max(maxDepth, depth);
+      width += 10;
+      (win.getSize as Mock).mockReturnValue([width, 400]);
       onResize!();
       depth -= 1;
     });
 
+    (win.getSize as Mock).mockReturnValue([800, 600]);
     expect(() => onResize!()).not.toThrow();
     expect(maxDepth).toBe(1);
   });
@@ -1343,10 +1484,11 @@ describe('Menubar positionWindow re-entrancy', () => {
     await mb.showWindow();
 
     const win = mb.window!;
-    const before = (win.setPosition as Mock).mock.calls.length;
+    const before = (win.setBounds as Mock).mock.calls.length;
 
+    (win.getSize as Mock).mockReturnValue([800, 600]);
     findHandler(win, 'resize')!();
 
-    expect((win.setPosition as Mock).mock.calls).toHaveLength(before + 1);
+    expect((win.setBounds as Mock).mock.calls).toHaveLength(before + 1);
   });
 });
