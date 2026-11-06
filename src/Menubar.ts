@@ -7,6 +7,7 @@ import {
   BrowserWindow,
   globalShortcut,
   type Menu,
+  screen,
   Tray,
 } from 'electron';
 
@@ -38,6 +39,15 @@ const TRAY_CLICK_AFTER_BLUR_HIDE_MS = 500;
 const DOCK_REHIDE_DELAY_MS = 2_000;
 
 /**
+ * Largest size change per dimension, in DIPs, taken as rounding drift from
+ * moving the window on a display with a fractional scale factor. A move there
+ * changes each dimension by up to 2 DIPs. See {@link Menubar.holdSize}.
+ */
+const FRACTIONAL_SCALE_DRIFT = 4;
+
+type Size = { width: number; height: number };
+
+/**
  * The main Menubar class.
  */
 export class Menubar extends EventEmitter {
@@ -58,6 +68,7 @@ export class Menubar extends EventEmitter {
   private _lastBlurHideTime = 0; // timestamp of the last blur-triggered hide, debounces tray clicks on Linux
   private _dockRehideTimeout?: NodeJS.Timeout; // pending post-startup dock re-hide check
   private _repositioning = false; // guards against re-entrant positionWindow calls
+  private _heldSize?: Size; // size requested on each move, see holdSize
   private _showOnAllWorkspaces = false; // `showOnAllWorkspaces` as read when the window was created
   private _tray?: Tray;
 
@@ -255,8 +266,13 @@ export class Menubar extends EventEmitter {
       return;
     }
     const bounds = this._tray.getBounds();
-    const { x, y } = this.positioner.calculate('trayCenter', bounds);
-    this._browserWindow.setPosition(Math.round(x), Math.round(y));
+    const size = this.holdSize(this._browserWindow);
+    const { x, y } = this.positioner.calculate('trayCenter', bounds, size);
+    this._browserWindow.setBounds({
+      x: Math.round(x),
+      y: Math.round(y),
+      ...size,
+    });
   }
 
   /**
@@ -409,7 +425,7 @@ export class Menubar extends EventEmitter {
       return;
     }
 
-    // `setPosition` below can make Windows emit `resize` synchronously, which
+    // Moving the window below can make Windows emit `resize` synchronously, which
     // re-enters this method through the window's `resize` listener. Each pass
     // nudges the window again, so the recursion never unwinds: the main
     // process wedges with the event loop blocked and the window grows past
@@ -425,6 +441,70 @@ export class Menubar extends EventEmitter {
       this._repositioning = false;
     }
   };
+
+  /**
+   * Re-anchor the window after the app resizes it (e.g. via `setSize`).
+   * Ignores the resize that moving the window itself causes; see
+   * {@link holdSize}.
+   */
+  private readonly onWindowResize = (): void => {
+    if (!this._browserWindow) {
+      return;
+    }
+    // On X11 with fractional display scaling, a move can emit `resize` a tick
+    // later because the window's size changed by a pixel or two.
+    // Repositioning on that echo moves the window again, which echoes again:
+    // the window grows thousands of pixels a second until the GPU process
+    // crashes and the main process stops responding. The re-entrancy guard in
+    // positionWindow can't catch it because the echo arrives asynchronously.
+    const [width, height] = this._browserWindow.getSize();
+    const held = this._heldSize;
+    const drift = this.sizeDrift(this._browserWindow);
+    if (
+      held &&
+      Math.abs(width - held.width) <= drift &&
+      Math.abs(height - held.height) <= drift
+    ) {
+      return;
+    }
+    this.positionWindow();
+  };
+
+  /**
+   * Pick the size to apply with the next move and remember it.
+   *
+   * On X11 with fractional display scaling, `setPosition` grows the window by
+   * a pixel or two per call, and so does `setBounds` with the size `getSize`
+   * reports, because each conversion between DIPs and device pixels rounds
+   * up. That drift often lands without a `resize` event, so only the size can
+   * tell it apart: a dimension within {@link sizeDrift} of the held size keeps
+   * the held value, and any other value came from the app and becomes the new
+   * held one.
+   */
+  private holdSize(win: BrowserWindow): Size {
+    const [width, height] = win.getSize();
+    const held = this._heldSize;
+    const drift = this.sizeDrift(win);
+    const size: Size = {
+      width: held && Math.abs(width - held.width) <= drift ? held.width : width,
+      height:
+        held && Math.abs(height - held.height) <= drift ? held.height : height,
+    };
+    this._heldSize = size;
+    return size;
+  }
+
+  /**
+   * Size change per dimension, in DIPs, that moving the window can cause.
+   * Rounding drift only happens at a fractional scale factor, so on any other
+   * display every size change counts as the app's. At a fractional scale, an
+   * app resize of up to this many DIPs is indistinguishable from drift and is
+   * not kept.
+   */
+  private sizeDrift(win: BrowserWindow): number {
+    const { scaleFactor } = screen.getDisplayMatching(win.getBounds());
+    return Number.isInteger(scaleFactor) ? 0 : FRACTIONAL_SCALE_DRIFT;
+  }
 
   /**
    * Compute and apply the tray-anchored position. Always call through
@@ -453,9 +533,13 @@ export class Menubar extends EventEmitter {
         process.platform === 'win32' ? 'bottomRight' : 'topRight';
     }
 
+    // Place the size that is about to be applied, which can differ from the
+    // current one by rounding drift.
+    const size = this.holdSize(this._browserWindow);
     const position = this.positioner.calculate(
       this._options.windowPosition || noBoundsPosition,
       trayPos,
+      size,
     ) as { x: number; y: number };
 
     // Not using `||` because x and y can be zero.
@@ -468,14 +552,14 @@ export class Menubar extends EventEmitter {
         ? this._options.browserWindow.y
         : position.y;
 
-    // `.setPosition` crashed on non-integers
+    // Electron's window move APIs crashed on non-integers
     // https://github.com/maxogden/menubar/issues/233
     const targetX = Math.round(x);
     const targetY = Math.round(y);
-    this._browserWindow.setPosition(targetX, targetY);
+    this._browserWindow.setBounds({ x: targetX, y: targetY, ...size });
 
     // Native Wayland gives an application no way to position its own window:
-    // `setPosition` is a no-op and `getPosition` reads back [0, 0]
+    // moving the window is a no-op and `getPosition` reads back [0, 0]
     // (https://github.com/electron/electron/issues/40886). The compositor
     // decides where the window lands, usually centered, so the popover can't
     // be anchored to the tray. Detect that the move didn't take and warn once,
@@ -762,7 +846,7 @@ export class Menubar extends EventEmitter {
     // Re-anchor the window to the tray when its size changes (e.g. via
     // `mb.window.setSize(...)`), so the window doesn't end up clipped under
     // the taskbar. https://github.com/maxogden/menubar/issues/349
-    this._browserWindow.on('resize', this.positionWindow);
+    this._browserWindow.on('resize', this.onWindowResize);
 
     this.emit('before-load');
 
@@ -810,6 +894,7 @@ export class Menubar extends EventEmitter {
 
   private windowClear(): void {
     this._browserWindow = undefined;
+    this._heldSize = undefined;
     this.emit('after-close');
   }
 }
