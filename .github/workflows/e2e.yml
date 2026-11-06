@@ -20,6 +20,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - runner: xcode-27
+            label: macOS 27
+            key: macos-27
           - runner: macos-26
             label: macOS 26 (Tahoe)
             key: macos-26
