@@ -928,15 +928,16 @@ describe('Menubar repositioning on resize', () => {
       await mb.showWindow();
 
       const win = mb.window!;
+      const calculate = vi.spyOn(mb.positioner, 'calculate');
       // A 2 DIP narrower width counts as drift and is restored to the held
-      // 400; the position must be computed for 400 too, or the right edge
-      // lands 2 DIPs past the work area.
+      // 400; the position must be computed for 400 too, or a right-anchored
+      // window lands 2 DIPs past the work area.
       (win.getSize as Mock).mockReturnValue([398, 600]);
       findHandler(win, 'resize')!();
 
-      const { x, width } = (win.setBounds as Mock).mock.calls.at(-1)![0];
-      expect(width).toBe(400);
-      expect(x + width).toBe(1920);
+      const { width, height } = (win.setBounds as Mock).mock.calls.at(-1)![0];
+      expect([width, height]).toEqual([400, 600]);
+      expect(calculate.mock.calls.at(-1)![2]).toEqual({ width, height });
     });
 
     it('repositions on a resize larger than drift', async () => {
