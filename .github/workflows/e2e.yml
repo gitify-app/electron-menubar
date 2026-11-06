@@ -21,7 +21,7 @@ jobs:
       matrix:
         include:
           - runner: xcode-27
-            label: macOS 27
+            label: macOS 27 (Golden Gate)
             key: macos-27
           - runner: macos-26
             label: macOS 26 (Tahoe)
@@ -36,13 +36,13 @@ jobs:
             label: Windows Server 2022
             key: windows-2022
           - runner: ubuntu-26.04
-            label: Ubuntu 26.04
+            label: Ubuntu 26.04 (Resolute Raccoon)
             key: ubuntu-26.04
           - runner: ubuntu-24.04
-            label: Ubuntu 24.04
+            label: Ubuntu 24.04 (Noble Numbat)
             key: ubuntu-24.04
           - runner: ubuntu-22.04
-            label: Ubuntu 22.04
+            label: Ubuntu 22.04 (Jammy Jellyfish)
             key: ubuntu-22.04
 
     steps:

@@ -22,7 +22,7 @@ jobs:
       matrix:
         include:
           - runner: xcode-27
-            label: macOS 27
+            label: macOS 27 (Golden Gate)
             key: macos-27
           - runner: macos-26
             label: macOS 26 (Tahoe)
