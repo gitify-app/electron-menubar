@@ -8,6 +8,7 @@ _Continuously verified by [E2E smoke tests](.github/workflows/e2e.yml)._
 | ------------------- | ------- |
 | macOS 15 (Sequoia)  | ✅ Pass |
 | macOS 26 (Tahoe)    | ✅ Pass |
+| macOS 27            | ✅ Pass |
 | Ubuntu 22.04        | ✅ Pass |
 | Ubuntu 24.04        | ✅ Pass |
 | Ubuntu 26.04        | ✅ Pass |
