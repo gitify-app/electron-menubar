@@ -1,7 +1,5 @@
 # Platforms where `menubar` is known to work
 
-macOS 14 (Sonoma) is no longer continuously tested because GitHub [retired its macOS 14 hosted runners on November 2, 2026](https://github.com/actions/runner-images/issues/15226). This changes CI coverage, not the library's runtime compatibility requirements.
-
 <!-- platforms:start -->
 
 _Continuously verified by [E2E smoke tests](.github/workflows/e2e.yml)._
