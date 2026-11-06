@@ -1,0 +1,20 @@
+tests/visual/capture-ready.spec.ts
+  h_ac004aadb63da9 1-91
+tests/visual/capture-ready.ts
+  h_ac004aadb63da9 1-57
+tests/visual/run.mts
+  h_ac004aadb63da9 9-14,156-168,170,174,208,237-241
+vitest.config.ts
+  h_ac004aadb63da9 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4fd5d95afd6d1d5d23041dfbfb6253a40b3bb28",
+  "prompts": {},
+  "humans": {
+    "h_ac004aadb63da9": {
+      "author": "Adam Setch <adam.setch@outlook.com>"
+    }
+  }
+}
