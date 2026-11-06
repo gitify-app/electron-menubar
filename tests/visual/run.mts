@@ -6,6 +6,12 @@ import { join, win32 } from 'node:path';
 
 import { PNG } from 'pngjs';
 
+import {
+  type Bounds,
+  type Rect,
+  waitForCaptureReady,
+} from './capture-ready.ts';
+
 // `electron`, required outside the Electron runtime, resolves to the binary
 // path. createRequire keeps that CJS behaviour in this ESM (.mts) module.
 const require = createRequire(import.meta.url);
@@ -118,18 +124,6 @@ const child = spawn(electronBin, electronArgs, {
   env: { ...process.env, ELECTRON_DISABLE_SANDBOX: '1' },
 });
 
-interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-interface Bounds {
-  tray: Rect;
-  window: Rect;
-  scale: number;
-}
-
 let ready = false;
 let windowShown = false;
 let bounds: Bounds | null = null;
@@ -159,24 +153,26 @@ child.on('exit', (code) => {
     console.error(`fixture exited (code=${code}) before VISUAL:ready`);
 });
 
-const deadline = Date.now() + READY_TIMEOUT_MS;
-await pollUntil(
-  deadline,
-  () => !ready && child.exitCode === null,
-  READY_POLL_INTERVAL_MS,
-);
-
-if (!ready) {
+let captureBounds: Bounds;
+try {
+  captureBounds = await waitForCaptureReady(
+    () => ({
+      ready,
+      windowShown,
+      bounds,
+      exited: child.exitCode !== null || child.signalCode !== null,
+    }),
+    READY_TIMEOUT_MS,
+    READY_POLL_INTERVAL_MS,
+  );
+} catch (err) {
   child.kill('SIGTERM');
-  writeResult({ status: 'fail', reason: 'fixture did not emit ready' });
+  writeResult({ status: 'fail', reason: (err as Error).message });
   process.exit(1);
 }
 
+// Settle only after showWindow() and its bounds report, not VISUAL:ready.
 await new Promise((r) => setTimeout(r, POST_READY_DELAY_MS));
-
-if (!windowShown) {
-  console.warn('fixture did not emit VISUAL:window-shown before screenshot');
-}
 
 const prepareCmd = process.env.VISUAL_PREPARE_CMD;
 if (prepareCmd) {
@@ -209,9 +205,7 @@ await pollUntil(
       throw err;
     }
     png = PNG.sync.read(readFileSync(screenshotPath));
-    // Bounds arrive asynchronously from the fixture; recompute per attempt so
-    // a late VISUAL:bounds line still tightens the window check on retries.
-    result = check(png, bounds ? scaleRect(bounds.window, bounds.scale) : null);
+    result = check(png, scaleRect(captureBounds.window, captureBounds.scale));
     console.log(
       [
         `exactTray=${result.exactTray}`,
@@ -240,15 +234,11 @@ writeResult({ ...result, attempts });
 // Overwrite the on-disk screenshot with a mask that keeps only the tray-icon
 // and popover-window rects. The pixel-check above ran on the original
 // full-screen capture; the saved PNG is the clean version for diffing.
-if (bounds) {
-  const masked = maskToRects(png, bounds);
-  writeFileSync(screenshotPath, PNG.sync.write(masked));
-  console.log(
-    `masked screenshot to tray=${rectStr(bounds.tray, bounds.scale)} window=${rectStr(bounds.window, bounds.scale)}`,
-  );
-} else {
-  console.warn('VISUAL:bounds not received; leaving screenshot unmasked');
-}
+const masked = maskToRects(png, captureBounds);
+writeFileSync(screenshotPath, PNG.sync.write(masked));
+console.log(
+  `masked screenshot to tray=${rectStr(captureBounds.tray, captureBounds.scale)} window=${rectStr(captureBounds.window, captureBounds.scale)}`,
+);
 
 if (status === 'fail') process.exit(1);
 
