@@ -16,6 +16,30 @@ updatePlatforms<PlatformResult>({
   resultsDir: 'test-results/visual',
   start: START,
   end: END,
+  buildDocsBlock: (results) =>
+    [
+      '{/* visual:start */}',
+      '',
+      '_Continuously verified by [visual tray rendering tests](https://github.com/gitify-app/electron-menubar/blob/main/.github/workflows/visual-tray.yml). Each run boots the menubar fixture, screenshots the OS panel, and asserts both the tray icon and the popover window are painted. These checks confirm rendering, not tray-anchored placement. See [Window positioning on Linux](/platforms/linux-window-positioning)._',
+      '',
+      '| Platform | Tray + Window |',
+      '| -------- | ------------- |',
+      ...results.map(
+        (r) =>
+          `| ${r.label} | ${r.status === 'pass' ? '✅ Pass' : '❌ Fail'} |`,
+      ),
+      '',
+      '### Screenshots',
+      '',
+      '<AccordionGroup>',
+      ...results.map(
+        (r) =>
+          `  <Accordion title="${r.label}">\n    <img\n      src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/${r.key}.png"\n      alt="${r.key} screenshot"\n    />\n  </Accordion>`,
+      ),
+      '</AccordionGroup>',
+      '',
+      '{/* visual:end */}',
+    ].join('\n'),
   buildBlock: (results) => {
     const rows = results
       .map(

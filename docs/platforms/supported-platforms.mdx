@@ -8,39 +8,45 @@ description: 'Platforms where electron-menubar is known to work, verified by end
 
 ## End-to-end tests
 
+{/* platforms:start */}
+
 _Continuously verified by [E2E smoke tests](https://github.com/gitify-app/electron-menubar/blob/main/.github/workflows/e2e.yml)._
 
-| Platform            | Status  |
-| ------------------- | ------- |
-| macOS 14 (Sonoma)   | ✅ Pass |
-| macOS 15 (Sequoia)  | ✅ Pass |
-| macOS 26 (Tahoe)    | ✅ Pass |
-| Ubuntu 22.04        | ✅ Pass |
-| Ubuntu 24.04        | ✅ Pass |
-| Ubuntu 26.04        | ✅ Pass |
-| Windows Server 2022 | ✅ Pass |
-| Windows Server 2025 | ✅ Pass |
+| Platform                        | Status  |
+| ------------------------------- | ------- |
+| macOS 15 (Sequoia)              | ✅ Pass |
+| macOS 26 (Tahoe)                | ✅ Pass |
+| macOS 27 (Golden Gate)          | ✅ Pass |
+| Ubuntu 22.04 (Jammy Jellyfish)  | ✅ Pass |
+| Ubuntu 24.04 (Noble Numbat)     | ✅ Pass |
+| Ubuntu 26.04 (Resolute Raccoon) | ✅ Pass |
+| Windows Server 2022             | ✅ Pass |
+| Windows Server 2025             | ✅ Pass |
+
+{/* platforms:end */}
 
 ## Visual tray rendering
 
+{/* visual:start */}
+
 _Continuously verified by [visual tray rendering tests](https://github.com/gitify-app/electron-menubar/blob/main/.github/workflows/visual-tray.yml). Each run boots the menubar fixture, screenshots the OS panel, and asserts both the tray icon and the popover window are painted. These checks confirm rendering, not tray-anchored placement. See [Window positioning on Linux](/platforms/linux-window-positioning)._
 
-| Platform            | Tray + Window |
-| ------------------- | ------------- |
-| Linux (Budgie)      | ✅ Pass       |
-| Linux (Cinnamon)    | ✅ Pass       |
-| Linux (GNOME)       | ✅ Pass       |
-| Linux (KDE Plasma)  | ✅ Pass       |
-| Linux (LXQt)        | ✅ Pass       |
-| Linux (MATE)        | ✅ Pass       |
-| Linux (Sway/Waybar) | ✅ Pass       |
-| Linux (Tint2)       | ✅ Pass       |
-| Linux (Xfce)        | ✅ Pass       |
-| macOS 14 (Sonoma)   | ✅ Pass       |
-| macOS 15 (Sequoia)  | ✅ Pass       |
-| macOS 26 (Tahoe)    | ✅ Pass       |
-| Windows Server 2022 | ✅ Pass       |
-| Windows Server 2025 | ✅ Pass       |
+| Platform               | Tray + Window |
+| ---------------------- | ------------- |
+| Linux (Budgie)         | ✅ Pass       |
+| Linux (Cinnamon)       | ✅ Pass       |
+| Linux (GNOME)          | ✅ Pass       |
+| Linux (KDE Plasma)     | ✅ Pass       |
+| Linux (LXQt)           | ✅ Pass       |
+| Linux (MATE)           | ✅ Pass       |
+| Linux (Sway/Waybar)    | ✅ Pass       |
+| Linux (Tint2)          | ✅ Pass       |
+| Linux (Xfce)           | ✅ Pass       |
+| macOS 15 (Sequoia)     | ✅ Pass       |
+| macOS 26 (Tahoe)       | ✅ Pass       |
+| macOS 27 (Golden Gate) | ✅ Pass       |
+| Windows Server 2022    | ✅ Pass       |
+| Windows Server 2025    | ✅ Pass       |
 
 ### Screenshots
 
@@ -108,13 +114,6 @@ _Continuously verified by [visual tray rendering tests](https://github.com/gitif
   />
 </Accordion>
 
-<Accordion title="macOS 14 (Sonoma)">
-  <img
-    src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/macos-14.png"
-    alt="macos-14 screenshot"
-  />
-</Accordion>
-
 <Accordion title="macOS 15 (Sequoia)">
   <img
     src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/macos-15.png"
@@ -126,6 +125,13 @@ _Continuously verified by [visual tray rendering tests](https://github.com/gitif
   <img
     src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/macos-26.png"
     alt="macos-26 screenshot"
+  />
+</Accordion>
+
+<Accordion title="macOS 27 (Golden Gate)">
+  <img
+    src="https://raw.githubusercontent.com/gitify-app/electron-menubar/main/.github/visual-screenshots/macos-27.png"
+    alt="macos-27 screenshot"
   />
 </Accordion>
 
@@ -143,3 +149,5 @@ _Continuously verified by [visual tray rendering tests](https://github.com/gitif
     />
   </Accordion>
 </AccordionGroup>
+
+{/* visual:end */}
