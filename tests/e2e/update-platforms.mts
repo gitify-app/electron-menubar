@@ -18,6 +18,21 @@ updatePlatforms<PlatformResult>({
   resultsDir: 'test-results/platforms',
   start: START,
   end: END,
+  buildDocsBlock: (results) =>
+    [
+      '{/* platforms:start */}',
+      '',
+      '_Continuously verified by [E2E smoke tests](https://github.com/gitify-app/electron-menubar/blob/main/.github/workflows/e2e.yml)._',
+      '',
+      '| Platform | Status |',
+      '| -------- | ------ |',
+      ...results.map(
+        (r) =>
+          `| ${r.label} | ${r.status === 'pass' ? '✅ Pass' : '❌ Fail'} |`,
+      ),
+      '',
+      '{/* platforms:end */}',
+    ].join('\n'),
   buildBlock: (results) => {
     const rows = results
       .map(
