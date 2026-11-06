@@ -1,0 +1,18 @@
+.github/workflows/e2e.yml
+  h_ac004aadb63da9 24,39,42,45
+.github/workflows/visual-tray.yml
+  h_ac004aadb63da9 25
+PLATFORMS.md
+  h_ac004aadb63da9 7-16,24-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "773582eb50d63f11414d73e5aeea29adf54e7c57",
+  "prompts": {},
+  "humans": {
+    "h_ac004aadb63da9": {
+      "author": "Adam Setch <adam.setch@outlook.com>"
+    }
+  }
+}
