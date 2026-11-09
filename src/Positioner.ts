@@ -34,9 +34,14 @@ export class Positioner {
     this.browserWindow = browserWindow;
   }
 
+  /**
+   * @param windowSize - Size to place, when it differs from the window's
+   * current size (e.g. the size about to be applied with `setBounds`).
+   */
   calculate(
     position?: WindowPosition,
     trayBounds?: Rectangle,
+    windowSize?: { width: number; height: number },
   ): { x: number; y: number } {
     if (!position) {
       throw new TypeError(
@@ -47,7 +52,9 @@ export class Positioner {
     const screenSize = trayBounds
       ? screen.getDisplayMatching(trayBounds).workArea
       : screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
-    const [windowWidth, windowHeight] = this.browserWindow.getSize();
+    const [windowWidth, windowHeight] = windowSize
+      ? [windowSize.width, windowSize.height]
+      : this.browserWindow.getSize();
     const trayX = trayBounds?.x ?? Number.NaN;
     const trayWidth = trayBounds?.width ?? Number.NaN;
 

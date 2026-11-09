@@ -32,9 +32,15 @@ export const autoUpdater: {
 
 export class BrowserWindow {
   private _position: [number, number] = [0, 0];
+  private _size: [number, number] = [400, 400];
   destroy: Mock = vi.fn();
+  getBounds: Mock = vi.fn(() => {
+    const [x, y] = this.getPosition() as [number, number];
+    const [width, height] = this.getSize() as [number, number];
+    return { x, y, width, height };
+  });
   getPosition: Mock = vi.fn(() => this._position);
-  getSize: Mock = vi.fn(() => [400, 400]);
+  getSize: Mock = vi.fn(() => this._size);
   hide: Mock = vi.fn();
   isAlwaysOnTop: Mock = vi.fn(() => false);
   isDestroyed: Mock = vi.fn(() => false);
@@ -43,6 +49,12 @@ export class BrowserWindow {
   });
   loadURL: Mock = vi.fn();
   on: Mock = vi.fn();
+  setBounds: Mock = vi.fn(
+    (bounds: { x: number; y: number; width: number; height: number }) => {
+      this._position = [bounds.x, bounds.y];
+      this._size = [bounds.width, bounds.height];
+    },
+  );
   setPosition: Mock = vi.fn((x: number, y: number) => {
     this._position = [x, y];
   });
@@ -87,6 +99,7 @@ export const screen: {
   getDisplayMatching: vi.fn(() => ({
     bounds: { ...defaultBounds },
     workArea: { ...defaultWorkArea },
+    scaleFactor: 1,
   })),
   getDisplayNearestPoint: vi.fn(() => ({
     bounds: { ...defaultBounds },
