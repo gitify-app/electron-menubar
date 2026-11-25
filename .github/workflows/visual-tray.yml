@@ -228,7 +228,7 @@ jobs:
       # 'com.solus-project.budgie-panel' is not installed".
       - name: Install desktop environment (cached)
         if: matrix.cache_apt
-        uses: awalsh128/cache-apt-pkgs-action@v1.6.3
+        uses: awalsh128/cache-apt-pkgs-action@v2.0.0
         with:
           packages: ${{ matrix.apt }}
           version: '1.0'
