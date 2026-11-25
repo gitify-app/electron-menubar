@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. Releases are managed by [release-please](https://github.com/googleapis/release-please) from [Conventional Commits](https://www.conventionalcommits.org/).
 
+## [11.1.4](https://github.com/gitify-app/electron-menubar/compare/v11.1.3...v11.1.4) (2026-11-25)
+
+
+### 📦 Dependency Updates (Core)
+
+* **deps-core:** update electron to v45.4.1 ([#344](https://github.com/gitify-app/electron-menubar/issues/344)) ([b492108](https://github.com/gitify-app/electron-menubar/commit/b492108d2fcff174fcf507d76ffdac37542e2dae))
+
 ## [11.1.3](https://github.com/gitify-app/electron-menubar/compare/v11.1.2...v11.1.3) (2026-11-09)
 
 
