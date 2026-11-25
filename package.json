@@ -70,7 +70,7 @@
   "devDependencies": {
     "@playwright/test": "1.65.1",
     "@types/pngjs": "6.0.5",
-    "electron": "45.2.3",
+    "electron": "45.4.1",
     "oxfmt": "0.79.0",
     "oxlint": "1.91.0",
     "pngjs": "7.0.0",
