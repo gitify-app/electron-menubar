@@ -1,0 +1,5 @@
+# Compatibility: actionlint 1.7.12 does not recognize these GitHub-hosted runner labels yet.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+    - xcode-27

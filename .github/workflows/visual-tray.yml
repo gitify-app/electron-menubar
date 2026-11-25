@@ -246,7 +246,8 @@ jobs:
         env:
           APT_PACKAGES: ${{ matrix.apt }}
         run: |
-          sudo apt-get install -y --no-install-recommends $APT_PACKAGES
+          read -r -a apt_packages <<< "$APT_PACKAGES"
+          sudo apt-get install -y --no-install-recommends "${apt_packages[@]}"
       - name: Build snixembed (SNI to XEmbed bridge)
         if: matrix.build_snixembed
         run: |
@@ -314,17 +315,19 @@ jobs:
           VISUAL_POST_READY_DELAY_MS: ${{ matrix.post_ready_delay || 3000 }}
           PANEL_CMD: ${{ matrix.panel_cmd }}
           PANEL_WARMUP: ${{ matrix.panel_warmup || 8 }}
-          TEST_DISPLAY: ${{ matrix.test_display || ':99' }}
+          TEST_DISPLAY: ':99'
         run: |
           set -x
           if [ "${{ matrix.use_xdummy || 'false' }}" = "true" ]; then
               sudo Xorg :99 -config /etc/X11/xorg-dummy.conf -noreset -nolisten tcp -logfile /tmp/xorg.log &
           else
-              Xvfb :99 -screen 0 ${{ matrix.xvfb_screen || '1920x1080x24' }} &
+              Xvfb :99 -screen 0 1920x1080x24 &
           fi
           XSERVER_PID=$!
           export DISPLAY=:99
           sleep 3
+          # Expand variables in the child shell, not in this runner shell.
+          # shellcheck disable=SC2016
           dbus-run-session -- bash -c '
               export DISPLAY=:99
               LD_PRELOAD=/usr/lib/x86_64-linux-gnu/faketime/libfaketimeMT.so.1 FAKETIME="@2026-01-01 00:00:00" bash -c "$PANEL_CMD" &
@@ -353,7 +356,6 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       # Hyprland is not in this matrix. Investigation summary (see PR #10):
@@ -397,6 +399,7 @@ jobs:
         env:
           APT_PACKAGES: ${{ matrix.apt }}
         run: |
+          read -r -a apt_packages <<< "$APT_PACKAGES"
           printf 'Acquire::Retries "3";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' | sudo tee /etc/apt/apt.conf.d/99-fetch-timeouts
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
@@ -406,7 +409,7 @@ jobs:
               libxtst6 libnotify4 libxrandr2 \
               libxcomposite1 libxdamage1 libxfixes3 libcups2 \
               libayatana-appindicator3-1 libdbusmenu-glib4 \
-              $APT_PACKAGES
+              "${apt_packages[@]}"
       - name: Configure Waybar
         run: |
           mkdir -p ~/.config/waybar
@@ -444,7 +447,7 @@ jobs:
         env:
           VISUAL_KEY: ${{ matrix.key }}
           VISUAL_LABEL: ${{ matrix.label }}
-          VISUAL_POST_READY_DELAY_MS: ${{ matrix.post_ready_delay || 8000 }}
+          VISUAL_POST_READY_DELAY_MS: '8000'
           DE: ${{ matrix.de }}
         run: |
           set -x
@@ -542,6 +545,8 @@ jobs:
           export XDG_RUNTIME_DIR=/tmp/xdg-runtime
           mkdir -p "$XDG_RUNTIME_DIR" /tmp/gnome-visual
           chmod 700 "$XDG_RUNTIME_DIR"
+          # Expand variables in the child shell, not in this runner shell.
+          # shellcheck disable=SC2016
           dbus-run-session -- bash -euo pipefail -c '
               export XDG_RUNTIME_DIR=/tmp/xdg-runtime
               export XDG_SESSION_TYPE=wayland
@@ -594,7 +599,6 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
