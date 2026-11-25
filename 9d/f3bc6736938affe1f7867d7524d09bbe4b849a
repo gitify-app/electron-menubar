@@ -1,0 +1,18 @@
+.github/actionlint.yaml
+  h_ac004aadb63da9 1-5
+.github/workflows/lint.yml
+  h_ac004aadb63da9 34-49
+.github/workflows/visual-tray.yml
+  h_ac004aadb63da9 249-250,318,324,329-330,402,412,450,548-549
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9df3bc6736938affe1f7867d7524d09bbe4b849a",
+  "prompts": {},
+  "humans": {
+    "h_ac004aadb63da9": {
+      "author": "Adam Setch <adam.setch@outlook.com>"
+    }
+  }
+}
