@@ -1,0 +1,14 @@
+.github/workflows/lint.yml
+  h_ac004aadb63da9 33-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a22760cefd4a78d42874056b5ac7dd6bd569e775",
+  "prompts": {},
+  "humans": {
+    "h_ac004aadb63da9": {
+      "author": "Adam Setch <adam.setch@outlook.com>"
+    }
+  }
+}
